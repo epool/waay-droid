@@ -1,9 +1,7 @@
 package mx.eduardopool.waaydroid;
 
-import java.util.Locale;
-
 import android.app.Activity;
-import android.content.Intent;
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.view.Menu;
@@ -14,41 +12,37 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.Button;
-import android.widget.GridView;
 import android.widget.Toast;
 
+import java.util.Locale;
+
+import mx.eduardopool.waaydroid.databinding.ActivityMainBinding;
+
 public class MainActivity extends Activity {
-    private Button yesButton;
-    private Button noButton;
-    private StringBuilder stringBuilder;
+
+    private ActivityMainBinding mActivityMainBinding;
+
+    private StringBuilder stringBuilder = new StringBuilder();
     private CardAdapter cardAdapter;
-    private GridView gridview;
 
     private TextToSpeech reader;
 
     private Animation fadeIn = new AlphaAnimation(0, 1);
+    private boolean isGuessing;
+    private String numberInMind = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+        mActivityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
-        stringBuilder = new StringBuilder();
-
-        gridview = (GridView) findViewById(R.id.gridview);
-        cardAdapter = new CardAdapter(this);
-        gridview.setAdapter(cardAdapter);
-
-        yesButton = (Button) findViewById(R.id.buttonYes);
-        yesButton.setOnClickListener(new OnClickListener() {
+        mActivityMainBinding.buttonYes.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 processSelection("1");
             }
         });
-        noButton = (Button) findViewById(R.id.buttonNo);
-        noButton.setOnClickListener(new OnClickListener() {
+        mActivityMainBinding.buttonNo.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 processSelection("0");
@@ -57,7 +51,9 @@ public class MainActivity extends Activity {
 
         isGuessing = true;
 
-        gridview.setOnItemClickListener(new OnItemClickListener() {
+        cardAdapter = new CardAdapter(this);
+        mActivityMainBinding.gridView.setAdapter(cardAdapter);
+        mActivityMainBinding.gridView.setOnItemClickListener(new OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 Toast.makeText(MainActivity.this, "" + position, Toast.LENGTH_SHORT).show();
             }
@@ -89,16 +85,13 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         //Close the Text to Speech Library
-        if(reader != null) {
+        if (reader != null) {
 
             reader.stop();
             reader.shutdown();
         }
         super.onDestroy();
     }
-
-    private boolean isGuessing;
-    private String numberInMind = "";
 
     private void processSelection(String selection) {
         if (isGuessing) {
@@ -109,7 +102,7 @@ public class MainActivity extends Activity {
             reader.speak("¿El número que pensaste fue " + numberInMind + "?", TextToSpeech.QUEUE_ADD, null);
         }
         if (cardAdapter.getCurrentCard() < cardAdapter.getCardsNumber()) {
-            gridview.startAnimation(fadeIn);
+            mActivityMainBinding.gridView.startAnimation(fadeIn);
             cardAdapter.notifyDataSetChanged();
         } else {
             isGuessing = false;

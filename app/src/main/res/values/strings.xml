@@ -2,10 +2,9 @@
 <resources>
 
     <string name="app_name">Wáay! Droid</string>
-    <string name="reset">Reset</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="isYourNumberQuestion">¿Está el número que pensaste en esta lista?</string>
-    <string name="yes">Si</string>
-    <string name="no">No</string>
+    <string name="label_reset">Reset</string>
+    <string name="label_number_question">Is the number you\'re thinking about in this list?</string>
+    <string name="label_yes">Yes</string>
+    <string name="label_no">No</string>
 
 </resources>

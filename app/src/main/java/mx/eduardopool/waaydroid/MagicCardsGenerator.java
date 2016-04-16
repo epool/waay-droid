@@ -4,17 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * Cards generator.
  * Created by EduardoPool on 17/08/14.
  */
 public class MagicCardsGenerator {
-    private Integer cardsNumber;
-    private Integer maxNumber;
+
+    private int cardsNumber;
+    private int maxNumber;
     private List<List<Integer>> cards;
 
     public MagicCardsGenerator(Integer cardsNumber) {
         this.cardsNumber = cardsNumber;
-        this.cards = new ArrayList<List<Integer>>(cardsNumber);
+        this.cards = new ArrayList<>(cardsNumber);
         calculateCardsNumbers();
     }
 
@@ -27,7 +28,7 @@ public class MagicCardsGenerator {
     }
 
     private List<Integer> calculateNumbersForCardIndex(int cardIndex) {
-        List<Integer> card = new ArrayList<Integer>();
+        List<Integer> card = new ArrayList<>();
         int jumpNumber = (int) Math.pow(2, cardIndex);
         boolean isAdd = true;
         for (int numberToAdd = jumpNumber, count = 0; numberToAdd < maxNumber; numberToAdd++, count++) {
@@ -42,11 +43,11 @@ public class MagicCardsGenerator {
         return card;
     }
 
-    public Integer getCardsNumber() {
+    public int getCardsNumber() {
         return cardsNumber;
     }
 
-    public void setCardsNumber(Integer cardsNumber) {
+    public void setCardsNumber(int cardsNumber) {
         this.cardsNumber = cardsNumber;
     }
 
