@@ -2,14 +2,18 @@
 
 buildscript {
     ext {
+        build_tools_version = '2.1.0-beta3'
         junit_version = '4.12'
         support_library_version = '23.3.0'
+        kotlin_version = '1.0.1-2'
+        anko_version = '0.8.3'
     }
     repositories {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.0-beta1'
+        classpath "com.android.tools.build:gradle:$build_tools_version"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
