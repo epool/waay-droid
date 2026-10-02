@@ -1,0 +1,47 @@
+{
+  "extraKnownMarketplaces": {
+    "Kotlin": {
+      "source": {
+        "source": "github",
+        "repo": "Kotlin/kotlin-agent-skills"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "kotlin-agent-skills@Kotlin": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew:*)",
+      "Bash(xcodegen:*)",
+      "Bash(xcodebuild:*)",
+      "Bash(xcrun simctl:*)",
+      "Bash(xcrun swift-format:*)",
+      "Bash(swift format:*)",
+      "Bash(android:*)",
+      "Bash(~/.local/bin/android:*)",
+      "Bash(adb:*)",
+      "Bash(specify:*)",
+      "Bash(~/.local/bin/specify:*)",
+      "Bash(.specify/scripts/bash/:*)",
+      "Bash(.specify/extensions/git/scripts/bash/:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git switch:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(git rm:*)",
+      "Bash(git mv:*)",
+      "Bash(git stash:*)",
+      "Bash(git rev-parse:*)"
+    ],
+    "deny": [
+      "Bash(git push:*)"
+    ]
+  }
+}
