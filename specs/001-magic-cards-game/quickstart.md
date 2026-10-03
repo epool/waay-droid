@@ -226,3 +226,22 @@ plus `adb shell input`, reading the screen the way a player would.
   - **API 26 emulator:** the `android-26;google_apis;arm64-v8a` image hangs in QEMU on this Apple
     Silicon host (emulator 37.2), even with a cold boot and SwiftShader. API 26 stays covered by the
     Robolectric `sdk = 26` flow.
+
+**2026-10-03: full validation (T101)**
+
+- **Section 1, from `clean` with `--no-build-cache`:** all green.
+  - spotless;
+  - strict lint: 0 issues;
+  - `:shared:allTests`: 64 Android-host + 67 iosSimulatorArm64 tests;
+  - `koverVerify`: 98.5%;
+  - 11 Robolectric tests;
+  - Roborazzi verify: 61 baselines;
+  - `assembleDebug`;
+  - swift-format lint;
+  - `xcodegen`: no project drift;
+  - `xcodebuild test` on iPhone 17 / iOS 27.0: 11 of 11, which is 3 Swift Testing + 8 XCUITest.
+- **Section 2:** see the device-verification entry above. Every Android scenario A1–A9 and iOS
+  scenarios I1, I4–I7 and I9 pass. The gesture-driven screen-reader runs and iPad Split View are
+  left for the acceptance gate.
+- **Section 3, SC-003:** needs a first-time human player and a stopwatch, so it's left for the
+  acceptance gate. For reference, a scripted 5-card round takes about 10 s.
