@@ -22,6 +22,7 @@ private fun GameSnapshot.toContent(strings: Strings): GameContentUi {
 
         is GamePhase.Asking -> {
             GameContentUi.Card(
+                index = phase.index,
                 progress = strings.progress(current = phase.index + 1, total = deck.cards.size),
                 question = strings.cardQuestion,
                 numbers = deck.cards[phase.index].numbers.map { NumberUi(value = it, label = strings.numberLabel(it)) },

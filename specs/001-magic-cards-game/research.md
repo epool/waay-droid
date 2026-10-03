@@ -488,6 +488,35 @@ Explicit API mode keeps the exported header small.
 
 ---
 
+## ADR-012 — Rapid-input guard (FR-028), added during Phase 9
+
+**Decision**: two complementary shared rules. The UIs stay logic-free.
+1. **Card index:** `OnAnswerClick(answer, cardIndex)` echoes `GameContentUi.Card.index`, and the
+   pure engine ignores answers for any card other than the current one. This catches same-frame
+   duplicates.
+2. **Answer cooldown:** `GameViewModel` ignores answers that arrive within **300 ms** of a card
+   appearing. `TimeSource` is injected: `TimeSource.Monotonic` in the app; `TestTimeSource` or an
+   auto-advancing fake in tests.
+
+**Rationale**
+- A human double tap is 100–200 ms. By then the next card has rendered, so the index guard alone
+  would let the second tap answer card 2, which FR-028 forbids.
+- Reading 16–64 numbers takes far longer than 300 ms, so real answers are never blocked.
+- The original 2014 app had an 800 ms fade-in between cards.
+
+**Alternatives considered**
+- UI-side debounce or disabling buttons: puts logic in the UIs, against constitution II.
+- A transition delay with `delay()` in `viewModelScope`: harder to test deterministically on
+  Robolectric's real looper.
+
+**Verification**
+- `GameEngineTest` covers the stale index.
+- `GameViewModelTest.rapidDoubleTapRecordsASingleAnswer` uses a frozen clock.
+- Robolectric `RapidInputTest` uses two taps about 16 ms apart.
+- The Robolectric robots wait out the cooldown, as a real player would.
+
+---
+
 ## Resolved unknowns
 
 Every Technical Context item in plan.md is resolved, and no NEEDS CLARIFICATION remains. The open

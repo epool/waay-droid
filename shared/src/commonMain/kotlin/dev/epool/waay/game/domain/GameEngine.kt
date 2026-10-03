@@ -30,8 +30,10 @@ internal sealed interface GamePhase {
 internal sealed interface GameCommand {
     data object Ready : GameCommand
 
+    /** [cardIndex] is the card the answer was given on; answers for any other card are ignored (FR-028). */
     data class AnswerCard(
         val answer: Answer,
+        val cardIndex: Int,
     ) : GameCommand
 
     data object NewGame : GameCommand
@@ -55,11 +57,15 @@ internal object GameEngine {
             GameCommand.NewGame -> start(newDeck(snapshot.deck.cardCount))
             is GameCommand.CardCountChanged -> start(newDeck(command.cardCount))
             GameCommand.Ready -> if (snapshot.phase == GamePhase.Intro) snapshot.copy(phase = GamePhase.Asking(0)) else snapshot
-            is GameCommand.AnswerCard -> snapshot.answer(command.answer)
+            is GameCommand.AnswerCard -> snapshot.answer(command.answer, command.cardIndex)
         }
 
-    private fun GameSnapshot.answer(answer: Answer): GameSnapshot {
+    private fun GameSnapshot.answer(
+        answer: Answer,
+        cardIndex: Int,
+    ): GameSnapshot {
         val asking = phase as? GamePhase.Asking ?: return this
+        if (asking.index != cardIndex) return this
         val answers = answers + answer
         val nextIndex = asking.index + 1
         val phase =

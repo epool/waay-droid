@@ -106,7 +106,7 @@ read-only `List`s, which bridge to Swift `[T]` (ADR-011). Their contracts are in
 
 `GameContentUi` cases:
 - **`Intro`**: `message` (for example "Think of a number from 1 to 31…") and `readyLabel`.
-- **`Card`**: `progress` ("Card 3 of 5"), `question` ("Is your number on this card?"),
+- **`Card`**: `index` (0-based position), `progress` ("Card 3 of 5"), `question` ("Is your number on this card?"),
   `numbers: List<NumberUi>`, `yesLabel` and `noLabel`. `NumberUi` has `value: Int` and
   `label: String`, which is what the screen reader announces.
 - **`Revealed`**: `message` ("The number you thought of is… 27!"), `number: Int`, `newGameLabel`.
@@ -115,7 +115,7 @@ read-only `List`s, which bridge to Swift `[T]` (ADR-011). Their contracts are in
 ### GameAction
 
 - `OnReadyClick`
-- `OnAnswerClick(answer: Answer)`
+- `OnAnswerClick(answer: Answer, cardIndex: Int)`: `cardIndex` echoes `Card.index`. Answers for any other card are ignored (FR-028).
 - `OnNewGameClick`
 - `OnSettingsClick`
 

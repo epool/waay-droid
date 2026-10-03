@@ -634,7 +634,7 @@ These tasks follow the official `adaptive` and `edge-to-edge` skills (ADR-008).
   - an announcement for each new card;
   - Dynamic Type up to AX5 without clipping;
   - identifiers matching XCUITest.
-- [ ] T093 Write `androidApp/src/test/kotlin/dev/epool/waay/android/game/RapidInputTest.kt` (FR-028:
+- [X] T093 Write `androidApp/src/test/kotlin/dev/epool/waay/android/game/RapidInputTest.kt` (FR-028:
   a double tap records one answer) and `ConfigurationChangeTest.kt` (FR-029: recreating the Activity
   mid-game keeps the card and the answers).
 - [ ] T094 Verify manually on the foldable and tablet emulators (`android emulator create`) and on

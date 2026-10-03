@@ -8,6 +8,7 @@ import dev.epool.waay.game.domain.CardCount
 import dev.epool.waay.game.domain.DeckFactory
 import dev.epool.waay.game.domain.GameCommand
 import dev.epool.waay.game.domain.GameEngine
+import dev.epool.waay.game.domain.GamePhase
 import dev.epool.waay.game.domain.GameSnapshot
 import dev.epool.waay.settings.domain.LanguageChoice
 import dev.epool.waay.settings.domain.Preferences
@@ -23,6 +24,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.TimeMark
+import kotlin.time.TimeSource
 
 /**
  * Thin MVI adapter over the pure [GameEngine] (ADR-001, contracts/game-viewmodel.md).
@@ -36,12 +40,14 @@ public class GameViewModel internal constructor(
     private val stringsProvider: StringsProvider,
     private val deckFactory: DeckFactory,
     private val speaker: Speaker,
+    private val timeSource: TimeSource,
 ) : ViewModel() {
     private var snapshot: GameSnapshot? = null
     private var preferences = Preferences()
     private var hasStarted = false
     private var isScreenVisible = false
     private var hasPendingSpeech = false
+    private var cardShownAt: TimeMark? = null
 
     private val _state =
         MutableStateFlow(
@@ -68,7 +74,7 @@ public class GameViewModel internal constructor(
     public fun onAction(action: GameAction) {
         when (action) {
             GameAction.OnReadyClick -> reduce(GameCommand.Ready)
-            is GameAction.OnAnswerClick -> reduce(GameCommand.AnswerCard(action.answer))
+            is GameAction.OnAnswerClick -> if (!isWithinAnswerCooldown()) reduce(GameCommand.AnswerCard(action.answer, action.cardIndex))
             GameAction.OnNewGameClick -> reduce(GameCommand.NewGame)
             GameAction.OnSettingsClick -> eventChannel.trySend(GameEvent.NavigateToSettings)
         }
@@ -114,8 +120,20 @@ public class GameViewModel internal constructor(
         val next = GameEngine.reduce(current, command, deckFactory::create)
         if (next === current) return
         snapshot = next
+        cardShownAt = if (next.phase is GamePhase.Asking) timeSource.markNow() else null
         publish()
         speakCurrentLine()
+    }
+
+    /**
+     * FR-028: a tap landing within [ANSWER_COOLDOWN] of a card appearing is the tail of a double tap
+     * on the previous card, not an answer to this one. The engine's card-index check covers
+     * same-frame duplicates.
+     */
+    private fun isWithinAnswerCooldown(): Boolean = cardShownAt?.let { it.elapsedNow() < ANSWER_COOLDOWN } ?: false
+
+    private companion object {
+        val ANSWER_COOLDOWN = 300.milliseconds
     }
 
     private fun publish() {

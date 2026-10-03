@@ -35,7 +35,7 @@ struct GameScreen: View {
         case .intro(let intro):
             IntroView(intro: intro, onReady: { onAction(GameActionOnReadyClick.shared) })
         case .card(let card):
-            CardView(card: card, onAnswer: { onAction(GameActionOnAnswerClick(answer: $0)) })
+            CardView(card: card, onAnswer: { onAction(GameActionOnAnswerClick(answer: $0, cardIndex: card.index)) })
         case .revealed(let revealed):
             ResultView(message: revealed.message, newGameLabel: revealed.newGameLabel) {
                 onAction(GameActionOnNewGameClick.shared)
@@ -147,6 +147,7 @@ private func previewState(_ content: GameContentUi) -> GameState {
         GameScreen(
             state: previewState(
                 GameContentUiCard(
+                    index: 1,
                     progress: "Card 2 of 5",
                     question: "Is your number on this card?",
                     numbers: [19, 3, 27, 6, 15, 22, 7, 31, 2, 11, 30, 18, 14, 23, 10, 26].map { NumberUi(value: $0, label: "\($0)") },

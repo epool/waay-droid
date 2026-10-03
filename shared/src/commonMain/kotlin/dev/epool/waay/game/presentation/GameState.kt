@@ -16,6 +16,8 @@ public sealed interface GameContentUi {
     ) : GameContentUi
 
     public data class Card(
+        /** Presentation position (0-based); sent back with answers so stale taps are ignored (FR-028). */
+        val index: Int,
         val progress: String,
         val question: String,
         /** Displayed numbers only: no bit information (FR-011). */

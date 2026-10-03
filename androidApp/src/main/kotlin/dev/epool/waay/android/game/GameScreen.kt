@@ -148,13 +148,13 @@ private fun CardContent(
         }
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
             Button(
-                onClick = { onAction(GameAction.OnAnswerClick(Answer.Yes)) },
+                onClick = { onAction(GameAction.OnAnswerClick(Answer.Yes, content.index)) },
                 modifier = Modifier.weight(1f).testTag("card.yes"),
             ) {
                 Text(content.yesLabel)
             }
             OutlinedButton(
-                onClick = { onAction(GameAction.OnAnswerClick(Answer.No)) },
+                onClick = { onAction(GameAction.OnAnswerClick(Answer.No, content.index)) },
                 modifier = Modifier.weight(1f).testTag("card.no"),
             ) {
                 Text(content.noLabel)
@@ -228,6 +228,7 @@ private fun CardPreview() {
             state =
                 previewState(
                     GameContentUi.Card(
+                        index = 1,
                         progress = "Card 2 of 5",
                         question = "Is your number on this card?",
                         numbers = listOf(19, 3, 27, 6, 15, 22, 7, 31, 2, 11, 30, 18, 14, 23, 10, 26).map { NumberUi(it, "$it") },

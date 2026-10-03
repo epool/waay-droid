@@ -16,8 +16,8 @@ class GameEngineTest {
         commands.fold(this) { snapshot, command -> GameEngine.reduce(snapshot, command, newDeck) }
 
     private fun GameSnapshot.answerTruthfully(secret: Int): GameSnapshot =
-        deck.cards.fold(this) { snapshot, card ->
-            snapshot.reduce(GameCommand.AnswerCard(if (secret in card.numbers) Answer.Yes else Answer.No))
+        deck.cards.foldIndexed(this) { index, snapshot, card ->
+            snapshot.reduce(GameCommand.AnswerCard(if (secret in card.numbers) Answer.Yes else Answer.No, cardIndex = index))
         }
 
     @Test
@@ -33,7 +33,7 @@ class GameEngineTest {
 
     @Test
     fun answersAdvanceThroughTheCards() {
-        val snapshot = start.reduce(GameCommand.Ready, GameCommand.AnswerCard(Answer.Yes), GameCommand.AnswerCard(Answer.No))
+        val snapshot = start.reduce(GameCommand.Ready, GameCommand.AnswerCard(Answer.Yes, 0), GameCommand.AnswerCard(Answer.No, 1))
 
         assertThat(snapshot.phase).isEqualTo(GamePhase.Asking(2))
         assertThat(snapshot.answers).isEqualTo(listOf(Answer.Yes, Answer.No))
@@ -57,7 +57,7 @@ class GameEngineTest {
     fun newGameFromAnyPhaseReturnsToIntroWithAFreshDeck() {
         listOf(
             start,
-            start.reduce(GameCommand.Ready, GameCommand.AnswerCard(Answer.Yes)),
+            start.reduce(GameCommand.Ready, GameCommand.AnswerCard(Answer.Yes, 0)),
             start.reduce(GameCommand.Ready).answerTruthfully(5),
             start.reduce(GameCommand.Ready).answerTruthfully(0),
         ).forEach { snapshot ->
@@ -80,13 +80,24 @@ class GameEngineTest {
     // FR-028: commands a phase doesn't allow are no-ops.
     @Test
     fun disallowedCommandsAreNoOps() {
-        assertThat(start.reduce(GameCommand.AnswerCard(Answer.Yes))).isSameInstanceAs(start)
+        assertThat(start.reduce(GameCommand.AnswerCard(Answer.Yes, 0))).isSameInstanceAs(start)
 
         val asking = start.reduce(GameCommand.Ready)
         assertThat(asking.reduce(GameCommand.Ready)).isSameInstanceAs(asking)
 
         val revealed = asking.answerTruthfully(9)
-        assertThat(revealed.reduce(GameCommand.AnswerCard(Answer.Yes))).isSameInstanceAs(revealed)
+        assertThat(revealed.reduce(GameCommand.AnswerCard(Answer.Yes, 4))).isSameInstanceAs(revealed)
         assertThat(revealed.reduce(GameCommand.Ready)).isSameInstanceAs(revealed)
+    }
+
+    // FR-028: a rapid second tap carries the previous card's index and is ignored, so one tap
+    // records exactly one answer for the card it was given on.
+    @Test
+    fun answerForAnyCardOtherThanTheCurrentOneIsIgnored() {
+        val onSecondCard = start.reduce(GameCommand.Ready, GameCommand.AnswerCard(Answer.Yes, cardIndex = 0))
+
+        assertThat(onSecondCard.reduce(GameCommand.AnswerCard(Answer.Yes, cardIndex = 0))).isSameInstanceAs(onSecondCard)
+        assertThat(onSecondCard.reduce(GameCommand.AnswerCard(Answer.Yes, cardIndex = 3))).isSameInstanceAs(onSecondCard)
+        assertThat(onSecondCard.reduce(GameCommand.AnswerCard(Answer.No, cardIndex = 1)).phase).isEqualTo(GamePhase.Asking(2))
     }
 }

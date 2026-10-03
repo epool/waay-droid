@@ -14,6 +14,11 @@ import androidx.compose.ui.test.performClick
 class GameRobot(
     private val rule: AndroidComposeTestRule<*, *>,
 ) {
+    companion object {
+        /** Real players need far longer than the 300 ms answer cooldown (FR-028) to read a card. */
+        fun waitOutAnswerCooldown() = Thread.sleep(350)
+    }
+
     fun assertIntro() =
         apply {
             rule.onNodeWithTag("intro.ready").assertIsDisplayed()
@@ -30,10 +35,18 @@ class GameRobot(
     ) = apply {
         repeat(cards) {
             rule.waitForIdle()
+            waitOutAnswerCooldown()
             val isOnCard = rule.onAllNodesWithTag("number.$secret").fetchSemanticsNodes().isNotEmpty()
             rule.onNodeWithTag(if (isOnCard) "card.yes" else "card.no").performClick()
         }
     }
+
+    fun answer(tag: String) =
+        apply {
+            rule.waitForIdle()
+            waitOutAnswerCooldown()
+            rule.onNodeWithTag(tag).performClick()
+        }
 
     fun assertRevealed(secret: Int) =
         apply {

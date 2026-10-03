@@ -18,6 +18,7 @@ import com.russhwolf.settings.MapSettings
 import dev.epool.waay.core.domain.Result
 import dev.epool.waay.core.i18n.EnglishStrings
 import dev.epool.waay.core.i18n.StringsProvider
+import dev.epool.waay.fakes.AdvancingTimeSource
 import dev.epool.waay.fakes.FakeDeviceLocale
 import dev.epool.waay.fakes.FakeSpeaker
 import dev.epool.waay.fakes.MainDispatcherTest
@@ -37,19 +38,25 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlin.random.Random
 import kotlin.test.Test
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.TestTimeSource
+import kotlin.time.TimeSource
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GameViewModelTest : MainDispatcherTest() {
     private val speaker = FakeSpeaker()
     private val preferences = KeyValuePreferencesDataSource(MapSettings())
 
-    private fun viewModel(random: Random = Random(1)) =
-        GameViewModel(
-            preferencesDataSource = preferences,
-            stringsProvider = StringsProvider(FakeDeviceLocale()),
-            deckFactory = DeckFactory { MagicDeck.create(it, random) },
-            speaker = speaker,
-        )
+    private fun viewModel(
+        random: Random = Random(1),
+        timeSource: TimeSource = AdvancingTimeSource(),
+    ) = GameViewModel(
+        preferencesDataSource = preferences,
+        stringsProvider = StringsProvider(FakeDeviceLocale()),
+        deckFactory = DeckFactory { MagicDeck.create(it, random) },
+        speaker = speaker,
+        timeSource = timeSource,
+    )
 
     private suspend fun ReceiveTurbine<GameState>.answerTruthfully(
         viewModel: GameViewModel,
@@ -61,7 +68,7 @@ class GameViewModelTest : MainDispatcherTest() {
         repeat(cards) {
             val card = state.content as GameContentUi.Card
             val answer = if (card.numbers.any { it.value == secret }) Answer.Yes else Answer.No
-            viewModel.onAction(GameAction.OnAnswerClick(answer))
+            viewModel.onAction(GameAction.OnAnswerClick(answer, card.index))
             state = awaitItem()
         }
         return state
@@ -137,7 +144,7 @@ class GameViewModelTest : MainDispatcherTest() {
                 awaitItem()
                 viewModel.onAction(GameAction.OnReadyClick)
                 awaitItem()
-                viewModel.onAction(GameAction.OnAnswerClick(Answer.Yes))
+                viewModel.onAction(GameAction.OnAnswerClick(Answer.Yes, cardIndex = 0))
                 awaitItem()
 
                 viewModel.onAction(GameAction.OnNewGameClick)
@@ -153,7 +160,7 @@ class GameViewModelTest : MainDispatcherTest() {
             val viewModel = viewModel()
             viewModel.state.test {
                 awaitItem()
-                viewModel.onAction(GameAction.OnAnswerClick(Answer.Yes))
+                viewModel.onAction(GameAction.OnAnswerClick(Answer.Yes, cardIndex = 0))
                 expectNoEvents()
             }
         }
@@ -400,13 +407,41 @@ class GameViewModelTest : MainDispatcherTest() {
                 assertThat(spanishCard.progress).isEqualTo("Carta 1 de 5")
                 assertThat(spanishCard.numbers).isEqualTo(englishCard.numbers)
 
-                viewModel.onAction(GameAction.OnAnswerClick(Answer.No))
+                viewModel.onAction(GameAction.OnAnswerClick(Answer.No, spanishCard.index))
                 awaitItem()
                 assertThat(
                     speaker.utterances
                         .last()
                         .language.languageCode,
                 ).isEqualTo("es")
+            }
+        }
+
+    // FR-028: a rapid double tap records a single answer — both a same-frame duplicate (stale card
+    // index) and a second tap landing on the next card within the 300 ms answer cooldown.
+    @Test
+    fun rapidDoubleTapRecordsASingleAnswer() =
+        runTest {
+            val clock = TestTimeSource()
+            val viewModel = viewModel(timeSource = clock)
+            viewModel.state.test {
+                awaitItem()
+                viewModel.onAction(GameAction.OnReadyClick)
+                val first = awaitItem().content as GameContentUi.Card
+                clock += 2_000.milliseconds
+
+                viewModel.onAction(GameAction.OnAnswerClick(Answer.Yes, first.index))
+                viewModel.onAction(GameAction.OnAnswerClick(Answer.Yes, first.index))
+                val second = awaitItem().content as GameContentUi.Card
+                assertThat(second.progress).isEqualTo("Card 2 of 5")
+
+                clock += 150.milliseconds
+                viewModel.onAction(GameAction.OnAnswerClick(Answer.Yes, second.index))
+                expectNoEvents()
+
+                clock += 200.milliseconds
+                viewModel.onAction(GameAction.OnAnswerClick(Answer.Yes, second.index))
+                assertThat((awaitItem().content as GameContentUi.Card).progress).isEqualTo("Card 3 of 5")
             }
         }
 }
