@@ -14,13 +14,17 @@ struct GameScreen: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
-                    Button { onAction(GameActionOnNewGameClick.shared) } label: {
+                    Button {
+                        onAction(GameActionOnNewGameClick.shared)
+                    } label: {
                         Image(systemName: "arrow.clockwise")
                     }
                     .accessibilityLabel(state.newGameLabel)
                     .accessibilityIdentifier("toolbar.newGame")
 
-                    Button { onAction(GameActionOnSettingsClick.shared) } label: {
+                    Button {
+                        onAction(GameActionOnSettingsClick.shared)
+                    } label: {
                         Image(systemName: "gearshape")
                     }
                     .accessibilityLabel(state.settingsLabel)
@@ -115,20 +119,29 @@ private struct CardView: View {
         }
     }
 
-    @ViewBuilder
-    private var answerButtons: some View {
-        let layout = AdaptiveGameLayout<EmptyView, EmptyView>.isSideBySide(
+    /// Beside the numbers the answers stack vertically; below them they sit side by side.
+    private var isSideBySide: Bool {
+        AdaptiveGameLayout<EmptyView, EmptyView>.isSideBySide(
             horizontal: horizontalSizeClass,
             vertical: verticalSizeClass
-        ) ? AnyLayout(VStackLayout(spacing: 12)) : AnyLayout(HStackLayout(spacing: 12))
+        )
+    }
+
+    @ViewBuilder
+    private var answerButtons: some View {
+        let layout = isSideBySide ? AnyLayout(VStackLayout(spacing: 12)) : AnyLayout(HStackLayout(spacing: 12))
         layout {
-            Button { onAnswer(.yes) } label: {
+            Button {
+                onAnswer(.yes)
+            } label: {
                 Text(card.yesLabel).frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
             .accessibilityIdentifier("card.yes")
 
-            Button { onAnswer(.no) } label: {
+            Button {
+                onAnswer(.no)
+            } label: {
                 Text(card.noLabel).frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
@@ -168,7 +181,9 @@ private func previewState(_ content: GameContentUi) -> GameState {
 #Preview("Intro") {
     NavigationStack {
         GameScreen(
-            state: previewState(GameContentUiIntro(message: "Think of a number from 1 to 31 and let me guess it…", readyLabel: "I'm ready")),
+            state: previewState(
+                GameContentUiIntro(
+                    message: "Think of a number from 1 to 31 and let me guess it…", readyLabel: "I'm ready")),
             onAction: { _ in }
         )
     }
@@ -182,7 +197,9 @@ private func previewState(_ content: GameContentUi) -> GameState {
                     index: 1,
                     progress: "Card 2 of 5",
                     question: "Is your number on this card?",
-                    numbers: [19, 3, 27, 6, 15, 22, 7, 31, 2, 11, 30, 18, 14, 23, 10, 26].map { NumberUi(value: $0, label: "\($0)") },
+                    numbers: [19, 3, 27, 6, 15, 22, 7, 31, 2, 11, 30, 18, 14, 23, 10, 26].map {
+                        NumberUi(value: $0, label: "\($0)")
+                    },
                     yesLabel: "Yes",
                     noLabel: "No"
                 )
@@ -195,7 +212,9 @@ private func previewState(_ content: GameContentUi) -> GameState {
 #Preview("Revealed") {
     NavigationStack {
         GameScreen(
-            state: previewState(GameContentUiRevealed(message: "The number you thought of is… 27!", number: 27, newGameLabel: "New game")),
+            state: previewState(
+                GameContentUiRevealed(
+                    message: "The number you thought of is… 27!", number: 27, newGameLabel: "New game")),
             onAction: { _ in }
         )
     }

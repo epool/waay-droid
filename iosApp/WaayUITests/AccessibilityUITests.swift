@@ -47,7 +47,7 @@ final class AccessibilityUITests: XCTestCase {
             XCTAssertTrue(app.buttons["card.no"].isHittable, "No is not reachable on card \(card + 1)")
             if card == 0 { attachScreenshot("card") }
             let before = progress.label
-            Thread.sleep(forTimeInterval: 0.35) // FR-028 answer cooldown
+            Thread.sleep(forTimeInterval: 0.35)  // FR-028 answer cooldown
             yes.tap()
             let answered = NSPredicate { _, _ in !progress.exists || progress.label != before }
             wait(for: [XCTNSPredicateExpectation(predicate: answered, object: nil)], timeout: 5)

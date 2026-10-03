@@ -26,7 +26,7 @@ final class CardScrollUITests: XCTestCase {
             throw XCTSkip("All 64 numbers fit on this screen, so the grid does not scroll")
         }
 
-        Thread.sleep(forTimeInterval: 0.35) // FR-028 answer cooldown
+        Thread.sleep(forTimeInterval: 0.35)  // FR-028 answer cooldown
         app.buttons["card.no"].tap()
 
         let secondCard = NSPredicate(format: "label == %@", "Card 2 of 7")

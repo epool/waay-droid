@@ -68,7 +68,9 @@ struct SettingsScreen: View {
                 voiceLabel: "Magician's voice",
                 voiceEnabled: true,
                 cardCountLabel: "Number of cards",
-                cardCountOptions: (3...7).map { CardCountOptionUi(value: Int32($0), label: "\($0) cards (1–\((1 << $0) - 1))") },
+                cardCountOptions: (3...7).map {
+                    CardCountOptionUi(value: Int32($0), label: "\($0) cards (1–\((1 << $0) - 1))")
+                },
                 selectedCardCount: 5,
                 languageLabel: "Language",
                 languageOptions: [

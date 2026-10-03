@@ -659,7 +659,7 @@ These tasks follow the official `adaptive` and `edge-to-edge` skills (ADR-008).
   line coverage, filtered to the packages `dev.epool.waay.game.domain`, `*.presentation` and
   `core.i18n`. If the Android-KMP host tests aren't supported, report coverage from host tests only
   and note it in ADR-011.
-- [ ] T096 [P] Add Swift formatting: `.swift-format` at the repository root (indent 4, line length
+- [X] T096 [P] Add Swift formatting: `.swift-format` at the repository root (indent 4, line length
   120), and a Gradle-independent check script, `scripts/swift-format-lint.sh`
   (`xcrun swift-format lint --strict --recursive iosApp/iosApp iosApp/WaayTests iosApp/WaayUITests`).
 - [ ] T097 [P] Configure Android Lint in `androidApp/build.gradle.kts` with `warningsAsErrors = true`
