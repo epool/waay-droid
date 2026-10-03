@@ -27,10 +27,11 @@ class GameViewModelTest : MainDispatcherTest() {
 
     private suspend fun ReceiveTurbine<GameState>.answerTruthfully(
         viewModel: GameViewModel,
+        firstCard: GameState,
         secret: Int,
         cards: Int = 5,
     ): GameState {
-        var state = expectMostRecentItem()
+        var state = firstCard
         repeat(cards) {
             val card = state.content as GameContentUi.Card
             val answer = if (card.numbers.any { it.value == secret }) Answer.Yes else Answer.No
@@ -79,9 +80,8 @@ class GameViewModelTest : MainDispatcherTest() {
             viewModel.state.test {
                 awaitItem()
                 viewModel.onAction(GameAction.OnReadyClick)
-                awaitItem()
 
-                val revealed = answerTruthfully(viewModel, secret = 27).content as GameContentUi.Revealed
+                val revealed = answerTruthfully(viewModel, awaitItem(), secret = 27).content as GameContentUi.Revealed
                 assertThat(revealed.number).isEqualTo(27)
                 assertThat(revealed.message).isEqualTo("The number you thought of is… 27!")
             }
@@ -95,9 +95,8 @@ class GameViewModelTest : MainDispatcherTest() {
             viewModel.state.test {
                 awaitItem()
                 viewModel.onAction(GameAction.OnReadyClick)
-                awaitItem()
 
-                val state = answerTruthfully(viewModel, secret = 0)
+                val state = answerTruthfully(viewModel, awaitItem(), secret = 0)
                 assertThat(state.content).isInstanceOf(GameContentUi.Invalid::class)
                 assertThat((state.content as GameContentUi.Invalid).message).contains("1 to 31")
             }
