@@ -1,6 +1,9 @@
 package dev.epool.waay.di
 
 import dev.epool.waay.core.i18n.StringsProvider
+import dev.epool.waay.game.domain.DeckFactory
+import dev.epool.waay.game.domain.MagicDeck
+import dev.epool.waay.game.presentation.GameViewModel
 import dev.epool.waay.settings.data.KeyValuePreferencesDataSource
 import dev.epool.waay.settings.domain.PreferencesDataSource
 import dev.epool.waay.settings.presentation.SettingsViewModel
@@ -12,5 +15,7 @@ internal val sharedModule =
     module {
         single<PreferencesDataSource> { KeyValuePreferencesDataSource(get()) }
         single { StringsProvider() }
+        single { DeckFactory(MagicDeck::create) }
         viewModelOf(::SettingsViewModel)
+        viewModelOf(::GameViewModel)
     }

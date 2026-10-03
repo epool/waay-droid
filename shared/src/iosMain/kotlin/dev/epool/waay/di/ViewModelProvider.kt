@@ -1,5 +1,6 @@
 package dev.epool.waay.di
 
+import dev.epool.waay.game.presentation.GameViewModel
 import dev.epool.waay.settings.presentation.SettingsViewModel
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
@@ -11,5 +12,7 @@ import org.koin.core.component.get
  * Factories are added per user story.
  */
 public object ViewModelProvider : KoinComponent {
+    public fun gameViewModel(scope: ScreenScope): GameViewModel = scope.obtain { get<GameViewModel>() }
+
     public fun settingsViewModel(scope: ScreenScope): SettingsViewModel = scope.obtain { get<SettingsViewModel>() }
 }
