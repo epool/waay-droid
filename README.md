@@ -32,8 +32,29 @@ There are human review gates between the stages.
 
 | Spec | Scope | State |
 |---|---|---|
-| 001 | Magic cards game v1 (Android + iOS, randomized cards, TTS, EN/ES, settings) | in progress |
+| 001 | Magic cards game v1 (Android + iOS, randomized cards, TTS, EN/ES, settings, adaptive layouts and foldables) | implemented, awaiting acceptance |
 
 ## Quick start
 
-Build, test and run instructions are added as spec 001 is implemented. Each feature's `quickstart.md` has the details.
+You need:
+- JDK 21. Gradle downloads everything else, including the JDK 25 it runs on.
+- The Android SDK, with platform 37.1.
+- For iOS: Xcode 26.4 or later, and [XcodeGen](https://github.com/yonaskolb/XcodeGen).
+
+```sh
+# Android: build, then install on a running emulator or device
+./gradlew :androidApp:assembleDebug
+adb install androidApp/build/outputs/apk/debug/androidApp-debug.apk
+
+# iOS: generate the project, then open it and run the "Waay" scheme
+xcodegen --spec iosApp/project.yml
+open iosApp/iosApp.xcodeproj
+
+# Tests and quality gates (the same ones CI runs)
+./gradlew spotlessCheck :androidApp:lintDebug :shared:allTests :shared:koverVerify :androidApp:testDebugUnitTest
+xcodebuild test -project iosApp/iosApp.xcodeproj -scheme Waay \
+  -destination 'platform=iOS Simulator,name=iPhone 17'
+```
+
+The full validation guide, including manual scenarios on phones, foldables and tablets, is
+[`specs/001-magic-cards-game/quickstart.md`](specs/001-magic-cards-game/quickstart.md).

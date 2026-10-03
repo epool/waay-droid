@@ -676,7 +676,7 @@ These tasks follow the official `adaptive` and `edge-to-edge` skills (ADR-008).
   - a group for the AGP;
   - the Gradle wrapper manager enabled;
   - `prConcurrentLimit` 5.
-- [ ] T100 [P] Update the documentation:
+- [X] T100 [P] Update the documentation:
   - `AGENTS.md` §6, replacing "expected" with the real build, test and lint commands;
   - `README.md`, with a quick start and a status table;
   - `specs/001-magic-cards-game/quickstart.md`, with any corrections found during the work.

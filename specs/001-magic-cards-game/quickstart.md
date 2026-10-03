@@ -7,31 +7,46 @@ This guide proves the feature works end-to-end. Run it at the verification gate.
 
 ## Prerequisites
 
-- JDK 21. `./gradlew` provisions Gradle 9.7.0, and toolchains provision anything else.
+- **JDK 21** to launch Gradle. `./gradlew` provisions Gradle 9.7.0. The Gradle daemon runs on
+  JDK 25, which Gradle downloads itself (`gradle/gradle-daemon-jvm.properties`).
 - **Android:**
   - Android SDK with platform 37.1: `android sdk install platforms/android-37.1`.
   - Android CLI (`android`).
-  - An emulator for each form factor: phone, foldable and tablet (`android emulator create …`), plus
-    an **API 26 (Android 8.0)** phone emulator for the minimum-version smoke run (FR-030).
+  - Emulators:
+    - **phone:** any `android emulator create` profile;
+    - **foldable:** needs the command-line tools (`android sdk install cmdline-tools/23.0`), then
+      `avdmanager create avd -n Waay_Fold -k "system-images;android-36;google_apis_playstore;arm64-v8a" -d pixel_9_pro_fold`.
+      Drive postures with `adb emu fold|unfold|rotate` and `adb shell cmd device_state state 1|reset`;
+    - **API 26 (Android 8.0):** for the minimum-version smoke run (FR-030). The arm64 API 26 image
+      does not boot on Apple Silicon with emulator 37.2. Use an x86_64 host or a real device; the
+      Robolectric `sdk = 26` flow covers it in the meantime.
 - **iOS:**
-  - Xcode 27 selected (`xcode-select -p`).
+  - Xcode 27 selected locally (`xcode-select -p`). CI uses Xcode 26.4.1.
   - `xcodegen`.
-  - Simulators: the latest runtime plus an **iOS 17.x** runtime for the minimum-version check
-    (`xcodebuild -downloadPlatform iOS -buildVersion 17.5` or similar).
+  - Simulators: the latest runtime plus the oldest one available. The **iOS 17.x** check runs in
+    CI's `ios-minimum-os` job (`xcodebuild -downloadPlatform iOS -buildVersion 17.5`).
 
 ## 1. Automated checks (CI parity)
 
+These mirror `.github/workflows/ci.yml`.
+
 ```sh
 ./gradlew spotlessCheck                         # Kotlin/KTS format + ktlint + compose-rules
-./gradlew :shared:allTests                      # commonTest on Android host + iosSimulatorArm64
-./gradlew :shared:koverVerify                   # ≥ 90% on game.domain + presentation
-./gradlew :androidApp:lintDebug :androidApp:testDebugUnitTest   # Lint + Robolectric UI + Roborazzi
+./gradlew :androidApp:lintDebug                 # Android Lint, warnings are errors
+./gradlew :shared:allTests                      # commonTest on the Android host + iosSimulatorArm64
+./gradlew :shared:koverVerify                   # ≥ 90% lines on game.domain, *.presentation, core.i18n
+./gradlew :androidApp:testDebugUnitTest         # Robolectric UI tests (API 26 and 36)
+./gradlew :androidApp:verifyRoborazziDebug      # screenshot baselines (record: recordRoborazziDebug)
 ./gradlew :androidApp:assembleDebug
+scripts/swift-format-lint.sh                    # swift-format lint --strict
 xcodegen --spec iosApp/project.yml
 xcodebuild test -project iosApp/iosApp.xcodeproj -scheme Waay \
-  -destination 'platform=iOS Simulator,name=iPhone 17,OS=27.0'   # Swift Testing + XCUITest smoke
-xcrun swift-format lint --strict --recursive iosApp/
+  -destination 'platform=iOS Simulator,name=iPhone 17,OS=27.0' \
+  -collect-test-diagnostics never               # Swift Testing + XCUITest
 ```
+
+`-collect-test-diagnostics never` stops a failing UI test from waiting up to 10 minutes for
+`simctl diagnose`.
 
 **Expected:** all green. The following tests must exist and pass:
 
@@ -42,9 +57,10 @@ xcrun swift-format lint --strict --recursive iosApp/
 | All "No" gives Invalid | FR-005 |
 | GameViewModel guarantees G1–G13 and SettingsViewModel guarantees S1–S6, with Turbine | Stories 1–6 |
 | Strings: every `Strings` member is non-blank in EN and ES, and no state mixes languages | SC-004, FR-019 |
-| Roborazzi matrix of 3 widths × 3 heights plus font scale 1.5 for each Game phase | SC-009, FR-026, FR-031 |
-| Robolectric robot smoke test: Intro → Ready → N answers → Revealed → New game | US1 |
-| XCUITest smoke: the same flow on iOS | US1, FR-025 |
+| Roborazzi: 3 widths × 3 heights, font scale 1.5 and 2.0, and the tabletop and book postures, for each Game phase | SC-009, FR-026, FR-031, FR-032 |
+| Robolectric robot flow, Intro → Ready → N answers → Revealed → New game, on API 26 and 36, plus a semantics-only run | US1, FR-025 |
+| `RapidInputTest`, `ConfigurationChangeTest`, `CardScrollTest`, `PreferencesPersistenceTest` | FR-028, FR-029, FR-003a, SC-005 |
+| XCUITest: `GameFlowUITests` (rotation, background, Settings round trip), `AccessibilityUITests` (AX5, both orientations), `CardScrollUITests`, `LanguageSwitchUITests`, `PreferencesPersistenceUITests` | US1, FR-025, FR-026, FR-003a, US5, SC-005 |
 
 ## 2. Manual scenarios
 
