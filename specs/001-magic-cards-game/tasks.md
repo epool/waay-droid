@@ -248,7 +248,7 @@ navigation. **No user-story work starts until this phase is complete.**
   - `SettingsRoot`, which uses `koinViewModel()` and `ObserveAsEvents` → `onBack`;
   - a stateless `SettingsScreen(state, onAction)`, with a top app bar and a back button;
   - `@Preview`.
-- [ ] T036 [P] Implement the iOS settings screen:
+- [X] T036 [P] Implement the iOS settings screen:
   - `iosApp/iosApp/Settings/SettingsModel.swift` (`@Observable @MainActor`, per
     [ios-bridge](./contracts/ios-bridge.md)):
     - an inert `init`;
@@ -258,7 +258,7 @@ navigation. **No user-story work starts until this phase is complete.**
     - `deinit` calls `scope?.close()`;
   - `SettingsRoot.swift`;
   - `SettingsScreen.swift` (stateless, with `#Preview`).
-- [ ] T037 Wire the iOS root: `iosApp/iosApp/ContentView.swift`, a `NavigationStack` with
+- [X] T037 Wire the iOS root: `iosApp/iosApp/ContentView.swift`, a `NavigationStack` with
   `navigationDestination` for Settings, and a placeholder game view.
 
 **Checkpoint**:

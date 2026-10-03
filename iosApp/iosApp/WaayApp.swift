@@ -13,10 +13,10 @@ struct WaayApp: App {
             if ProcessInfo.processInfo.arguments.contains("-lifecycleProbe") {
                 LifecycleProbeScreen()
             } else {
-                Text(AppInfo.shared.NAME)
+                ContentView()
             }
             #else
-            Text(AppInfo.shared.NAME)
+            ContentView()
             #endif
         }
     }
