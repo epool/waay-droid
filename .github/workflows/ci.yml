@@ -95,12 +95,14 @@ jobs:
         run: |
           brew install xcodegen
           xcodegen --spec iosApp/project.yml
+      # OS=latest: the image's runtimes carry patch versions (e.g. 26.4.1), so an exact "26.4" matches
+      # nothing. iOS 17.5 is covered by ios-minimum-os.
       - name: App and UI tests
         run: >
           xcodebuild test
           -project iosApp/iosApp.xcodeproj
           -scheme Waay
-          -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.4'
+          -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest'
           -resultBundlePath build/Waay.xcresult
           -collect-test-diagnostics never
       - name: Upload test results

@@ -514,8 +514,9 @@ has **not run yet**, because nothing has been pushed. It has four jobs:
   up anyway, re-record on CI rather than loosening the comparison.
 - **`ios`** (macos-26), with `DEVELOPER_DIR` pointing at **Xcode 26.4.1**. Of the Xcode versions on
   the image (26.0.1–26.6), it is the one matching Kotlin 2.4.20's tested 26.4. Steps:
-  `iosSimulatorArm64Test`, the swift-format lint, `xcodegen`, then `xcodebuild test` on iPhone 17 /
-  iOS 26.4. Kotlin/Native picks the first available simulator by itself
+  `iosSimulatorArm64Test`, the swift-format lint, `xcodegen`, then `xcodebuild test` on iPhone 17 at
+  `OS=latest`. The first CI run failed on `OS=26.4`: the image's runtime is 26.4.1, and xcodebuild
+  matches OS versions exactly. Kotlin/Native picks the first available simulator by itself
   (`XcodeDefaultTestDevicesValueSource` in KGP).
 - **`ios-minimum-os`** (macos-26, not on pull requests): for FR-030. No runner image ships an
   iOS 17 runtime (macos-15 has 18.5 and up; macos-26 has 26.x), so the job downloads one with
