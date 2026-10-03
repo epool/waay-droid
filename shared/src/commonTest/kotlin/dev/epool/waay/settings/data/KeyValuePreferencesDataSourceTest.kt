@@ -64,4 +64,21 @@ class KeyValuePreferencesDataSourceTest {
                 assertThat(awaitItem().languageChoice).isEqualTo(LanguageChoice.Spanish)
             }
         }
+
+    // SC-005 / FR-023: values written by one instance are read back by a new one over the same store
+    // (what happens across an app restart).
+    @Test
+    fun valuesSurviveANewInstanceOverTheSameStore() =
+        runTest {
+            val settings = MapSettings()
+            KeyValuePreferencesDataSource(settings).apply {
+                setCardCount(cardCount(6))
+                setVoiceEnabled(false)
+                setLanguageChoice(LanguageChoice.Spanish)
+            }
+
+            val restored = KeyValuePreferencesDataSource(settings).preferences.first()
+
+            assertThat(restored).isEqualTo(Preferences(cardCount(6), voiceEnabled = false, LanguageChoice.Spanish))
+        }
 }
