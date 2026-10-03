@@ -36,4 +36,9 @@ internal object EnglishStrings : Strings {
         count: Int,
         max: Int,
     ): String = "$count cards (1–$max)"
+
+    override val languageLabel: String = "Language"
+    override val languageDevice: String = "Device language"
+    override val languageEnglish: String = "English"
+    override val languageSpanish: String = "Español"
 }

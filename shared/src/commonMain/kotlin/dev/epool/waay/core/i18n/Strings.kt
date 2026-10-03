@@ -44,4 +44,12 @@ internal interface Strings {
         count: Int,
         max: Int,
     ): String
+
+    // US5 — language
+    val languageLabel: String
+    val languageDevice: String
+
+    /** Language names are endonyms ("English", "Español") in every catalog. */
+    val languageEnglish: String
+    val languageSpanish: String
 }
