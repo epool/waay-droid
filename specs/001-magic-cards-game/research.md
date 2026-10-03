@@ -486,6 +486,35 @@ Explicit API mode keeps the exported header small.
 
 **Revisit**: ktlint or Detekt 2 stable releases with full Kotlin 2.4 support.
 
+**CI as built (T098, 2026-10-03)** — `.github/workflows/ci.yml`. It passes `actionlint` 1.7.12 but
+has **not run yet**, because nothing has been pushed. It has four jobs:
+- **`android`** (ubuntu-24.04): `spotlessCheck`, `lintDebug`, host tests, Robolectric tests,
+  `koverVerify` and `assembleDebug`. Temurin 21 launches Gradle, which provisions the JDK 25 daemon
+  from `gradle/gradle-daemon-jvm.properties` (pinned foojay URLs).
+- **`android-screenshots`** (macos-26, arm64): `verifyRoborazziDebug`. This departs from the task
+  text, which put Roborazzi on Ubuntu. The baselines were recorded on macOS arm64, and native-graphics
+  output can differ by host OS and CPU, so they are verified on the same kind of host. If a diff shows
+  up anyway, re-record on CI rather than loosening the comparison.
+- **`ios`** (macos-26), with `DEVELOPER_DIR` pointing at **Xcode 26.4.1**. Of the Xcode versions on
+  the image (26.0.1–26.6), it is the one matching Kotlin 2.4.20's tested 26.4. Steps:
+  `iosSimulatorArm64Test`, the swift-format lint, `xcodegen`, then `xcodebuild test` on iPhone 17 /
+  iOS 26.4. Kotlin/Native picks the first available simulator by itself
+  (`XcodeDefaultTestDevicesValueSource` in KGP).
+- **`ios-minimum-os`** (macos-26, not on pull requests): for FR-030. No runner image ships an
+  iOS 17 runtime (macos-15 has 18.5 and up; macos-26 has 26.x), so the job downloads one with
+  `xcodebuild -downloadPlatform iOS -buildVersion 17.5` (Xcode 16.1+), creates an iPhone 15, and
+  runs the full suite.
+
+Known risks for the first run:
+- The swift-format bundled with Xcode 26.4 may format slightly differently from Xcode 27's local
+  one. Run `swift-format format` with the CI toolchain and commit the result.
+- The iOS 17.5 runtime download is about 8 GB.
+
+Sources: [runner images](https://github.com/actions/runner-images),
+[macOS 26 image](https://github.com/actions/runner-images/blob/main/images/macos/macos-26-arm64-Readme.md),
+[macOS 15 image](https://github.com/actions/runner-images/blob/main/images/macos/macos-15-arm64-Readme.md),
+[installing older runtimes with `-buildVersion`](https://dev.classmethod.jp/en/articles/xcodebuild-ios-simulator-runtime-download-install/).
+
 **Coverage verification (T095, 2026-10-03)**
 - Kover 0.9.9 instruments the Android-KMP host tests: `koverVerify` depends on
   `:shared:testAndroidHostTest`. Kotlin/Native (iOS) tests run the same `commonTest` code but

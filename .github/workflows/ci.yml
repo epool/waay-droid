@@ -1,0 +1,153 @@
+# Quality gates for every change (constitution VIII, ADR-011). Runner images and their Xcode,
+# simulator and JDK sets are documented in github.com/actions/runner-images.
+name: CI
+
+on:
+  push:
+    branches: [kmp, master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    name: Android — format, lint, tests, coverage, build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      # JDK 21 launches Gradle; the daemon JDK 25 is provisioned from gradle/gradle-daemon-jvm.properties.
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Check, test and build
+        run: >
+          ./gradlew
+          spotlessCheck
+          :androidApp:lintDebug
+          :shared:testAndroidHostTest
+          :androidApp:testDebugUnitTest
+          :shared:koverVerify
+          :androidApp:assembleDebug
+      - name: Upload reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-reports
+          path: |
+            androidApp/build/reports/
+            shared/build/reports/
+
+  android-screenshots:
+    # The Roborazzi baselines were recorded on macOS arm64. Native-graphics rendering can differ by
+    # host OS and architecture, so they are verified on the same kind of host (ADR-011).
+    name: Android — screenshot baselines
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Verify Roborazzi baselines
+        run: ./gradlew :androidApp:verifyRoborazziDebug
+      - name: Upload screenshot diffs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: roborazzi-diffs
+          path: androidApp/build/outputs/roborazzi/
+
+  ios:
+    name: iOS — shared tests, format, app and UI tests
+    runs-on: macos-26
+    timeout-minutes: 75
+    env:
+      # Kotlin 2.4.20 is tested against Xcode 26.4 (ADR-000); macos-26 ships it side by side.
+      DEVELOPER_DIR: /Applications/Xcode_26.4.1.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Cache Kotlin/Native toolchain
+        uses: actions/cache@v6
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}
+      - name: Shared tests on the iOS simulator
+        run: ./gradlew :shared:iosSimulatorArm64Test
+      - name: Swift format
+        run: scripts/swift-format-lint.sh
+      - name: Regenerate the Xcode project from project.yml
+        run: |
+          brew install xcodegen
+          xcodegen --spec iosApp/project.yml
+      - name: App and UI tests
+        run: >
+          xcodebuild test
+          -project iosApp/iosApp.xcodeproj
+          -scheme Waay
+          -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.4'
+          -resultBundlePath build/Waay.xcresult
+          -collect-test-diagnostics never
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ios-xcresult
+          path: build/Waay.xcresult
+
+  ios-minimum-os:
+    # FR-030: the full suite on the minimum supported OS. No runner image preinstalls an iOS 17
+    # runtime, so it is downloaded (~8 GB). Skipped on pull requests to keep them fast.
+    name: iOS 17.5 — minimum OS
+    if: github.event_name != 'pull_request'
+    runs-on: macos-26
+    timeout-minutes: 90
+    env:
+      # Kotlin 2.4.20 is tested against Xcode 26.4 (ADR-000); macos-26 ships it side by side.
+      DEVELOPER_DIR: /Applications/Xcode_26.4.1.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Install the iOS 17.5 simulator runtime
+        run: |
+          xcodebuild -downloadPlatform iOS -buildVersion 17.5
+          xcrun simctl list runtimes
+      - name: Create an iPhone 15 on iOS 17.5
+        run: |
+          udid=$(xcrun simctl create "iPhone 15 (iOS 17.5)" \
+            com.apple.CoreSimulator.SimDeviceType.iPhone-15 \
+            com.apple.CoreSimulator.SimRuntime.iOS-17-5)
+          echo "SIMULATOR_UDID=$udid" >> "$GITHUB_ENV"
+      - name: App and UI tests on iOS 17.5
+        run: >
+          xcodebuild test
+          -project iosApp/iosApp.xcodeproj
+          -scheme Waay
+          -destination "platform=iOS Simulator,id=$SIMULATOR_UDID"
+          -resultBundlePath build/Waay-ios17.xcresult
+          -collect-test-diagnostics never
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ios17-xcresult
+          path: build/Waay-ios17.xcresult

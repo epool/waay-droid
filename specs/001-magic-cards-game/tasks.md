@@ -664,7 +664,7 @@ These tasks follow the official `adaptive` and `edge-to-edge` skills (ADR-008).
   (`xcrun swift-format lint --strict --recursive iosApp/iosApp iosApp/WaayTests iosApp/WaayUITests`).
 - [X] T097 [P] Configure Android Lint in `androidApp/build.gradle.kts` with `warningsAsErrors = true`
   and `abortOnError = true`. Fix every finding.
-- [ ] T098 [P] Create `.github/workflows/ci.yml` with two jobs:
+- [X] T098 [P] Create `.github/workflows/ci.yml` with two jobs:
   - `android` (ubuntu-latest, Temurin 21):
     `./gradlew spotlessCheck :androidApp:lintDebug :shared:testAndroidHostTest :androidApp:testDebugUnitTest :shared:koverVerify :androidApp:assembleDebug`.
     Roborazzi runs in verify mode.
