@@ -1,0 +1,102 @@
+# XcodeGen spec — the source of truth for iosApp.xcodeproj (never hand-edit project.pbxproj).
+# Regenerate with: xcodegen --spec iosApp/project.yml
+name: iosApp
+
+options:
+  bundleIdPrefix: dev.epool
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  defaultSourceDirectoryType: syncedFolder
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    DEAD_CODE_STRIPPING: YES
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ""
+
+targets:
+  Waay:
+    type: application
+    platform: iOS
+    sources:
+      - path: iosApp
+    settings:
+      base:
+        PRODUCT_NAME: Waay
+        PRODUCT_BUNDLE_IDENTIFIER: dev.epool.waay
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Wáay
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        CODE_SIGN_STYLE: Automatic
+    preBuildScripts:
+      - name: Compile Kotlin Framework
+        basedOnDependencyAnalysis: false
+        script: |
+          if [ "YES" = "$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED" ]; then
+            echo "Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED=YES"
+            exit 0
+          fi
+          # Xcode does not inherit the shell environment: locate a JDK defensively.
+          if [ -z "$JAVA_HOME" ] || [ ! -x "$JAVA_HOME/bin/java" ]; then
+            if /usr/libexec/java_home -v 21 >/dev/null 2>&1; then
+              export JAVA_HOME="$(/usr/libexec/java_home -v 21)"
+            elif [ -x "$HOME/.sdkman/candidates/java/current/bin/java" ]; then
+              export JAVA_HOME="$HOME/.sdkman/candidates/java/current"
+            else
+              echo "error: No JDK found. Set JAVA_HOME or install JDK 21." >&2
+              exit 1
+            fi
+          fi
+          cd "$SRCROOT/.."
+          ./gradlew :shared:embedAndSignAppleFrameworkForXcode
+
+  WaayTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: WaayTests
+    dependencies:
+      - target: Waay
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: dev.epool.waay.tests
+
+  WaayUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: WaayUITests
+    dependencies:
+      - target: Waay
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: dev.epool.waay.uitests
+        TEST_TARGET_NAME: Waay
+
+schemes:
+  Waay:
+    build:
+      targets:
+        Waay: all
+        WaayTests: [test]
+        WaayUITests: [test]
+    test:
+      gatherCoverageData: true
+      targets:
+        - WaayTests
+        - WaayUITests
+    run:
+      config: Debug
+    archive:
+      config: Release
