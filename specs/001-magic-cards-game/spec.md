@@ -15,6 +15,20 @@
 - Q: What does "verify the answers" mean for the player? → A: There is no extra step for the player.
   Verification is internal: the answers are decoded through the hidden card mapping (FR-010), and
   the all-"No" result is rejected (FR-005). The reveal is a statement, not a confirmation question.
+- Q: Should each game begin with a "think of a number" screen and an "I'm ready" tap before the
+  first card? → A: Yes. Every game, including each "New game", starts on an intro screen that shows
+  the range and has an "I'm ready" action. Cards begin only after that tap.
+- Q: What are the oldest operating system versions v1 must support? → A: iOS 15.8.8 or later, and
+  Android 8.0 or later.
+- Q: Where does the player change the card count, voice and language? → A: On a separate Settings
+  screen, opened from a settings (gear) control that is visible on the intro, card and result
+  screens.
+- Q: Besides the intro and the reveal, should the voice speak during the cards? → A: Yes. A short
+  prompt is spoken as each card appears, for example "Card 3: is your number here?". The numbers
+  themselves are never read aloud by the magician voice.
+- Q: Should the game support both portrait and landscape, or lock to portrait? → A: It supports all
+  orientations on every device. The UI MUST adapt to the available window size, including foldable
+  devices.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -35,19 +49,20 @@ and check that the revealed number matches. Repeat for the lowest and highest nu
 
 **Acceptance Scenarios**:
 
-1. **Given** a new 5-card game, **When** the game starts, **Then** the player is invited to think of
-   a number from 1 to 31 and sees the first card with its numbers, a "Yes" and a "No" choice, and
-   their progress (e.g., "Card 1 of 5").
-2. **Given** the player thought of 27 and answers every card truthfully, **When** the last card is
+1. **Given** a new 5-card game, **When** the game starts, **Then** the player sees an intro screen
+   inviting them to think of a number from 1 to 31, with an "I'm ready" action. No card is shown yet.
+2. **Given** the intro screen, **When** the player taps "I'm ready", **Then** the first card appears
+   with its numbers, a "Yes" and a "No" choice, and their progress (e.g., "Card 1 of 5").
+3. **Given** the player thought of 27 and answers every card truthfully, **When** the last card is
    answered, **Then** the game reveals 27.
-3. **Given** the player thought of 1 (the lowest number), **When** they answer every card truthfully,
+4. **Given** the player thought of 1 (the lowest number), **When** they answer every card truthfully,
    **Then** the game reveals 1. **Given** they thought of 31 (the highest), **Then** the game reveals 31.
-4. **Given** a game in progress or a revealed result, **When** the player chooses "New game",
-   **Then** a fresh game starts from the first card, with all previous answers discarded.
-5. **Given** the player answered "No" to every card, **When** the last card is answered, **Then** the
+5. **Given** a game in progress or a revealed result, **When** the player chooses "New game",
+   **Then** a fresh game starts on the intro screen, with all previous answers discarded.
+6. **Given** the player answered "No" to every card, **When** the last card is answered, **Then** the
    game does not reveal a number. It explains that the number must be between 1 and the range
    maximum, or that an answer may have been mistaken, and offers to play again.
-6. **Given** a result has been revealed, **When** the player looks at the screen, **Then** the reveal
+7. **Given** a result has been revealed, **When** the player looks at the screen, **Then** the reveal
    is a statement, not a question asking the player to confirm, and a "New game" option is shown.
 
 ---
@@ -85,6 +100,8 @@ keeps the magic convincing over repeated play. It builds directly on Story 1.
 Like the original, the game talks to the player in a magician's voice:
 - When a game starts, it invites the player to think of a number in the current range. For example:
   "Think of a number from 1 to 31 and let me guess it…".
+- As each card appears, it speaks a short prompt. For example: "Card 3: is your number here?". It
+  never reads the numbers aloud.
 - When it reveals the result, it speaks the reveal. For example: "The number you thought of is… 27!".
 
 The player can turn the voice on or off.
@@ -100,13 +117,15 @@ spoken while the on-screen text still appears.
 
 1. **Given** the voice is on, **When** a new game starts, **Then** the intro invitation is spoken and
    also shown on screen.
-2. **Given** the voice is on, **When** the result is revealed, **Then** the reveal is spoken and shown
+2. **Given** the voice is on, **When** a card appears, **Then** a short prompt naming the card's
+   position is spoken. The card's numbers are not read aloud.
+3. **Given** the voice is on, **When** the result is revealed, **Then** the reveal is spoken and shown
    on screen.
-3. **Given** the voice is off, **When** playing a full game, **Then** nothing is spoken, and all the
+4. **Given** the voice is off, **When** playing a full game, **Then** nothing is spoken, and all the
    same messages appear on screen.
-4. **Given** the device has no voice available for the current language, **When** playing, **Then**
+5. **Given** the device has no voice available for the current language, **When** playing, **Then**
    the game works normally with on-screen text and does not show errors that block play.
-5. **Given** speech is in progress, **When** the player starts a new game or the reveal happens,
+6. **Given** speech is in progress, **When** the player starts a new game or the reveal happens,
    **Then** the old speech stops and only the latest message is spoken.
 
 ---
@@ -135,8 +154,11 @@ are 3 cards, and the reveal is correct. Repeat with 7 cards (1–127).
    the range 1–127, the game asks 7 cards, and each card shows 64 numbers.
 2. **Given** the player selects 3 cards, **When** they answer truthfully for any number from 1 to 7,
    **Then** the correct number is revealed.
-3. **Given** a game is in progress, **When** the player changes the card count, **Then** a new game
-   starts with the new count. The game in progress is discarded.
+3. **Given** a game is in progress, **When** the player changes the card count in Settings and
+   closes Settings, **Then** a new game starts on the intro screen with the new count. The game in
+   progress is discarded.
+4. **Given** a game is in progress, **When** the player opens Settings and closes it without
+   changing the card count, **Then** the game continues exactly where it was.
 
 ---
 
@@ -201,6 +223,9 @@ the app and reopen it. Check that all three choices are still in effect.
   blocking error.
 - **Screen reader and magician voice:** screen-reader users can turn the magician voice off so it
   does not compete with screen-reader announcements.
+- **Rotating, folding or resizing mid-game:** rotating the device, folding or unfolding it, or
+  resizing the window in split-screen keeps the current card, the answers given and any revealed
+  result. The layout reflows to fit.
 - **Rapid input:** tapping "Yes" or "No" several times quickly must record exactly one answer per
   card. Answers after the last card must not change the result.
 
@@ -215,8 +240,11 @@ the app and reopen it. Check that all three choices are still in effect.
 - **FR-002**: Each game MUST contain exactly N cards. The card associated with bit value 2^k (k = 0…N−1)
   MUST contain exactly the numbers in the game's range whose binary representation includes 2^k.
   Each card therefore holds 2^(N−1) numbers.
-- **FR-003**: The system MUST present the cards one at a time and collect exactly one Yes/No answer
-  per card. It MUST show the player's progress, for example "Card 3 of 5".
+- **FR-003**: Every game MUST begin on an intro screen. That screen invites the player to think of a
+  number in the current range (1 to 2^N − 1) and offers an "I'm ready" action. No card is shown
+  before the player taps "I'm ready".
+- **FR-003a**: After "I'm ready", the system MUST present the cards one at a time and collect exactly
+  one Yes/No answer per card. It MUST show the player's progress, for example "Card 3 of 5".
 - **FR-004**: After the last answer, the system MUST compute the result as the sum of the bit values
   of the cards answered "Yes", and reveal it to the player.
 - **FR-005**: If the computed result is 0 (all answers "No"), the system MUST NOT reveal a number. It
@@ -243,7 +271,9 @@ the app and reopen it. Check that all three choices are still in effect.
 **Voice**
 
 - **FR-012**: When voice is on, the system MUST speak:
-  - the game invitation, including the current range, when a game starts;
+  - the game invitation, including the current range, when the intro screen appears;
+  - a short prompt naming the card's position (for example "Card 3: is your number here?") when each
+    card appears, without reading the card's numbers;
   - the reveal message, when the result is revealed;
   - the invalid-result message, in the FR-005 case.
 - **FR-013**: Every spoken message MUST also appear as on-screen text.
@@ -252,10 +282,19 @@ the app and reopen it. Check that all three choices are still in effect.
 - **FR-016**: If voice output is unavailable for the current language, or fails, the game MUST
   continue with on-screen text only, with no blocking error.
 
+**Settings screen**
+
+- **FR-016a**: The card count, voice and language choices MUST be changed on a dedicated Settings
+  screen. That screen MUST be reachable through a settings (gear) control that is visible on the
+  intro, card and result screens.
+- **FR-016b**: Closing Settings MUST return the player to where they were. The only exception is
+  FR-018.
+
 **Card count**
 
 - **FR-017**: The player MUST be able to choose the card count from 3 to 7.
-- **FR-018**: Changing the card count MUST start a new game with the new count.
+- **FR-018**: Changing the card count MUST start a new game, on the intro screen, with the new count
+  once the player leaves Settings. Changing only the voice or the language MUST NOT restart the game.
 
 **Language**
 
@@ -288,13 +327,31 @@ the app and reopen it. Check that all three choices are still in effect.
 - **FR-029**: A game in progress MUST survive temporary interruptions: app switching, incoming calls
   and screen rotation.
 
+**Adaptive layout**
+
+- **FR-031**: Every screen MUST work in portrait and landscape, on phones, tablets and foldable
+  devices.
+  - The layout MUST adapt to the available window width and height, for example by showing more
+    grid columns when there is more width.
+  - The layout MUST also adapt to split-screen and multi-window sizes.
+- **FR-032**: On foldable devices:
+  - folding or unfolding mid-game MUST keep the game exactly where it was;
+  - when the device is half-opened (tabletop or book posture), no card number, answer choice or
+    message may sit on, or be split by, the fold.
+
+**Platforms**
+
+- **FR-030**: The game MUST install and be fully playable on iPhones running iOS 15.8.8 or later, and
+  on Android phones running Android 8.0 or later. All requirements above apply on the oldest
+  supported versions.
+
 ### Key Entities
 
 - **Game**: one round of the trick. It has:
   - the card count N and the derived range 1…2^N − 1;
   - the shuffled sequence of cards;
   - the answers given so far;
-  - its status: in progress, revealed, or invalid result.
+  - its status: intro (waiting for "I'm ready"), in progress, revealed, or invalid result.
 - **Card**: one presented set of numbers. It has:
   - its presentation position (visible);
   - its displayed, shuffled list of numbers (visible);
@@ -315,8 +372,8 @@ the app and reopen it. Check that all three choices are still in effect.
 - **SC-002**: Across 10,000 simulated games per card count, each card appears in each position with
   a frequency within ±5% of uniform. A card's smallest number appears first no more often than
   chance (1 / numbers per card, ±5%).
-- **SC-003**: A first-time player completes a 5-card game, from opening the app to the reveal, in
-  under 60 seconds without instructions.
+- **SC-003**: A first-time player completes a 5-card game, from opening the app, through the intro
+  screen, to the reveal, in under 60 seconds without instructions.
 - **SC-004**: 100% of on-screen and spoken messages exist in both English and Spanish. No screen
   ever mixes the two languages.
 - **SC-005**: Preferences are retained across 100% of app restarts in testing.
@@ -325,11 +382,25 @@ the app and reopen it. Check that all three choices are still in effect.
 - **SC-007**: With voice unavailable or turned off, players complete games at the same rate as with
   voice. No step depends on hearing audio.
 - **SC-008**: Starting a new game takes a single action from any point in the app.
+- **SC-009**: A full game can be completed in each of these configurations with no lost progress, no
+  clipped or overlapping content, and nothing placed across a fold:
+  - phone portrait;
+  - phone landscape;
+  - tablet;
+  - foldable folded;
+  - foldable unfolded;
+  - foldable half-opened;
+  - split-screen.
+
+  The device is rotated or folded at least once mid-game in each run.
 
 ## Assumptions
 
-- **Platforms:** phones running current Android and iOS versions. Tablets are supported with the
-  same layout but are not specially optimized in v1.
+- **Platforms:** phones, tablets and foldables running iOS 15.8.8 or later, or Android 8.0 or later
+  (FR-030). Layouts adapt to every orientation and window size (FR-031, FR-032).
+- **Oldest-iOS verification:** verifying on iOS 15 needs a physical device with iOS 15.8.x. Current
+  Apple developer tools only run and debug apps on iOS 17 or later, so iOS 15 checks go through a
+  test-distribution build.
 - **Offline:** the game works fully offline. There are no accounts, scores, leaderboards, analytics
   or online features.
 - **Voice:** speech uses the voices built into the device. Audio follows the device's normal volume
