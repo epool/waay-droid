@@ -81,3 +81,21 @@ Run `xcodebuild … -destination 'platform=iOS Simulator,name=iPhone 17,OS=27.0'
 ## 3. Performance sanity check (SC-003)
 
 A first-time player completes a 5-card game in under 60 s. Time one unassisted run on each platform.
+
+## Run log
+
+**2026-10-02: US1 MVP checkpoint (T053)**
+
+- Section 1, automated:
+  - `:shared:allTests` passes on the Android host and `iosSimulatorArm64`.
+  - `:androidApp:testDebugUnitTest` passes: the Robolectric robot flow on API 26 and API 36.
+  - `xcodebuild test` passes on the iPhone 17 / iOS 27.0 simulator: Swift Testing, plus the
+    XCUITest flow with rotation, backgrounding and a Settings round trip mid-game.
+- iOS manual demo: the app was installed and launched on the iPhone 17 (iOS 27.0) simulator, and
+  the intro screen rendered as specified.
+- **Deviation:** the Android emulator demo was not run. On this machine, `adb start-server` hangs
+  without binding `tcp:5037`, even outside the command sandbox, so `android emulator start` never
+  launches QEMU. Likely cause: a pending macOS "Local Network" permission prompt for `adb`, which
+  can't be answered over Remote Control. To run it, allow the prompt (System Settings → Privacy &
+  Security → Local Network), then run:
+  `android emulator start Pixel_9_Pro_XL && android run --apks=androidApp/build/outputs/apk/debug/androidApp-debug.apk`.
