@@ -18,7 +18,9 @@ import com.russhwolf.settings.MapSettings
 import dev.epool.waay.core.domain.Result
 import dev.epool.waay.core.i18n.EnglishStrings
 import dev.epool.waay.core.i18n.StringsProvider
+import dev.epool.waay.core.speech.Speaker
 import dev.epool.waay.fakes.AdvancingTimeSource
+import dev.epool.waay.fakes.BrokenSpeaker
 import dev.epool.waay.fakes.FakeDeviceLocale
 import dev.epool.waay.fakes.FakeSpeaker
 import dev.epool.waay.fakes.MainDispatcherTest
@@ -50,6 +52,7 @@ class GameViewModelTest : MainDispatcherTest() {
     private fun viewModel(
         random: Random = Random(1),
         timeSource: TimeSource = AdvancingTimeSource(),
+        speaker: Speaker = this.speaker,
     ) = GameViewModel(
         preferencesDataSource = preferences,
         stringsProvider = StringsProvider(FakeDeviceLocale()),
@@ -336,6 +339,35 @@ class GameViewModelTest : MainDispatcherTest() {
             store.clear()
 
             assertThat(speaker.stopCount).isGreaterThanOrEqualTo(1)
+        }
+
+    // FR-016: a speech engine that fails on every call never blocks the game, from the intro to the
+    // reveal, through turning the voice off, to leaving the screen.
+    @Test
+    fun speechFailuresNeverBlockTheGame() =
+        runTest {
+            val brokenSpeaker = BrokenSpeaker()
+            val store = ViewModelStore()
+            val viewModel =
+                ViewModelProvider.create(
+                    store,
+                    viewModelFactory { initializer { viewModel(speaker = brokenSpeaker) } },
+                )[GameViewModel::class]
+            viewModel.state.test {
+                awaitItem()
+                viewModel.onAction(GameAction.OnReadyClick)
+
+                val revealed = answerTruthfully(viewModel, awaitItem(), secret = 27).content as GameContentUi.Revealed
+                assertThat(revealed.number).isEqualTo(27)
+
+                preferences.setVoiceEnabled(false)
+                runCurrent()
+                cancelAndIgnoreRemainingEvents()
+            }
+
+            store.clear()
+
+            assertThat(brokenSpeaker.calls).isGreaterThanOrEqualTo(8)
         }
 
     private fun cardCount(value: Int) = (CardCount.of(value) as Result.Success).data

@@ -65,6 +65,7 @@ public sealed interface GameEvent {
 | G11 | `OnSettingsClick` | Emits `NavigateToSettings` exactly once. | FR-016a |
 | G12 | `onCleared` | `Speaker.stop()` is called, and no further emissions happen. | ADR-001 |
 | G13 | Any `GameState` | No field exposes or encodes `bitValue`. | FR-011 |
+| G14 | `Speaker.speak` or `stop` throws | The failure is logged and the game continues unchanged, through the reveal, a voice toggle and `onCleared`. This is defence in depth on top of the speakers' own failure handling. | FR-016 |
 
 ## UI obligations (both platforms)
 

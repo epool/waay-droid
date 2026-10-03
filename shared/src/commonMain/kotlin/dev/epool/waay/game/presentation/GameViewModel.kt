@@ -3,6 +3,7 @@ package dev.epool.waay.game.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.epool.waay.core.i18n.StringsProvider
+import dev.epool.waay.core.logging.log
 import dev.epool.waay.core.speech.Speaker
 import dev.epool.waay.game.domain.CardCount
 import dev.epool.waay.game.domain.DeckFactory
@@ -81,7 +82,7 @@ public class GameViewModel internal constructor(
     }
 
     override fun onCleared() {
-        speaker.stop()
+        stopSpeech()
     }
 
     private suspend fun onScreenVisible() {
@@ -106,7 +107,7 @@ public class GameViewModel internal constructor(
         preferencesDataSource.preferences.drop(1).collect { updated ->
             val previous = preferences
             preferences = updated
-            if (previous.voiceEnabled && !updated.voiceEnabled) speaker.stop()
+            if (previous.voiceEnabled && !updated.voiceEnabled) stopSpeech()
             if (updated.cardCount != previous.cardCount) {
                 reduce(GameCommand.CardCountChanged(updated.cardCount))
             } else {
@@ -148,7 +149,14 @@ public class GameViewModel internal constructor(
             hasPendingSpeech = true
             return
         }
-        speaker.speak(_state.value.content.spokenLine(), stringsProvider.speechLanguageFor(preferences.languageChoice))
+        val line = _state.value.content.spokenLine()
+        runCatching { speaker.speak(line, stringsProvider.speechLanguageFor(preferences.languageChoice)) }
+            .onFailure { log.w(it) { "Speech failed; continuing with on-screen text" } }
+    }
+
+    /** Speech is optional: a failing engine never blocks the game (FR-016). */
+    private fun stopSpeech() {
+        runCatching { speaker.stop() }.onFailure { log.w(it) { "Stopping speech failed" } }
     }
 }
 
