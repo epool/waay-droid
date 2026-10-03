@@ -458,6 +458,13 @@ Explicit API mode keeps the exported header small.
   stable.
 - Paparazzi: viable, but Robolectric is already needed for UI tests.
 
+**Platform services (T104, 2026-10-03):** `shared`'s Android host tests also run Robolectric, so
+`TextToSpeechSpeaker` is tested against the platform `TextToSpeech` shadow:
+- every line uses `QUEUE_FLUSH` (FR-015); swapping in `QUEUE_ADD` makes the test fail;
+- a line requested before init is spoken once the engine is ready;
+- `stop()` reaches the engine;
+- an engine that fails to initialise stays silent without failing (FR-016).
+
 ---
 
 ## ADR-011 — Quality gates, CI and updates

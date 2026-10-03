@@ -68,7 +68,20 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.koin.android)
         }
+        // Robolectric covers the Android platform services (e.g. TextToSpeechSpeaker) on the JVM.
+        getByName("androidHostTest").dependencies {
+            implementation(libs.junit4)
+            implementation(libs.robolectric)
+        }
     }
+}
+
+tasks.withType<Test>().configureEach {
+    // Robolectric on SDK 36 + JDK 21+ needs reflective access to FileDescriptor internals.
+    jvmArgs(
+        "--add-opens=java.base/java.io=ALL-UNNAMED",
+        "--add-exports=java.base/jdk.internal.access=ALL-UNNAMED",
+    )
 }
 
 // Constitution VIII / ADR-011: line coverage of the shared brain, measured by the Android host tests.
