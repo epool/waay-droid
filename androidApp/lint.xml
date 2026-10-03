@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!--
+      Version freshness is owned by Renovate (renovate.json, ADR-011), not by lint: with
+      warningsAsErrors these checks would fail the build whenever a new library ships, regardless
+      of the code. Versions are pinned to the newest mutually compatible set (ADR-000).
+    -->
+    <issue id="GradleDependency" severity="ignore" />
+    <issue id="AndroidGradlePluginVersion" severity="ignore" />
+    <issue id="NewerVersionAvailable" severity="ignore" />
+</lint>

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "description": "Keeps the version catalog on the newest mutually compatible set (constitution VII, ADR-000, ADR-011).",
+  "prConcurrentLimit": 5,
+  "gradle-wrapper": {
+    "enabled": true
+  },
+  "packageRules": [
+    {
+      "description": "Kotlin, its Gradle plugins (incl. the Compose compiler) and SKIE move together: SKIE supports specific Kotlin versions. Check the KMP compatibility guide (Gradle/AGP/Xcode ranges) before merging.",
+      "groupName": "Kotlin and SKIE",
+      "matchPackageNames": ["org.jetbrains.kotlin:*", "org.jetbrains.kotlin.*", "co.touchlab.skie*"]
+    },
+    {
+      "description": "Android Gradle Plugin and the Android-KMP library plugin share one version.",
+      "groupName": "Android Gradle Plugin",
+      "matchPackageNames": ["com.android.application*", "com.android.kotlin.multiplatform.library*", "com.android.tools.build:*"]
+    }
+  ]
+}

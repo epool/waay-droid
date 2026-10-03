@@ -1,0 +1,160 @@
+package dev.epool.waay.android.adaptive
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
+
+/** How the game screen is arranged for the current window and fold posture (ADR-008, FR-031, FR-032). */
+enum class GameLayoutMode {
+    /** Compact portrait: content above, controls below. */
+    Stacked,
+
+    /** Medium width and up (phone landscape, tablet, unfolded foldable, wide split screen). */
+    SideBySide,
+
+    /** Half-opened with a horizontal fold: content above the hinge, controls below it. */
+    Tabletop,
+
+    /** Half-opened with a vertical fold: content left of the hinge, controls right of it. */
+    Book,
+}
+
+data class GameLayout(
+    val mode: GameLayoutMode,
+    /** Hinge bounds in window coordinates (px) for [GameLayoutMode.Tabletop]/[GameLayoutMode.Book]. */
+    val hingeBounds: Rect? = null,
+)
+
+@Composable
+fun rememberGameLayout(): GameLayout {
+    val info = currentWindowAdaptiveInfoV2()
+    val hinge = info.windowPosture.hingeList.firstOrNull { it.isSeparating || !it.isFlat }
+    val sizeClass = info.windowSizeClass
+    return when {
+        hinge != null && !hinge.isVertical -> {
+            GameLayout(GameLayoutMode.Tabletop, hinge.bounds)
+        }
+
+        hinge != null -> {
+            GameLayout(GameLayoutMode.Book, hinge.bounds)
+        }
+
+        // Medium width and up: phones in landscape, tablets, unfolded foldables, wide split screens.
+        // Narrow-but-short windows stay stacked; their grid scrolls.
+        sizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) -> {
+            GameLayout(GameLayoutMode.SideBySide)
+        }
+
+        else -> {
+            GameLayout(GameLayoutMode.Stacked)
+        }
+    }
+}
+
+/**
+ * Places [primary] (what the player reads) and [secondary] (what the player taps) for [layout].
+ * In folded postures the split follows the hinge, so nothing is placed on or across the fold.
+ * With [keepTogether] (intro, result), unfolded layouts center both pieces as one group.
+ */
+@Composable
+fun AdaptiveGameLayout(
+    layout: GameLayout,
+    primary: @Composable () -> Unit,
+    secondary: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    keepTogether: Boolean = false,
+) {
+    var origin by remember { mutableStateOf(Offset.Zero) }
+    val density = LocalDensity.current
+    // Movable, so the slots keep their state (e.g. grid scroll) when the posture or size changes.
+    val primaryContent = remember(primary) { movableContentOf(primary) }
+    val secondaryContent = remember(secondary) { movableContentOf(secondary) }
+    val root = modifier.fillMaxSize().onGloballyPositioned { origin = it.positionInWindow() }
+    val hinge = layout.hingeBounds
+
+    when {
+        layout.mode == GameLayoutMode.Tabletop && hinge != null -> {
+            Column(modifier = root) {
+                val above = with(density) { (hinge.top - origin.y).coerceAtLeast(0f).toDp() }
+                Box(Modifier.fillMaxWidth().height(above).padding(bottom = HingeGutter), contentAlignment = Alignment.Center) {
+                    primaryContent()
+                }
+                Spacer(Modifier.height(with(density) { hinge.height.toDp() }))
+                Box(Modifier.fillMaxWidth().weight(1f).padding(top = HingeGutter), contentAlignment = Alignment.Center) {
+                    secondaryContent()
+                }
+            }
+        }
+
+        layout.mode == GameLayoutMode.Book && hinge != null -> {
+            Row(modifier = root) {
+                val before = with(density) { (hinge.left - origin.x).coerceAtLeast(0f).toDp() }
+                Box(Modifier.fillMaxHeight().width(before).padding(end = HingeGutter), contentAlignment = Alignment.Center) {
+                    primaryContent()
+                }
+                Spacer(Modifier.width(with(density) { hinge.width.toDp() }))
+                Box(Modifier.fillMaxHeight().weight(1f).padding(start = HingeGutter), contentAlignment = Alignment.Center) {
+                    secondaryContent()
+                }
+            }
+        }
+
+        keepTogether -> {
+            Column(
+                modifier = root,
+                verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                primaryContent()
+                secondaryContent()
+            }
+        }
+
+        layout.mode == GameLayoutMode.SideBySide -> {
+            BoxWithConstraints(modifier = root) {
+                val controlsWidth = (maxWidth * 0.4f).coerceIn(200.dp, 360.dp)
+                Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                    Box(Modifier.weight(1f).fillMaxHeight()) { primaryContent() }
+                    Box(Modifier.width(controlsWidth).fillMaxHeight(), contentAlignment = Alignment.Center) {
+                        secondaryContent()
+                    }
+                }
+            }
+        }
+
+        else -> {
+            Column(modifier = root, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(Modifier.weight(1f).fillMaxWidth()) { primaryContent() }
+                secondaryContent()
+            }
+        }
+    }
+}
+
+/** Clear space on each side of a fold, so nothing sits on or against it (FR-032). */
+private val HingeGutter = 16.dp

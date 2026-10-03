@@ -1,0 +1,53 @@
+import SwiftUI
+
+/// Arranges the game screen for the current size classes (ADR-008, FR-031):
+/// side by side on iPad (regular width) and iPhone landscape (compact height), stacked otherwise.
+/// With `keepTogether` (intro, result) both pieces are centered as one group.
+struct AdaptiveGameLayout<Primary: View, Secondary: View>: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+
+    private let keepTogether: Bool
+    private let primary: Primary
+    private let secondary: Secondary
+
+    init(
+        keepTogether: Bool = false,
+        @ViewBuilder primary: () -> Primary,
+        @ViewBuilder secondary: () -> Secondary
+    ) {
+        self.keepTogether = keepTogether
+        self.primary = primary()
+        self.secondary = secondary()
+    }
+
+    static func isSideBySide(horizontal: UserInterfaceSizeClass?, vertical: UserInterfaceSizeClass?) -> Bool {
+        horizontal == .regular || vertical == .compact
+    }
+
+    var body: some View {
+        if keepTogether {
+            // Centered when it fits; scrolls instead of clipping at the largest text sizes (FR-026).
+            GeometryReader { proxy in
+                ScrollView {
+                    VStack(spacing: 32) {
+                        primary
+                        secondary
+                    }
+                    .frame(maxWidth: .infinity, minHeight: proxy.size.height)
+                }
+                .scrollBounceBehavior(.basedOnSize)
+            }
+        } else if Self.isSideBySide(horizontal: horizontalSizeClass, vertical: verticalSizeClass) {
+            HStack(spacing: 24) {
+                primary.frame(maxWidth: .infinity, maxHeight: .infinity)
+                secondary.frame(maxWidth: 360)
+            }
+        } else {
+            VStack(spacing: 12) {
+                primary.frame(maxHeight: .infinity)
+                secondary
+            }
+        }
+    }
+}
