@@ -3,6 +3,10 @@ import SwiftUI
 
 @main
 struct WaayApp: App {
+    init() {
+        InitKoinKt.doInitKoin(config: nil)
+    }
+
     var body: some Scene {
         WindowGroup {
             #if DEBUG

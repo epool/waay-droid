@@ -205,23 +205,23 @@ navigation. **No user-story work starts until this phase is complete.**
 
 ### 2d. DI and app shells
 
-- [ ] T026 Implement the DI wiring:
+- [X] T026 Implement the DI wiring:
   - `shared/src/commonMain/kotlin/dev/epool/waay/di/SharedModule.kt`;
   - `PlatformModule.kt` (`expect val platformModule: Module`);
   - `InitKoin.kt` (`public fun initKoin(config: KoinAppDeclaration? = null)`).
-- [ ] T027 [P] Implement `shared/src/androidMain/kotlin/dev/epool/waay/di/PlatformModule.android.kt`.
+- [X] T027 [P] Implement `shared/src/androidMain/kotlin/dev/epool/waay/di/PlatformModule.android.kt`.
   It provides `ObservableSettings` as `SharedPreferencesSettings` (file "waay_preferences") from
   `androidContext()`, a placeholder `DeviceLocale` and a no-op `Speaker`. The real ones come in
   US3 and US5.
-- [ ] T028 [P] Implement `shared/src/iosMain/kotlin/dev/epool/waay/di/PlatformModule.ios.kt`, with
+- [X] T028 [P] Implement `shared/src/iosMain/kotlin/dev/epool/waay/di/PlatformModule.ios.kt`, with
   `NSUserDefaultsSettings(NSUserDefaults.standardUserDefaults)` and the same placeholder speaker and
   locale as T027.
-- [ ] T029 Implement `shared/src/iosMain/kotlin/dev/epool/waay/di/ViewModelProvider.kt`
+- [X] T029 Implement `shared/src/iosMain/kotlin/dev/epool/waay/di/ViewModelProvider.kt`
   (`public object ViewModelProvider : KoinComponent`). Its `…ViewModel(scope: ScreenScope)`
   factories are added per story.
-- [ ] T030 [P] Implement `androidApp/src/main/kotlin/dev/epool/waay/android/WaayApp.kt` (an
+- [X] T030 [P] Implement `androidApp/src/main/kotlin/dev/epool/waay/android/WaayApp.kt` (an
   `Application` that calls `initKoin { androidContext(this) }`) and register it in the manifest.
-- [ ] T031 [P] Update `iosApp/iosApp/WaayApp.swift` so its `init()` calls `KoinKt.doInitKoin(config: nil)`.
+- [X] T031 [P] Update `iosApp/iosApp/WaayApp.swift` so its `init()` calls `KoinKt.doInitKoin(config: nil)`.
 
 ### 2e. Settings scaffold and navigation (screens get filled in by the stories)
 
