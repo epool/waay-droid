@@ -15,6 +15,7 @@ import assertk.assertions.isGreaterThanOrEqualTo
 import assertk.assertions.isInstanceOf
 import assertk.assertions.isNotEqualTo
 import com.russhwolf.settings.MapSettings
+import dev.epool.waay.core.domain.Result
 import dev.epool.waay.core.i18n.EnglishStrings
 import dev.epool.waay.core.i18n.StringsProvider
 import dev.epool.waay.fakes.FakeSpeaker
@@ -326,5 +327,54 @@ class GameViewModelTest : MainDispatcherTest() {
             store.clear()
 
             assertThat(speaker.stopCount).isGreaterThanOrEqualTo(1)
+        }
+
+    private fun cardCount(value: Int) = (CardCount.of(value) as Result.Success).data
+
+    // US4 — G7: changing the card count while watching resets to the intro for the new range,
+    // speaks it, and the cards then show numbersPerCard numbers (FR-018).
+    @Test
+    fun cardCountChangeResetsToTheIntroForTheNewRange() =
+        runTest {
+            val viewModel = viewModel()
+            viewModel.state.test {
+                awaitItem()
+                viewModel.onAction(GameAction.OnReadyClick)
+                awaitItem()
+
+                preferences.setCardCount(cardCount(7))
+                val intro = awaitItem().content as GameContentUi.Intro
+                assertThat(intro.message).contains("1 to 127")
+                assertThat(speaker.texts().last()).isEqualTo(intro.message)
+
+                viewModel.onAction(GameAction.OnReadyClick)
+                val card = awaitItem().content as GameContentUi.Card
+                assertThat(card.progress).isEqualTo("Card 1 of 7")
+                assertThat(card.numbers).hasSize(64)
+            }
+        }
+
+    // US4 — G7 + finding U1: a change made while the game screen is not watched (player in Settings)
+    // keeps the intro speech pending until the game screen subscribes again — never over Settings.
+    @Test
+    fun introSpeechIsDeferredWhileTheGameScreenIsAway() =
+        runTest {
+            val viewModel = viewModel()
+            viewModel.state.test {
+                awaitItem()
+                viewModel.onAction(GameAction.OnReadyClick)
+                awaitItem()
+            }
+            val spokenBefore = speaker.utterances.size
+
+            preferences.setCardCount(cardCount(3))
+            runCurrent()
+            assertThat(speaker.utterances).hasSize(spokenBefore)
+
+            viewModel.state.test {
+                val intro = awaitItem().content as GameContentUi.Intro
+                assertThat(intro.message).contains("1 to 7")
+                assertThat(speaker.texts().last()).isEqualTo(intro.message)
+            }
         }
 }
