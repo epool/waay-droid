@@ -4,7 +4,7 @@
 [versions]
 # Toolchain
 kotlin = "2.4.20"
-agp = "9.3.3"
+agp = "9.4.1"
 skie = "0.10.15"
 android-minSdk = "26"
 # AndroidX 2026.09 (Compose 1.12, Navigation3 1.2, Lifecycle 2.11) requires compileSdk >= 37.

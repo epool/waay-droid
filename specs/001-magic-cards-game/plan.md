@@ -26,7 +26,7 @@ recorded as ADRs in [research.md](./research.md); ADR-001 is the hybrid ViewMode
   - Swift 6 in Swift 6 language mode, with SwiftUI;
   - JDK 21 toolchain.
 - **Primary Dependencies:**
-  - Build: Gradle 9.7.0 (wrapper), AGP 9.3.3, SKIE 0.10.15.
+  - Build: Gradle 9.7.0 (wrapper; daemon on JDK 25), AGP 9.4.1, SKIE 0.10.15.
   - Shared: kotlinx-coroutines 1.11.0, `org.jetbrains.androidx.lifecycle:lifecycle-viewmodel`
     2.11.0, Koin 4.2.2, multiplatform-settings 1.3.0, Kermit 2.2.0.
   - Android: Compose BOM 2026.09.00 (Material 3 1.4.0), material3-adaptive 1.3.0, Navigation 3
@@ -177,4 +177,4 @@ iosApp/
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |---|---|---|
 | Local builds use **Xcode 27.0**, outside Kotlin 2.4.20's tested **Xcode 26.4** (constitution VII) | Xcode 27 is the installed toolchain. CI pins 26.4, which is tested. | Downgrading the local Xcode before proving a problem costs time and disk. **The first implementation task is a spike** that builds and tests the SKIE framework and the iOS app with Xcode 27. If it fails, we install Xcode 26.4 side by side and use `DEVELOPER_DIR` (decided at that point with the human). |
-| AGP **9.3.3**, a patch above KGP's tested 9.3.1 | Bug-fix patches only. Same minor version. | 9.3.1 would knowingly forgo shipped fixes. Patch releases don't change the compatibility contract. |
+| AGP **9.4.1**, a minor version above KGP 2.4.20's tested 9.3.1 (owner decision, 2026-10-03) | Android Studio's upgrade assistant moved the project to 9.4.1 and the owner chose the newest AGP. Every build and test (shared, Robolectric, XCUITest) passes with it. | Reverting to 9.3.3 was offered and declined. Renovate and Kotlin 2.4.30/2.5 releases will bring KGP's tested range up to 9.4. |

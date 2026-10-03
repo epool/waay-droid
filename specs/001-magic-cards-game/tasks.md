@@ -42,7 +42,7 @@ demoed on its own.
   - `pluginManagement` and `dependencyResolutionManagement` repositories (google, mavenCentral);
   - the `org.gradle.toolchains.foojay-resolver-convention` plugin, version 1.0.0.
 - [X] T002 Create `gradle/libs.versions.toml` with the ADR-000 matrix **verbatim**:
-  - Toolchain: kotlin 2.4.20, agp 9.3.3, skie 0.10.15.
+  - Toolchain: kotlin 2.4.20, agp 9.3.3 (later 9.4.1, owner decision 2026-10-03), skie 0.10.15.
   - Shared libraries: coroutines 1.11.0, serialization 1.11.0, jetbrains-lifecycle 2.11.0, koin 4.2.2,
     multiplatform-settings 1.3.0, kermit 2.2.0.
   - Testing: turbine 1.2.1, assertk 0.28.1, robolectric 4.17, roborazzi 1.76.0, androidx-test-runner
