@@ -18,6 +18,7 @@ import com.russhwolf.settings.MapSettings
 import dev.epool.waay.core.domain.Result
 import dev.epool.waay.core.i18n.EnglishStrings
 import dev.epool.waay.core.i18n.StringsProvider
+import dev.epool.waay.fakes.FakeDeviceLocale
 import dev.epool.waay.fakes.FakeSpeaker
 import dev.epool.waay.fakes.MainDispatcherTest
 import dev.epool.waay.game.domain.Answer
@@ -29,6 +30,7 @@ import dev.epool.waay.game.domain.GameCommand
 import dev.epool.waay.game.domain.GameEngine
 import dev.epool.waay.game.domain.MagicDeck
 import dev.epool.waay.settings.data.KeyValuePreferencesDataSource
+import dev.epool.waay.settings.domain.LanguageChoice
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
@@ -44,7 +46,7 @@ class GameViewModelTest : MainDispatcherTest() {
     private fun viewModel(random: Random = Random(1)) =
         GameViewModel(
             preferencesDataSource = preferences,
-            stringsProvider = StringsProvider(),
+            stringsProvider = StringsProvider(FakeDeviceLocale()),
             deckFactory = DeckFactory { MagicDeck.create(it, random) },
             speaker = speaker,
         )
@@ -375,6 +377,36 @@ class GameViewModelTest : MainDispatcherTest() {
                 val intro = awaitItem().content as GameContentUi.Intro
                 assertThat(intro.message).contains("1 to 7")
                 assertThat(speaker.texts().last()).isEqualTo(intro.message)
+            }
+        }
+
+    // US5 — G8: switching the language re-resolves every text in place; the game itself is unchanged,
+    // and the next line is spoken with a voice for the new language (FR-021, FR-022).
+    @Test
+    fun languageSwitchReResolvesTextInPlace() =
+        runTest {
+            val viewModel = viewModel()
+            viewModel.state.test {
+                awaitItem()
+                viewModel.onAction(GameAction.OnReadyClick)
+                val english = awaitItem()
+                val englishCard = english.content as GameContentUi.Card
+
+                preferences.setLanguageChoice(LanguageChoice.Spanish)
+                val spanish = awaitItem()
+                val spanishCard = spanish.content as GameContentUi.Card
+
+                assertThat(spanish.newGameLabel).isEqualTo("Nuevo juego")
+                assertThat(spanishCard.progress).isEqualTo("Carta 1 de 5")
+                assertThat(spanishCard.numbers).isEqualTo(englishCard.numbers)
+
+                viewModel.onAction(GameAction.OnAnswerClick(Answer.No))
+                awaitItem()
+                assertThat(
+                    speaker.utterances
+                        .last()
+                        .language.languageCode,
+                ).isEqualTo("es")
             }
         }
 }

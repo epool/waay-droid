@@ -7,6 +7,7 @@ import assertk.assertions.isFalse
 import assertk.assertions.isTrue
 import com.russhwolf.settings.MapSettings
 import dev.epool.waay.core.i18n.StringsProvider
+import dev.epool.waay.fakes.FakeDeviceLocale
 import dev.epool.waay.fakes.MainDispatcherTest
 import dev.epool.waay.settings.data.KeyValuePreferencesDataSource
 import kotlinx.coroutines.flow.first
@@ -17,7 +18,7 @@ class SettingsViewModelTest : MainDispatcherTest() {
     private fun viewModel(settings: MapSettings = MapSettings()) =
         SettingsViewModel(
             preferencesDataSource = KeyValuePreferencesDataSource(settings),
-            stringsProvider = StringsProvider(),
+            stringsProvider = StringsProvider(FakeDeviceLocale()),
         )
 
     // S1: reflects the persisted preferences (or defaults) with localized labels.
@@ -86,5 +87,33 @@ class SettingsViewModelTest : MainDispatcherTest() {
                     .first()
                     .cardCount.value,
             ).isEqualTo(7)
+        }
+
+    // S4: choosing a language switches every label immediately and is persisted (FR-021).
+    @Test
+    fun languageSelectionSwitchesLabelsImmediately() =
+        runTest {
+            val settings = MapSettings()
+            val viewModel = viewModel(settings)
+            viewModel.state.test {
+                val initial = awaitItem()
+                assertThat(initial.selectedLanguage).isEqualTo(LanguageChoiceUi.Device)
+                assertThat(initial.languageOptions.map { it.choice })
+                    .isEqualTo(listOf(LanguageChoiceUi.Device, LanguageChoiceUi.English, LanguageChoiceUi.Spanish))
+                assertThat(initial.languageOptions.map { it.label }).isEqualTo(listOf("Device language", "English", "Español"))
+
+                viewModel.onAction(SettingsAction.OnLanguageSelect(LanguageChoiceUi.Spanish))
+
+                val spanish = awaitItem()
+                assertThat(spanish.title).isEqualTo("Ajustes")
+                assertThat(spanish.languageLabel).isEqualTo("Idioma")
+                assertThat(spanish.selectedLanguage).isEqualTo(LanguageChoiceUi.Spanish)
+            }
+            assertThat(
+                KeyValuePreferencesDataSource(settings)
+                    .preferences
+                    .first()
+                    .languageChoice.key,
+            ).isEqualTo("es")
         }
 }
