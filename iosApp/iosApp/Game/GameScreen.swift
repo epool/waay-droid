@@ -103,6 +103,9 @@ private struct CardView: View {
                 }
             }
             .scrollBounceBehavior(.basedOnSize)
+            // A fresh scroll view per card: each card starts at the top, so no number stays hidden
+            // above the visible area by the previous card's scrolling (FR-003a).
+            .id(card.index)
         } secondary: {
             answerButtons
         }

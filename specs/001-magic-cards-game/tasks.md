@@ -637,6 +637,14 @@ These tasks follow the official `adaptive` and `edge-to-edge` skills (ADR-008).
 - [X] T093 Write `androidApp/src/test/kotlin/dev/epool/waay/android/game/RapidInputTest.kt` (FR-028:
   a double tap records one answer) and `ConfigurationChangeTest.kt` (FR-029: recreating the Activity
   mid-game keeps the card and the answers).
+- [X] T102 Fix found during T094: a new card kept the previous card's scroll offset, so numbers at the
+  top could stay hidden (FR-003a). Write failing tests first:
+  - `androidApp/src/test/kotlin/dev/epool/waay/android/game/CardScrollTest.kt`: scroll card 1 of 7 to
+    the end, answer, then assert card 2's grid is at offset 0;
+  - `iosApp/WaayUITests/CardScrollUITests.swift`: the same, asserting card 2's header is hittable.
+
+  Then give each card a fresh scroll state: `key(content.index)` around the grid in `GameScreen.kt`,
+  and `.id(card.index)` on the card's `ScrollView` in `GameScreen.swift`.
 - [ ] T094 Verify manually on the foldable and tablet emulators (`android emulator create`) and on
   an iPad simulator. Cover `specs/001-magic-cards-game/quickstart.md` scenarios A8–A10 and I8–I10, including the **iOS 17.x simulator**
   (FR-030). Also run a smoke game on an **API 26 (Android 8.0)** emulator (finding G2).

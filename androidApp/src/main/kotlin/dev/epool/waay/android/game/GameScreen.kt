@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -159,13 +160,17 @@ private fun CardContent(
                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }.testTag("card.progress"),
                 )
                 Text(content.question, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
-                LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 64.dp),
-                    modifier = Modifier.fillMaxWidth().testTag("card.numbers"),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    items(content.numbers, key = { it.value }) { number -> NumberCell(number) }
+                // A fresh scroll state per card: each card starts at the top, so no number stays hidden
+                // above the visible area by the previous card's scrolling (FR-003a).
+                key(content.index) {
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(minSize = 64.dp),
+                        modifier = Modifier.fillMaxWidth().testTag("card.numbers"),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        items(content.numbers, key = { it.value }) { number -> NumberCell(number) }
+                    }
                 }
             }
         },

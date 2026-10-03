@@ -220,7 +220,9 @@ the app and reopen it. Check that all three choices are still in effect.
   the player returns, the current game continues exactly where it was. If the app is fully closed,
   the game in progress may be lost, but settings are kept.
 - **Large games:** a 7-card game shows 64 numbers per card. All of them must be readable and
-  reachable, including at the largest system text sizes, by scrolling if necessary.
+  reachable, including at the largest system text sizes, by scrolling if necessary. Every new card
+  starts at the top of its numbers. Otherwise numbers left above the visible area by the previous
+  card's scrolling could be missed, leading to a wrong answer (found during T094 verification).
 - **Voice unavailable or failing mid-game:** play continues with on-screen text only, with no
   blocking error.
 - **Screen reader and magician voice:** screen-reader users can turn the magician voice off so it
@@ -246,7 +248,9 @@ the app and reopen it. Check that all three choices are still in effect.
   number in the current range (1 to 2^N − 1) and offers an "I'm ready" action. No card is shown
   before the player taps "I'm ready".
 - **FR-003a**: After "I'm ready", the system MUST present the cards one at a time and collect exactly
-  one Yes/No answer per card. It MUST show the player's progress, for example "Card 3 of 5".
+  one Yes/No answer per card. It MUST show the player's progress, for example "Card 3 of 5". Each
+  card MUST be shown from the start of its numbers, however far the player scrolled the previous
+  card, so that no number is hidden when the player answers.
 - **FR-004**: After the last answer, the system MUST compute the result as the sum of the bit values
   of the cards answered "Yes", and reveal it to the player.
 - **FR-005**: If the computed result is 0 (all answers "No"), the system MUST NOT reveal a number. It
