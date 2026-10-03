@@ -365,7 +365,7 @@ for 1 and 31. Answering "No" to everything gives the invalid message.
     `#Preview`s.
 
   Replace the placeholder in `ContentView.swift`. This makes T043 pass.
-- [ ] T053 [US1] Run `./gradlew :shared:allTests :androidApp:testDebugUnitTest` and `xcodebuild test`.
+- [X] T053 [US1] Run `./gradlew :shared:allTests :androidApp:testDebugUnitTest` and `xcodebuild test`.
   Demo US1 on the Android emulator (`android run`) and on the iOS simulator, following `specs/001-magic-cards-game/quickstart.md`
   section 1. Note any deviations in that file.
 
@@ -470,7 +470,7 @@ the reveal. With the voice off, nothing is spoken, and the same text appears on 
   `SettingsViewModel.kt` (this makes T060 pass). Add the switch row to
   `androidApp/.../settings/SettingsScreen.kt` and `iosApp/iosApp/Settings/SettingsScreen.swift`
   (`Toggle`).
-- [ ] T066 [US3] Verify manually on the Android emulator and the iOS simulator, using `specs/001-magic-cards-game/quickstart.md`
+- [X] T066 [US3] Verify manually on the Android emulator and the iOS simulator, using `specs/001-magic-cards-game/quickstart.md`
   scenarios A1, A5 and I1, I5. Disable the TTS engine on the emulator to verify FR-016, the fallback
   with no blocking error.
 
@@ -507,7 +507,7 @@ the reveal. With the voice off, nothing is spoken, and the same text appears on 
   `androidApp/.../settings/SettingsScreen.kt` (single-choice rows, accessible).
 - [X] T072 [P] [US4] Add the card-count picker to the iOS settings screen,
   `iosApp/iosApp/Settings/SettingsScreen.swift` (`Picker` with an inline style).
-- [ ] T073 [US4] Verify `specs/001-magic-cards-game/quickstart.md` scenarios A4 and I4: 7 cards gives 64 numbers, and they scroll at the
+- [X] T073 [US4] Verify `specs/001-magic-cards-game/quickstart.md` scenarios A4 and I4: 7 cards gives 64 numbers, and they scroll at the
   largest font size.
 
 **Checkpoint**: US1–US4 pass.
@@ -559,7 +559,7 @@ app, and everything, including speech, is in English, without restarting the gam
   - Android: `androidApp/src/main/res/values/strings.xml` and `values-es/strings.xml`, with
     `app_name` "Wáay";
   - iOS: `iosApp/iosApp/InfoPlist.xcstrings`, with `CFBundleDisplayName` in EN and ES.
-- [ ] T082 [US5] Verify `specs/001-magic-cards-game/quickstart.md` scenarios A1, A6, I1 and I6: Spanish device, then switch to English
+- [X] T082 [US5] Verify `specs/001-magic-cards-game/quickstart.md` scenarios A1, A6, I1 and I6: Spanish device, then switch to English
   mid-game.
 
 **Checkpoint**: US1–US5 pass.

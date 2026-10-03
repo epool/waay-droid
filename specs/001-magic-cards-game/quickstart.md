@@ -152,3 +152,57 @@ A first-time player completes a 5-card game in under 60 s. Time one unassisted r
     recreation;
   - XCUITest `PreferencesPersistenceUITests`: the defaults on a fresh install, and 6 cards, voice
     off and Spanish all surviving terminate and relaunch (SC-005).
+
+**2026-10-03: device verification (T053, T066, T073, T082, T094)**
+
+`adb` works again, so the Android emulator runs were done. Each was scripted with `android layout`
+plus `adb shell input`, reading the screen the way a player would.
+
+- **Android, Pixel 9 Pro XL (API 36):**
+  - **A1:** fresh install, app locale `es-MX` (`cmd locale set-app-locales`). Spanish intro, cards
+    and reveal ("¡27!"). Google TTS synthesized every line in Spanish; it maps es-MX to its es-US
+    voice.
+  - **A2:** two games show different first cards and number orders.
+  - **A3:** all "No" gives the invalid message and "Nuevo juego".
+  - **A4:** 7 cards mid-game resets to Intro with 1–127; scrolling the grid reaches all 64 numbers.
+  - **A5:** voice off mid-game: the game continues, and no synthesis requests follow.
+  - **A6:** English mid-game: the same card and numbers re-render in English, and the next speech
+    is en-US.
+  - **A7:** force-stop and relaunch: 7 cards, voice off and English are kept.
+  - **FR-016:** with the Google TTS engine disabled, a full round plays silently with no crash or
+    dialog.
+  - **Speech evidence:** with voice on, one speech player per line (intro, 5 cards, reveal) is
+    registered by `com.google.android.tts` in `dumpsys audio`. Audibility itself was not judged by
+    ear.
+  - **A10 (font scale 2.0):** a full 7-card round decodes 100 correctly. **This run found T102:** a
+    new card kept the previous card's scroll offset, hiding its first numbers. Fixed and re-verified
+    on the emulator; see FR-003a.
+- **Android, Pixel 9 Pro Fold (API 36),** AVD `Waay_Fold`, created with
+  `avdmanager create avd -d pixel_9_pro_fold`. Controlled with `adb emu fold|unfold|rotate` and
+  `cmd device_state state 1|reset`. A8 and A9 pass, and every transition keeps "Card 3 of 5" and
+  its numbers:
+  - unfolded → side by side;
+  - folded (outer display) → stacked;
+  - book posture → split at the vertical hinge;
+  - tabletop (half-open + landscape) → numbers above the hinge, answers below;
+  - half-width window (`wm size`, the split-screen reflow) → stacked.
+- **iOS, iPhone 17 (iOS 27.0):**
+  - **I1/I6:** `LanguageSwitchUITests`: Spanish device, then English mid-game re-renders the same
+    card.
+  - **I5:** with `voice_enabled = 0` in the app's defaults, no `TextToSpeech` audio-queue activity
+    appears in the unified log. With voice on, the queue runs for the intro.
+  - **I9 (Accessibility XXXL, portrait and landscape):** `AccessibilityUITests` plays a round with
+    every control hittable. Screenshots were reviewed: nothing is clipped, and overflow scrolls.
+- **iOS, iPad Pro 11-inch M5 (iOS 27.0) and iPhone 16 (iOS 18.6):** the full iOS suite passes,
+  including rotation, backgrounding and the Settings round trip. On iPad the card is side by side.
+- **Not done:**
+  - **TalkBack and VoiceOver walkthroughs (A10, I9):** `adb input` taps bypass TalkBack's
+    explore-by-touch, and simulators have no VoiceOver gestures. The semantics are covered by
+    `gameIsUsableThroughSemantics` and the iOS labels and traits. Needs a person.
+  - **iPad Split View (I8):** not scriptable with XCUITest. Resize reflow is covered on Android and
+    by size classes on iOS. Needs a person.
+  - **I10, iOS 17.x:** no 17.x runtime is installable with Xcode 27. iOS 18.6, the oldest available,
+    passes. The CI job (T098) can add a 17.x simulator.
+  - **API 26 emulator:** the `android-26;google_apis;arm64-v8a` image hangs in QEMU on this Apple
+    Silicon host (emulator 37.2), even with a cold boot and SwiftShader. API 26 stays covered by the
+    Robolectric `sdk = 26` flow.
