@@ -67,6 +67,8 @@ androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4
 androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 androidx-compose-foundation = { module = "androidx.compose.foundation:foundation" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
+# Frozen at 1.7.8 inside the BOM; provides Settings/ArrowBack/Refresh.
+androidx-compose-material-icons-core = { module = "androidx.compose.material:material-icons-core" }
 androidx-compose-material3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive", version.ref = "material3-adaptive" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
@@ -91,6 +93,7 @@ androidx-compose = [
     "androidx-compose-ui-tooling-preview",
     "androidx-compose-foundation",
     "androidx-compose-material3",
+    "androidx-compose-material-icons-core",
 ]
 navigation3 = [
     "androidx-navigation3-runtime",

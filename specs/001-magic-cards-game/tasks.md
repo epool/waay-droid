@@ -237,14 +237,14 @@ navigation. **No user-story work starts until this phase is complete.**
   - `SettingsViewModel.kt`;
   - its Koin registration (`viewModelOf`);
   - `ViewModelProvider.settingsViewModel(scope)`.
-- [ ] T034 [P] Implement Android navigation:
+- [X] T034 [P] Implement Android navigation:
   - `androidApp/src/main/kotlin/dev/epool/waay/android/navigation/NavKeys.kt`, with `@Serializable`
     `GameKey` and `SettingsKey`;
   - `WaayNavDisplay.kt`, using `NavDisplay` and `rememberNavBackStack(GameKey)` with
     `rememberSaveableStateHolderNavEntryDecorator` and `rememberViewModelStoreNavEntryDecorator`;
   - `ui/ObserveAsEvents.kt`;
   - `ui/theme/Theme.kt` (Material 3, dynamic color).
-- [ ] T035 [P] Implement `androidApp/src/main/kotlin/dev/epool/waay/android/settings/SettingsScreen.kt`:
+- [X] T035 [P] Implement `androidApp/src/main/kotlin/dev/epool/waay/android/settings/SettingsScreen.kt`:
   - `SettingsRoot`, which uses `koinViewModel()` and `ObserveAsEvents` → `onBack`;
   - a stateless `SettingsScreen(state, onAction)`, with a top app bar and a back button;
   - `@Preview`.
