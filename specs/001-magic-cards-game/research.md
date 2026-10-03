@@ -431,6 +431,16 @@ Explicit API mode keeps the exported header small.
 - XcodeGen keeps the project diffable.
 - Observation is the modern SwiftUI data flow (constitution, iOS 17).
 
+**App icon (T106, 2026-10-03):** one design on both platforms, a fan of three cards with a sparkle
+in the 2014 icon's red to orange, on deep indigo.
+- **Android:** a vector adaptive icon with a monochrome layer (T097).
+- **iOS:** an asset catalog with single-size 1024 px light, dark and tinted variants. They are
+  rendered from the Android geometry by `scripts/render-ios-app-icon.swift` (CoreGraphics), so the
+  design has one source. The light variant is opaque, as the App Store requires.
+- **Rejected:** an Icon Composer `.icon` file, which only gives the layered Liquid Glass look on
+  iOS 26 and later. The asset catalog covers the whole iOS 17+ range. Revisit when the minimum OS
+  moves to 26.
+
 ---
 
 ## ADR-010 — Testing stack

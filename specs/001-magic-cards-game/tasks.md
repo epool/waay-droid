@@ -777,3 +777,9 @@ Each increment keeps the earlier stories green.
 - [X] T103 CRITICAL: add a `commonTest` case in `shared/src/commonTest/kotlin/dev/epool/waay/game/presentation/GameViewModelTest.kt` where the `Speaker` throws on `speak` and `stop`, and a full game still reaches the reveal. Then guard the `GameViewModel` speaker calls (log and continue) per Constitution VI, FR-016 (partial)
 - [X] T104 CRITICAL: add a Robolectric host test for `shared/src/androidMain/kotlin/dev/epool/waay/core/speech/TextToSpeechSpeaker.kt`: every line is queued with `QUEUE_FLUSH`, which interrupts the previous one, and `stop()` stops the engine. Per Constitution VI, FR-015 (partial)
 - [X] T105 CRITICAL: add Roborazzi baselines for the Settings screen in `androidApp/src/test/kotlin/dev/epool/waay/android/screenshots/SettingsScreenScreenshotTest.kt` (voice on and off, a selected card count and language), and review them for non-colour selection cues. Per Constitution VI, FR-027 (partial)
+
+## Phase 12: Acceptance follow-ups
+
+- [X] T106 Add the iOS app icon the owner requested at the verification gate, for parity with the Android launcher icon (T097):
+  - `iosApp/iosApp/Assets.xcassets/AppIcon.appiconset` holds single-size 1024 px light (opaque), dark and tinted variants for iOS 18+ appearances;
+  - they are rendered by `scripts/render-ios-app-icon.swift` from the same geometry as `ic_launcher_foreground.xml`.
