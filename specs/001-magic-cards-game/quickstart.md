@@ -140,3 +140,15 @@ A first-time player completes a 5-card game in under 60 s. Time one unassisted r
 - **Pending:**
   - the manual in-app switch to English mid-game on iOS (I6);
   - A1 and A6 on Android, blocked by `adb` (see the T053 note).
+
+**2026-10-03: US6 preferences (T083–T087)**
+
+- **Test-only launch argument:** `-resetPreferences` clears the app's `UserDefaults` domain before
+  Koin starts, so every iOS UI test begins from the first-use defaults (FR-024). All UI tests pass
+  it, so they cannot leak settings into each other.
+- **Verified:**
+  - `KeyValuePreferencesDataSourceTest`: a new instance reads back what an earlier one wrote;
+  - Robolectric `PreferencesPersistenceTest`: UI changes, then a fresh Koin graph and Activity
+    recreation;
+  - XCUITest `PreferencesPersistenceUITests`: the defaults on a fresh install, and 6 cards, voice
+    off and Spanish all surviving terminate and relaunch (SC-005).
