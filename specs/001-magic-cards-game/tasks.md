@@ -302,7 +302,7 @@ for 1 and 31. Answering "No" to everything gives the invalid message.
   `GameFlowTest.kt` (Robolectric, robot pattern). The flow is Intro → "I'm ready" → 5 answers for 27
   → reveal shows 27 → New game → Intro. Run it with Robolectric `@Config(sdk = [26, 36])` so the
   Android 8.0 minimum is exercised (FR-030, analyze finding G2).
-- [ ] T043 [P] [US1] Write `iosApp/WaayUITests/GameFlowUITests.swift` (XCUITest). It runs the same
+- [X] T043 [P] [US1] Write `iosApp/WaayUITests/GameFlowUITests.swift` (XCUITest). It runs the same
   flow using accessibility identifiers `intro.ready`, `card.yes`, `card.no`, `result.message` and
   `toolbar.newGame`. Mid-game, it also:
   - rotates with `XCUIDevice.shared.orientation = .landscapeLeft` and back;
@@ -356,7 +356,7 @@ for 1 and 31. Answering "No" to everything gives the invalid message.
   - previews for each phase.
 
   Wire it into `WaayNavDisplay`. This makes T042 pass.
-- [ ] T052 [P] [US1] Implement the iOS game screen:
+- [X] T052 [P] [US1] Implement the iOS game screen:
   - `iosApp/iosApp/Game/GameModel.swift`, which follows the same ownership as T036: lazy scope,
     `.task` only collects, close in `deinit`;
   - `GameRoot.swift`;
