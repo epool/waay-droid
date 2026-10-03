@@ -125,3 +125,18 @@ A first-time player completes a 5-card game in under 60 s. Time one unassisted r
 - Both grids scroll: Android `LazyVerticalGrid` and iOS `LazyVGrid` in a `ScrollView`.
 - **Pending:** the visual check at the largest font, with 64 numbers reachable and none clipped. It
   moves to Phase 9: the T088 font-scale screenshots and the T092 Dynamic Type pass.
+
+**2026-10-03: US5 languages (T082)**
+
+- Automated tests:
+  - StringsTest: both catalogs complete, and the reveal is a statement in every language;
+  - LanguageResolverTest: device-following default, explicit override, and the regional voice;
+  - G8: switching language mid-game re-resolves the text in place, keeps the same numbers, and the
+    next speech is in Spanish;
+  - S4: the Settings labels switch immediately.
+- **I1, verified on the iOS 27 simulator:** launching with the device language set to Spanish
+  (`-AppleLanguages (es-MX)`) shows the Spanish intro, "Piensa en un número del 1 al 31…", with
+  "Estoy listo".
+- **Pending:**
+  - the manual in-app switch to English mid-game on iOS (I6);
+  - A1 and A6 on Android, blocked by `adb` (see the T053 note).
