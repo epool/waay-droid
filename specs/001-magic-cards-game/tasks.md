@@ -298,7 +298,7 @@ for 1 and 31. Answering "No" to everything gives the invalid message.
 - [X] T041 [P] [US1] Write `shared/src/commonTest/kotlin/dev/epool/waay/game/presentation/GameViewModelTest.kt`,
   covering guarantees G1–G6, G11 and G13 of [game contract](./contracts/game-viewmodel.md), using
   Turbine and `FakeSpeaker` (speech assertions come in US3).
-- [ ] T042 [P] [US1] Write `androidApp/src/test/kotlin/dev/epool/waay/android/game/GameRobot.kt` and
+- [X] T042 [P] [US1] Write `androidApp/src/test/kotlin/dev/epool/waay/android/game/GameRobot.kt` and
   `GameFlowTest.kt` (Robolectric, robot pattern). The flow is Intro → "I'm ready" → 5 answers for 27
   → reveal shows 27 → New game → Intro. Run it with Robolectric `@Config(sdk = [26, 36])` so the
   Android 8.0 minimum is exercised (FR-030, analyze finding G2).
@@ -314,30 +314,30 @@ for 1 and 31. Answering "No" to everything gives the invalid message.
 
 ### Implementation for User Story 1
 
-- [ ] T044 [P] [US1] Implement the domain types in `shared/src/commonMain/kotlin/dev/epool/waay/game/domain/`:
+- [X] T044 [P] [US1] Implement the domain types in `shared/src/commonMain/kotlin/dev/epool/waay/game/domain/`:
   - `Answer.kt` (`public enum Answer { Yes, No }`, the only public domain type, because the UI
     actions use it);
   - `Card.kt` (`internal`; `bitValue` hidden; `numbers: List<Int>`);
   - `Deck.kt` (`internal`).
-- [ ] T045 [US1] Implement `shared/src/commonMain/kotlin/dev/epool/waay/game/domain/MagicDeck.kt`:
+- [X] T045 [US1] Implement `shared/src/commonMain/kotlin/dev/epool/waay/game/domain/MagicDeck.kt`:
   `create(cardCount)` builds the bit-exact cards in ascending order (makes T038 pass).
-- [ ] T046 [US1] Implement `shared/src/commonMain/kotlin/dev/epool/waay/game/domain/AnswerDecoder.kt`.
+- [X] T046 [US1] Implement `shared/src/commonMain/kotlin/dev/epool/waay/game/domain/AnswerDecoder.kt`.
   It returns `Result<Int, DecodeError>` (makes T039 pass).
-- [ ] T047 [US1] Implement `shared/src/commonMain/kotlin/dev/epool/waay/game/domain/GameEngine.kt`
+- [X] T047 [US1] Implement `shared/src/commonMain/kotlin/dev/epool/waay/game/domain/GameEngine.kt`
   (the pure reducer), `GameSnapshot`, `GamePhase` and `GameCommand` (makes T040 pass). Visibility: `internal` (plan visibility rule, C1).
-- [ ] T048 [US1] Add the Story 1 members to `shared/src/commonMain/kotlin/dev/epool/waay/core/i18n/Strings.kt` and `EnglishStrings.kt`:
+- [X] T048 [US1] Add the Story 1 members to `shared/src/commonMain/kotlin/dev/epool/waay/core/i18n/Strings.kt` and `EnglishStrings.kt`:
   - `intro(max: Int)`, `readyLabel`;
   - `progress(current: Int, total: Int)`, `cardQuestion`;
   - `yesLabel`, `noLabel`;
   - `reveal(number: Int)`, which must be a statement: "The number you thought of is… 27!";
   - `invalid(max: Int)`, `newGameLabel`;
   - `numberLabel(n)`.
-- [ ] T049 [US1] Implement the game presentation layer in
+- [X] T049 [US1] Implement the game presentation layer in
   `shared/src/commonMain/kotlin/dev/epool/waay/game/presentation/`:
   - `GameState.kt`, including the top-level `newGameLabel` for every phase (FR-006, SC-008),
     `GameAction.kt` and `GameEvent.kt`, per the contract;
   - `GameUiMapper.kt`, a pure `(GameSnapshot, Strings) -> GameState` that never maps `bitValue`.
-- [ ] T050 [US1] Implement `shared/src/commonMain/kotlin/dev/epool/waay/game/presentation/GameViewModel.kt`:
+- [X] T050 [US1] Implement `shared/src/commonMain/kotlin/dev/epool/waay/game/presentation/GameViewModel.kt`:
   - the `_state`/`state` pair with `stateIn(WhileSubscribed(5_000))`;
   - a `Channel` for events;
   - an inert init, with a `hasStarted` flag so re-subscribing never repeats start-up effects;
@@ -346,7 +346,7 @@ for 1 and 31. Answering "No" to everything gives the invalid message.
 
   Register it in `SharedModule.kt`, and add `ViewModelProvider.gameViewModel(scope)`. This makes
   T041 pass.
-- [ ] T051 [P] [US1] Implement `androidApp/src/main/kotlin/dev/epool/waay/android/game/GameScreen.kt`:
+- [X] T051 [P] [US1] Implement `androidApp/src/main/kotlin/dev/epool/waay/android/game/GameScreen.kt`:
   - `GameRoot`, which uses `koinViewModel()`, `collectAsStateWithLifecycle` and `ObserveAsEvents`
     for `NavigateToSettings`;
   - a stateless `GameScreen`, which renders Intro, Card (`LazyVerticalGrid(GridCells.Adaptive(...))`

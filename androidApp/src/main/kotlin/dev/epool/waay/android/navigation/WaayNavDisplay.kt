@@ -7,7 +7,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import dev.epool.waay.android.game.GamePlaceholder
+import dev.epool.waay.android.game.GameRoot
 import dev.epool.waay.android.settings.SettingsRoot
 
 /**
@@ -29,8 +29,8 @@ fun WaayNavDisplay(modifier: Modifier = Modifier) {
         entryProvider =
             entryProvider {
                 entry<GameKey> {
-                    GamePlaceholder(
-                        onSettingsClick = { if (backStack.lastOrNull() != SettingsKey) backStack.add(SettingsKey) },
+                    GameRoot(
+                        onNavigateToSettings = { if (backStack.lastOrNull() != SettingsKey) backStack.add(SettingsKey) },
                     )
                 }
                 entry<SettingsKey> {
