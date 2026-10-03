@@ -57,8 +57,14 @@ final class GameFlowUITests: XCTestCase {
         for _ in 0..<cards {
             let yes = app.buttons["card.yes"]
             XCTAssertTrue(yes.waitForExistence(timeout: 5))
+            let progress = app.staticTexts["card.progress"]
+            let progressBefore = progress.label
             let isOnCard = app.staticTexts["number.\(secret)"].exists
+            // Taps within 300 ms of a card appearing are ignored as accidental (FR-028, ADR-012).
+            Thread.sleep(forTimeInterval: 0.35)
             (isOnCard ? yes : app.buttons["card.no"]).tap()
+            let answered = NSPredicate { _, _ in !progress.exists || progress.label != progressBefore }
+            wait(for: [XCTNSPredicateExpectation(predicate: answered, object: nil)], timeout: 5)
         }
     }
 }

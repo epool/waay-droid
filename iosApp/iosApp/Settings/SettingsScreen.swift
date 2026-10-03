@@ -11,20 +11,27 @@ struct SettingsScreen: View {
         Form {
             Toggle(state.voiceLabel, isOn: voiceBinding)
                 .accessibilityIdentifier("settings.voice")
-            Picker(state.cardCountLabel, selection: cardCountBinding) {
-                ForEach(state.cardCountOptions, id: \.value) { option in
-                    Text(option.label).tag(option.value)
+            // Section headers are visible and carry the header trait for VoiceOver's rotor (FR-025).
+            Section(state.cardCountLabel) {
+                Picker(state.cardCountLabel, selection: cardCountBinding) {
+                    ForEach(state.cardCountOptions, id: \.value) { option in
+                        Text(option.label).tag(option.value)
+                    }
                 }
+                .pickerStyle(.inline)
+                .labelsHidden()
+                .accessibilityIdentifier("settings.cardCount")
             }
-            .pickerStyle(.inline)
-            .accessibilityIdentifier("settings.cardCount")
-            Picker(state.languageLabel, selection: languageBinding) {
-                ForEach(state.languageOptions, id: \.choice) { option in
-                    Text(option.label).tag(option.choice)
+            Section(state.languageLabel) {
+                Picker(state.languageLabel, selection: languageBinding) {
+                    ForEach(state.languageOptions, id: \.choice) { option in
+                        Text(option.label).tag(option.choice)
+                    }
                 }
+                .pickerStyle(.inline)
+                .labelsHidden()
+                .accessibilityIdentifier("settings.language")
             }
-            .pickerStyle(.inline)
-            .accessibilityIdentifier("settings.language")
         }
         .navigationTitle(state.title)
         .navigationBarTitleDisplayMode(.inline)

@@ -617,7 +617,7 @@ These tasks follow the official `adaptive` and `edge-to-edge` skills (ADR-008).
   - nothing ever placed across the hinge (FR-031, FR-032).
 
   Use it in `GameScreen.kt`.
-- [ ] T090 [P] Implement `iosApp/iosApp/Game/AdaptiveGameLayout.swift`: size classes choose a stacked
+- [X] T090 [P] Implement `iosApp/iosApp/Game/AdaptiveGameLayout.swift`: size classes choose a stacked
   or side-by-side layout, `LazyVGrid(.adaptive)` holds the numbers, and safe areas are respected.
 - [X] T091 Do an accessibility pass on Android (`GameScreen.kt`, `SettingsScreen.kt`):
   - `contentDescription` and semantics from the shared labels;
@@ -629,7 +629,7 @@ These tasks follow the official `adaptive` and `edge-to-edge` skills (ADR-008).
 
   Extend `GameFlowTest.kt` with semantic matchers and a state-restoration check (official
   testing-setup step 9).
-- [ ] T092 [P] Do an accessibility pass on iOS (`GameScreen.swift`, `SettingsScreen.swift`):
+- [X] T092 [P] Do an accessibility pass on iOS (`GameScreen.swift`, `SettingsScreen.swift`):
   - `accessibilityLabel` and `accessibilityAddTraits(.isHeader)`;
   - an announcement for each new card;
   - Dynamic Type up to AX5 without clipping;
