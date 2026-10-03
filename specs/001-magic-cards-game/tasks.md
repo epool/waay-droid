@@ -802,7 +802,7 @@ The owner asked, after the first CI runs, for the same UI coverage on both platf
 fixed against its existing requirement.
 
 - [X] T107 [P] Android `GameFlowTest.playsAFullRoundSurvivingInterruptionsThenStartsANewGame`: mid-game recreate, background and foreground, and a Settings round trip keep the same card and numbers; then reveal and start a new game. Mirrors the iOS `GameFlowUITests` (FR-029, FR-016b)
-- [ ] T108 [P] Android `LanguageSwitchTest`: a Spanish device starts in Spanish; switching to English mid-game re-renders the same card in English. Mirrors the iOS `LanguageSwitchUITests` (US5, FR-020, FR-021)
+- [X] T108 [P] Android `LanguageSwitchTest`: a Spanish device starts in Spanish; switching to English mid-game re-renders the same card in English. Mirrors the iOS `LanguageSwitchUITests` (US5, FR-020, FR-021)
 - [ ] T109 [P] Android `PreferencesPersistenceTest.freshInstallUsesTheDefaults`: the 1–31 intro, plus 5 cards, voice on and device language selected in Settings. Mirrors the iOS test of the same name (FR-024)
 - [ ] T110 Android `AccessibilityTest`: a full round at font scale 2.0 in portrait and landscape, with every control on screen (scrolling allowed). Mirrors the iOS `AccessibilityUITests`. Fix any clipping it exposes (FR-026, SC-006)
 - [ ] T111 [P] iOS `RapidInputUITests`: a double tap on Yes records one answer. Mirrors the Android `RapidInputTest` (FR-028)
