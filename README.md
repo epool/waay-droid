@@ -32,7 +32,7 @@ There are human review gates between the stages.
 
 | Spec | Scope | State |
 |---|---|---|
-| 001 | Magic cards game v1 (Android + iOS, randomized cards, TTS, EN/ES, settings, adaptive layouts and foldables) | implemented, awaiting acceptance |
+| 001 | Magic cards game v1 (Android + iOS, randomized cards, TTS, EN/ES, settings, adaptive layouts and foldables) | accepted, merged into `kmp` |
 
 ## Quick start
 

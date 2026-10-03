@@ -645,7 +645,7 @@ These tasks follow the official `adaptive` and `edge-to-edge` skills (ADR-008).
 
   Then give each card a fresh scroll state: `key(content.index)` around the grid in `GameScreen.kt`,
   and `.id(card.index)` on the card's `ScrollView` in `GameScreen.swift`.
-- [ ] T094 Verify manually on the foldable and tablet emulators (`android emulator create`) and on
+- [X] T094 Verify manually on the foldable and tablet emulators (`android emulator create`) and on
   an iPad simulator. Cover `specs/001-magic-cards-game/quickstart.md` scenarios A8–A10 and I8–I10, including the **iOS 17.x simulator**
   (FR-030). Also run a smoke game on an **API 26 (Android 8.0)** emulator (finding G2).
 
@@ -680,7 +680,7 @@ These tasks follow the official `adaptive` and `edge-to-edge` skills (ADR-008).
   - `AGENTS.md` §6, replacing "expected" with the real build, test and lint commands;
   - `README.md`, with a quick start and a status table;
   - `specs/001-magic-cards-game/quickstart.md`, with any corrections found during the work.
-- [ ] T101 Run the full [quickstart.md](./quickstart.md) validation, sections 1–3, on both platforms,
+- [X] T101 Run the full [quickstart.md](./quickstart.md) validation, sections 1–3, on both platforms,
   and fix any failures. Then run `/speckit-converge` until it reports converged.
 
 ---
@@ -783,3 +783,14 @@ Each increment keeps the earlier stories green.
 - [X] T106 Add the iOS app icon the owner requested at the verification gate, for parity with the Android launcher icon (T097):
   - `iosApp/iosApp/Assets.xcassets/AppIcon.appiconset` holds single-size 1024 px light (opaque), dark and tinted variants for iOS 18+ appearances;
   - they are rendered by `scripts/render-ios-app-icon.swift` from the same geometry as `ic_launcher_foreground.xml`.
+
+**Accepted by the owner on 2026-10-03.** T094 and T101 were closed with these checks waived, so they
+were not performed:
+- TalkBack and VoiceOver walkthroughs with real gestures (A10, I9, SC-006);
+- iPad Split View (I8);
+- SC-003, timing a first-time player;
+- listening to the voice in English and Spanish;
+- a run on a real Android 8.0 device;
+- iOS 17.x (I10), which is left to CI's `ios-minimum-os` job after the first push.
+
+Everything else is recorded in `quickstart.md`'s run log.

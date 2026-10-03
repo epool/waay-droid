@@ -248,3 +248,8 @@ plus `adb shell input`, reading the screen the way a player would.
   left for the acceptance gate.
 - **Section 3, SC-003:** needs a first-time human player and a stopwatch, so it's left for the
   acceptance gate. For reference, a scripted 5-card round takes about 10 s.
+
+**2026-10-03: acceptance**
+
+The owner accepted spec 001 at the verification gate. The checks listed under T101 in `tasks.md`
+were waived. iOS 17.x is still covered by CI's `ios-minimum-os` job once the branch is pushed.
