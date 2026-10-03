@@ -4,9 +4,9 @@ import android.content.Context
 import com.russhwolf.settings.ObservableSettings
 import com.russhwolf.settings.SharedPreferencesSettings
 import dev.epool.waay.core.locale.DeviceLocale
-import dev.epool.waay.core.speech.SilentSpeaker
 import dev.epool.waay.core.speech.Speaker
 import dev.epool.waay.core.speech.SpeechLanguage
+import dev.epool.waay.core.speech.TextToSpeechSpeaker
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -16,8 +16,8 @@ internal actual val platformModule: Module =
         single<ObservableSettings> {
             SharedPreferencesSettings(androidContext().getSharedPreferences(PREFERENCES_FILE, Context.MODE_PRIVATE))
         }
-        // Placeholders until US3 (TextToSpeechSpeaker) and US5 (AndroidDeviceLocale).
-        single<Speaker> { SilentSpeaker }
+        single<Speaker> { TextToSpeechSpeaker(androidContext()) }
+        // Placeholder until US5 (AndroidDeviceLocale).
         single<DeviceLocale> {
             object : DeviceLocale {
                 override fun current() = SpeechLanguage("en", null)
