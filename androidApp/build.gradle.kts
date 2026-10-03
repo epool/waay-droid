@@ -71,6 +71,15 @@ android {
         compose = true
     }
 
+    // Constitution VIII / ADR-011: every lint warning fails the build. lint.xml documents the few
+    // checks that are disabled and why.
+    lint {
+        warningsAsErrors = true
+        abortOnError = true
+        checkDependencies = true
+        lintConfig = file("lint.xml")
+    }
+
     testOptions {
         unitTests {
             isIncludeAndroidResources = true

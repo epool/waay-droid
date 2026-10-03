@@ -662,7 +662,7 @@ These tasks follow the official `adaptive` and `edge-to-edge` skills (ADR-008).
 - [X] T096 [P] Add Swift formatting: `.swift-format` at the repository root (indent 4, line length
   120), and a Gradle-independent check script, `scripts/swift-format-lint.sh`
   (`xcrun swift-format lint --strict --recursive iosApp/iosApp iosApp/WaayTests iosApp/WaayUITests`).
-- [ ] T097 [P] Configure Android Lint in `androidApp/build.gradle.kts` with `warningsAsErrors = true`
+- [X] T097 [P] Configure Android Lint in `androidApp/build.gradle.kts` with `warningsAsErrors = true`
   and `abortOnError = true`. Fix every finding.
 - [ ] T098 [P] Create `.github/workflows/ci.yml` with two jobs:
   - `android` (ubuntu-latest, Temurin 21):
