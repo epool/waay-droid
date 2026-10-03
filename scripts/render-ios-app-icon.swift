@@ -1,4 +1,5 @@
-#!/usr/bin/env swift  // Renders the iOS app icon from the same geometry as the Android adaptive icon
+#!/usr/bin/env swift
+// Renders the iOS app icon from the same geometry as the Android adaptive icon
 // (androidApp/src/main/res/drawable/ic_launcher_foreground.xml), so both platforms share one design.
 // Usage: scripts/render-ios-app-icon.swift   (writes into iosApp/iosApp/Assets.xcassets/AppIcon.appiconset)
 
