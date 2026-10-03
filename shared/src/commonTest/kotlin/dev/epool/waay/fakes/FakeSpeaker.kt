@@ -11,6 +11,9 @@ internal class FakeSpeaker : Speaker {
     )
 
     val utterances = mutableListOf<Utterance>()
+
+    fun texts(): List<String> = utterances.map { it.text }
+
     var stopCount = 0
         private set
 

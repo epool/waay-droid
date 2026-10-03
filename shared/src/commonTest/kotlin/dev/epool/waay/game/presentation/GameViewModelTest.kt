@@ -1,16 +1,23 @@
 package dev.epool.waay.game.presentation
 
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.hasSize
+import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
+import assertk.assertions.isGreaterThanOrEqualTo
 import assertk.assertions.isInstanceOf
 import assertk.assertions.isNotEqualTo
 import com.russhwolf.settings.MapSettings
 import dev.epool.waay.core.i18n.EnglishStrings
 import dev.epool.waay.core.i18n.StringsProvider
+import dev.epool.waay.fakes.FakeSpeaker
 import dev.epool.waay.fakes.MainDispatcherTest
 import dev.epool.waay.game.domain.Answer
 import dev.epool.waay.game.domain.Card
@@ -21,16 +28,24 @@ import dev.epool.waay.game.domain.GameCommand
 import dev.epool.waay.game.domain.GameEngine
 import dev.epool.waay.game.domain.MagicDeck
 import dev.epool.waay.settings.data.KeyValuePreferencesDataSource
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlin.random.Random
 import kotlin.test.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class GameViewModelTest : MainDispatcherTest() {
+    private val speaker = FakeSpeaker()
+    private val preferences = KeyValuePreferencesDataSource(MapSettings())
+
     private fun viewModel(random: Random = Random(1)) =
         GameViewModel(
-            preferencesDataSource = KeyValuePreferencesDataSource(MapSettings()),
+            preferencesDataSource = preferences,
             stringsProvider = StringsProvider(),
             deckFactory = DeckFactory { MagicDeck.create(it, random) },
+            speaker = speaker,
         )
 
     private suspend fun ReceiveTurbine<GameState>.answerTruthfully(
@@ -211,4 +226,105 @@ class GameViewModelTest : MainDispatcherTest() {
         assertThat(snapshotWithFirstCardBit(1).toGameState(EnglishStrings))
             .isEqualTo(snapshotWithFirstCardBit(4).toGameState(EnglishStrings))
     }
+
+    // US3 — G1 + FR-013: the intro is spoken once, exactly as shown, and not repeated on resubscription.
+    @Test
+    fun introIsSpokenOnceExactlyAsShown() =
+        runTest {
+            val viewModel = viewModel()
+            viewModel.state.test {
+                val intro = awaitItem().content as GameContentUi.Intro
+                assertThat(speaker.texts()).isEqualTo(listOf(intro.message))
+            }
+            advanceTimeBy(10_000)
+            viewModel.state.test { awaitItem() }
+
+            assertThat(speaker.utterances).hasSize(1)
+        }
+
+    // US3 — G2 + FR-013: each card is announced with exactly its on-screen progress and question.
+    @Test
+    fun eachCardIsAnnouncedWithItsOnScreenProgressAndQuestion() =
+        runTest {
+            val viewModel = viewModel()
+            viewModel.state.test {
+                awaitItem()
+                viewModel.onAction(GameAction.OnReadyClick)
+                val card = awaitItem().content as GameContentUi.Card
+
+                assertThat(speaker.texts().last()).isEqualTo("${card.progress}. ${card.question}")
+            }
+        }
+
+    // US3 — G3, G10: the reveal is spoken as shown; every new line is spoken (intro + 5 cards + reveal).
+    @Test
+    fun revealIsSpokenAndEveryLineIsSpokenOnce() =
+        runTest {
+            val viewModel = viewModel()
+            viewModel.state.test {
+                awaitItem()
+                viewModel.onAction(GameAction.OnReadyClick)
+                val revealed = answerTruthfully(viewModel, awaitItem(), secret = 27).content as GameContentUi.Revealed
+
+                assertThat(speaker.texts().last()).isEqualTo(revealed.message)
+                assertThat(speaker.utterances).hasSize(7)
+            }
+        }
+
+    // US3 — G4: the invalid-result message is spoken as shown.
+    @Test
+    fun invalidMessageIsSpoken() =
+        runTest {
+            val viewModel = viewModel()
+            viewModel.state.test {
+                awaitItem()
+                viewModel.onAction(GameAction.OnReadyClick)
+                val invalid = answerTruthfully(viewModel, awaitItem(), secret = 0).content as GameContentUi.Invalid
+
+                assertThat(speaker.texts().last()).isEqualTo(invalid.message)
+            }
+        }
+
+    // US3 — G9: with voice off nothing is spoken (FR-014).
+    @Test
+    fun nothingIsSpokenWhenVoiceIsOff() =
+        runTest {
+            preferences.setVoiceEnabled(false)
+            val viewModel = viewModel()
+            viewModel.state.test {
+                awaitItem()
+                viewModel.onAction(GameAction.OnReadyClick)
+                awaitItem()
+            }
+
+            assertThat(speaker.utterances).isEmpty()
+        }
+
+    // US3 — G9: turning the voice off mid-game stops any speech in progress.
+    @Test
+    fun turningVoiceOffStopsSpeech() =
+        runTest {
+            val viewModel = viewModel()
+            viewModel.state.test {
+                awaitItem()
+                preferences.setVoiceEnabled(false)
+                runCurrent()
+
+                assertThat(speaker.stopCount).isGreaterThanOrEqualTo(1)
+            }
+        }
+
+    // US3 — G12: clearing the ViewModel stops speech (ADR-001).
+    @Test
+    fun clearingTheViewModelStopsSpeech() =
+        runTest {
+            val store = ViewModelStore()
+            val viewModel =
+                ViewModelProvider.create(store, viewModelFactory { initializer { viewModel() } })[GameViewModel::class]
+            viewModel.state.test { awaitItem() }
+
+            store.clear()
+
+            assertThat(speaker.stopCount).isGreaterThanOrEqualTo(1)
+        }
 }
