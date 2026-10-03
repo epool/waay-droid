@@ -225,11 +225,11 @@ navigation. **No user-story work starts until this phase is complete.**
 
 ### 2e. Settings scaffold and navigation (screens get filled in by the stories)
 
-- [ ] T032 Write a failing test,
+- [X] T032 Write a failing test,
   `shared/src/commonTest/kotlin/dev/epool/waay/settings/presentation/SettingsViewModelTest.kt`, for
   guarantees S1 (reflects the persisted preferences or the defaults) and S5 (`OnBackClick` emits
   `NavigateBack` once), per [settings contract](./contracts/settings-viewmodel.md).
-- [ ] T033 Implement the settings presentation layer:
+- [X] T033 Implement the settings presentation layer:
   - `shared/src/commonMain/kotlin/dev/epool/waay/settings/presentation/SettingsState.kt` (title and
     back label for now);
   - `SettingsAction.kt`;
