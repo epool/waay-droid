@@ -7,22 +7,30 @@ import assertk.assertions.contains
 import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
 import assertk.assertions.isInstanceOf
+import assertk.assertions.isNotEqualTo
 import com.russhwolf.settings.MapSettings
+import dev.epool.waay.core.i18n.EnglishStrings
 import dev.epool.waay.core.i18n.StringsProvider
 import dev.epool.waay.fakes.MainDispatcherTest
 import dev.epool.waay.game.domain.Answer
+import dev.epool.waay.game.domain.Card
+import dev.epool.waay.game.domain.CardCount
+import dev.epool.waay.game.domain.Deck
 import dev.epool.waay.game.domain.DeckFactory
+import dev.epool.waay.game.domain.GameCommand
+import dev.epool.waay.game.domain.GameEngine
 import dev.epool.waay.game.domain.MagicDeck
 import dev.epool.waay.settings.data.KeyValuePreferencesDataSource
 import kotlinx.coroutines.test.runTest
+import kotlin.random.Random
 import kotlin.test.Test
 
 class GameViewModelTest : MainDispatcherTest() {
-    private fun viewModel() =
+    private fun viewModel(random: Random = Random(1)) =
         GameViewModel(
             preferencesDataSource = KeyValuePreferencesDataSource(MapSettings()),
             stringsProvider = StringsProvider(),
-            deckFactory = DeckFactory { MagicDeck.create(it) },
+            deckFactory = DeckFactory { MagicDeck.create(it, random) },
         )
 
     private suspend fun ReceiveTurbine<GameState>.answerTruthfully(
@@ -157,4 +165,50 @@ class GameViewModelTest : MainDispatcherTest() {
                 card.numbers.forEach { assertThat(it.label).isEqualTo(it.value.toString()) }
             }
         }
+
+    // G5 (US2): a new game deals a freshly shuffled deck (FR-008, FR-009).
+    @Test
+    fun newGameDealsAFreshlyShuffledDeck() =
+        runTest {
+            val viewModel = viewModel(Random(99))
+            viewModel.state.test {
+                awaitItem()
+                viewModel.onAction(GameAction.OnReadyClick)
+                val firstGame = (awaitItem().content as GameContentUi.Card).numbers
+
+                viewModel.onAction(GameAction.OnNewGameClick)
+                awaitItem()
+                viewModel.onAction(GameAction.OnReadyClick)
+                val secondGame = (awaitItem().content as GameContentUi.Card).numbers
+
+                assertThat(secondGame).isNotEqualTo(firstGame)
+            }
+        }
+
+    // G13 (US2): the hidden mapping is invisible — same displayed numbers, different bit values,
+    // identical UI state (FR-011).
+    @Test
+    fun hiddenBitMappingDoesNotReachTheUi() {
+        val numbers = listOf(3, 1, 7, 5)
+
+        fun snapshotWithFirstCardBit(bitValue: Int) =
+            GameEngine.reduce(
+                GameEngine.start(
+                    Deck(
+                        cardCount = CardCount.all.first(),
+                        cards =
+                            listOf(
+                                Card(bitValue, numbers),
+                                Card(2, listOf(2, 3, 6, 7)),
+                                Card(4 xor bitValue xor 1, listOf(4, 5, 6, 7)),
+                            ),
+                    ),
+                ),
+                GameCommand.Ready,
+                newDeck = { error("unused") },
+            )
+
+        assertThat(snapshotWithFirstCardBit(1).toGameState(EnglishStrings))
+            .isEqualTo(snapshotWithFirstCardBit(4).toGameState(EnglishStrings))
+    }
 }
