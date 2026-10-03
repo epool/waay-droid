@@ -60,6 +60,8 @@ xcodebuild test -project iosApp/iosApp.xcodeproj -scheme Waay \
 | Roborazzi: 3 widths × 3 heights, font scale 1.5 and 2.0, and the tabletop and book postures, for each Game phase | SC-009, FR-026, FR-031, FR-032 |
 | Robolectric robot flow, Intro → Ready → N answers → Revealed → New game, on API 26 and 36, plus a semantics-only run | US1, FR-025 |
 | `RapidInputTest`, `ConfigurationChangeTest`, `CardScrollTest`, `PreferencesPersistenceTest` | FR-028, FR-029, FR-003a, SC-005 |
+| `GameViewModelTest.speechFailuresNeverBlockTheGame` (a speaker that throws on every call) and Robolectric `TextToSpeechSpeakerTest` (flush queue mode, pending first line, `stop`, failed init) | FR-016, FR-015 |
+| Roborazzi `SettingsScreenScreenshotTest`: EN with voice on, ES with voice off, font 2.0; reviewed for non-colour selection cues | FR-027, FR-026, FR-019 |
 | XCUITest: `GameFlowUITests` (rotation, background, Settings round trip), `AccessibilityUITests` (AX5, both orientations), `CardScrollUITests`, `LanguageSwitchUITests`, `PreferencesPersistenceUITests` | US1, FR-025, FR-026, FR-003a, US5, SC-005 |
 
 ## 2. Manual scenarios
@@ -227,15 +229,16 @@ plus `adb shell input`, reading the screen the way a player would.
     Silicon host (emulator 37.2), even with a cold boot and SwiftShader. API 26 stays covered by the
     Robolectric `sdk = 26` flow.
 
-**2026-10-03: full validation (T101)**
+**2026-10-03: full validation (T101), re-run at HEAD after convergence (T103–T105)**
 
 - **Section 1, from `clean` with `--no-build-cache`:** all green.
   - spotless;
   - strict lint: 0 issues;
-  - `:shared:allTests`: 64 Android-host + 67 iosSimulatorArm64 tests;
+  - `:shared:allTests`: 69 Android-host tests (including Robolectric `TextToSpeechSpeakerTest`) and
+    68 iosSimulatorArm64 tests;
   - `koverVerify`: 98.5%;
-  - 11 Robolectric tests;
-  - Roborazzi verify: 61 baselines;
+  - 13 Robolectric app tests;
+  - Roborazzi verify: 64 baselines;
   - `assembleDebug`;
   - swift-format lint;
   - `xcodegen`: no project drift;
