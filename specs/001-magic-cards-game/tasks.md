@@ -555,7 +555,7 @@ app, and everything, including speech, is in English, without restarting the gam
 - [X] T080 [US5] Add `languageLabel`, `languageOptions` and `selectedLanguage` to `SettingsState`,
   and handle `OnLanguageSelect` in `SettingsViewModel.kt`. Add the language pickers to the Android
   `SettingsScreen.kt` and the iOS `SettingsScreen.swift`.
-- [ ] T081 [P] [US5] Localize the app display name:
+- [X] T081 [P] [US5] Localize the app display name:
   - Android: `androidApp/src/main/res/values/strings.xml` and `values-es/strings.xml`, with
     `app_name` "Wáay";
   - iOS: `iosApp/iosApp/InfoPlist.xcstrings`, with `CFBundleDisplayName` in EN and ES.
