@@ -33,4 +33,7 @@ internal interface Strings {
     val newGameLabel: String
 
     fun numberLabel(number: Int): String
+
+    // US3 — voice
+    val voiceLabel: String
 }

@@ -437,8 +437,11 @@ the reveal. With the voice off, nothing is spoken, and the same text appears on 
 
 ### Implementation for User Story 3
 
-- [ ] T061 [US3] Add `cardPrompt(position: Int)` ("Card 3: is your number here?") and `voiceLabel` to
-  `shared/src/commonMain/kotlin/dev/epool/waay/core/i18n/Strings.kt` and `EnglishStrings.kt`.
+- [ ] T061 [US3] Add `voiceLabel` to `shared/src/commonMain/kotlin/dev/epool/waay/core/i18n/Strings.kt`
+  and `EnglishStrings.kt`. *Implementation note (FR-013):* no separate `cardPrompt` string. The
+  spoken card line is the on-screen progress plus the question, for example "Card 3 of 5. Is your
+  number on this card?". It names the position, as clarified, and is always identical to text on
+  screen.
 - [ ] T062 [US3] Add speech orchestration to `shared/src/commonMain/kotlin/dev/epool/waay/game/presentation/GameViewModel.kt`:
   - on each phase change, speak through `Speaker`, only when `voiceEnabled` is true;
   - observe `voiceEnabled` and call `stop()` when it turns false;

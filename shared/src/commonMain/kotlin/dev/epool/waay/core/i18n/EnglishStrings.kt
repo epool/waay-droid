@@ -27,4 +27,6 @@ internal object EnglishStrings : Strings {
     override val newGameLabel: String = "New game"
 
     override fun numberLabel(number: Int): String = number.toString()
+
+    override val voiceLabel: String = "Magician's voice"
 }
