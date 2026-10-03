@@ -174,7 +174,9 @@ plus `adb shell input`, reading the screen the way a player would.
   - **Speech evidence:** with voice on, one speech player per line (intro, 5 cards, reveal) is
     registered by `com.google.android.tts` in `dumpsys audio`. Audibility itself was not judged by
     ear.
-  - **A10 (font scale 2.0):** a full 7-card round decodes 100 correctly. **This run found T102:** a
+  - **A10 (system `font_scale` 2.0, read back from settings):** a full 7-card round decodes 100
+    correctly. Android 14+ scales large text non-linearly, so the visual evidence for the largest
+    font is the Roborazzi `font2.0` baselines. **This run found T102:** a
     new card kept the previous card's scroll offset, hiding its first numbers. Fixed and re-verified
     on the emulator; see FR-003a.
 - **Android, Pixel 9 Pro Fold (API 36),** AVD `Waay_Fold`, created with
@@ -193,8 +195,10 @@ plus `adb shell input`, reading the screen the way a player would.
     appears in the unified log. With voice on, the queue runs for the intro.
   - **I9 (Accessibility XXXL, portrait and landscape):** `AccessibilityUITests` plays a round with
     every control hittable. Screenshots were reviewed: nothing is clipped, and overflow scrolls.
-- **iOS, iPad Pro 11-inch M5 (iOS 27.0) and iPhone 16 (iOS 18.6):** the full iOS suite passes,
-  including rotation, backgrounding and the Settings round trip. On iPad the card is side by side.
+- **iOS, iPad Pro 11-inch M5 (iOS 27.0) and iPhone 16 (iOS 18.6):** the full iOS suite (8 UI
+  tests) passes, including rotation, backgrounding, the Settings round trip, the language switch
+  and the T102 scroll fix. On iPad the card is side by side. `CardScrollUITests` skips there
+  because all 64 numbers fit without scrolling.
 - **Not done:**
   - **TalkBack and VoiceOver walkthroughs (A10, I9):** `adb input` taps bypass TalkBack's
     explore-by-touch, and simulators have no VoiceOver gestures. The semantics are covered by

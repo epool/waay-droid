@@ -222,7 +222,7 @@ the app and reopen it. Check that all three choices are still in effect.
 - **Large games:** a 7-card game shows 64 numbers per card. All of them must be readable and
   reachable, including at the largest system text sizes, by scrolling if necessary. Every new card
   starts at the top of its numbers. Otherwise numbers left above the visible area by the previous
-  card's scrolling could be missed, leading to a wrong answer (found during T094 verification).
+  card's scrolling could be missed, leading to a wrong answer.
 - **Voice unavailable or failing mid-game:** play continues with on-screen text only, with no
   blocking error.
 - **Screen reader and magician voice:** screen-reader users can turn the magician voice off so it
