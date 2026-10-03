@@ -14,7 +14,7 @@ import kotlin.test.BeforeTest
  * for an [UnconfinedTestDispatcher] (Lackner's testing skill, kotlinx-coroutines-test).
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-internal abstract class MainDispatcherTest {
+abstract class MainDispatcherTest {
     protected val testDispatcher: TestDispatcher = UnconfinedTestDispatcher()
 
     @BeforeTest
