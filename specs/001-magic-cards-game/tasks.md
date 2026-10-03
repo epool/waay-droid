@@ -487,25 +487,25 @@ the reveal. With the voice off, nothing is spoken, and the same text appears on 
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T067 [P] [US4] Extend `SettingsViewModelTest.kt` with **S2**: `OnCardCountSelect(n)` persists
+- [X] T067 [P] [US4] Extend `SettingsViewModelTest.kt` with **S2**: `OnCardCountSelect(n)` persists
   for "3–7 inclusive", values outside the range are ignored, and the option labels read like
   "5 cards (1–31)".
-- [ ] T068 [P] [US4] Extend `GameViewModelTest.kt` with **G7**: changing the card count resets to
+- [X] T068 [P] [US4] Extend `GameViewModelTest.kt` with **G7**: changing the card count resets to
   Intro with the new N. The invitation states the new range, and Card shows `numbersPerCard`
   numbers. When the change happens with **no subscriber** (the player is in Settings), the intro
   speech stays pending and is spoken only on the next subscription (finding U1).
 
 ### Implementation for User Story 4
 
-- [ ] T069 [US4] Add `cardCountLabel` and `cardCountOption(count, max)` to `Strings` and
+- [X] T069 [US4] Add `cardCountLabel` and `cardCountOption(count, max)` to `Strings` and
   `EnglishStrings`. Add `cardCountOptions` and `selectedCardCount` to `SettingsState`, and handle
   `OnCardCountSelect` in `SettingsViewModel.kt` (makes T067 pass).
-- [ ] T070 [US4] Make `GameViewModel.kt` observe `cardCount` from `PreferencesDataSource`. A change
+- [X] T070 [US4] Make `GameViewModel.kt` observe `cardCount` from `PreferencesDataSource`. A change
   resets the game to Intro with a fresh deck (FR-018). Intro speech is deferred while `state` has
   no subscribers, using `subscriptionCount`. This makes T068 pass.
-- [ ] T071 [P] [US4] Add the card-count picker to the Android settings screen,
+- [X] T071 [P] [US4] Add the card-count picker to the Android settings screen,
   `androidApp/.../settings/SettingsScreen.kt` (single-choice rows, accessible).
-- [ ] T072 [P] [US4] Add the card-count picker to the iOS settings screen,
+- [X] T072 [P] [US4] Add the card-count picker to the iOS settings screen,
   `iosApp/iosApp/Settings/SettingsScreen.swift` (`Picker` with an inline style).
 - [ ] T073 [US4] Verify `specs/001-magic-cards-game/quickstart.md` scenarios A4 and I4: 7 cards gives 64 numbers, and they scroll at the
   largest font size.

@@ -115,3 +115,13 @@ A first-time player completes a 5-card game in under 60 s. Time one unassisted r
   1. Play a round with the voice on, and listen.
   2. On Android, disable the TTS engine (Settings → Accessibility → Text-to-speech) and confirm the
      game still plays silently.
+
+**2026-10-03: US4 card count (T073)**
+
+- Automated:
+  - S2: options 3–7 with range labels, values outside the range ignored, and the choice persisted.
+  - G7: the reset to Intro states the new range, and 7 cards show 64 numbers.
+  - The intro speech is deferred while the game screen is away.
+- Both grids scroll: Android `LazyVerticalGrid` and iOS `LazyVGrid` in a `ScrollView`.
+- **Pending:** the visual check at the largest font, with 64 numbers reachable and none clipped. It
+  moves to Phase 9: the T088 font-scale screenshots and the T092 Dynamic Type pass.
