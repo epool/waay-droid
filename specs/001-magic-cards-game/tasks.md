@@ -771,3 +771,9 @@ Each increment keeps the earlier stories green.
   - `android-cli` for running and inspecting the app.
 - Never hand-edit `project.pbxproj`. Change `iosApp/project.yml` and run `xcodegen`.
 - Never `git push`.
+
+## Phase 11: Convergence
+
+- [ ] T103 CRITICAL: add a `commonTest` case in `shared/src/commonTest/kotlin/dev/epool/waay/game/presentation/GameViewModelTest.kt` where the `Speaker` throws on `speak` and `stop`, and a full game still reaches the reveal. Then guard the `GameViewModel` speaker calls (log and continue) per Constitution VI, FR-016 (partial)
+- [ ] T104 CRITICAL: add a Robolectric host test for `shared/src/androidMain/kotlin/dev/epool/waay/core/speech/TextToSpeechSpeaker.kt`: every line is queued with `QUEUE_FLUSH`, which interrupts the previous one, and `stop()` stops the engine. Per Constitution VI, FR-015 (partial)
+- [ ] T105 CRITICAL: add Roborazzi baselines for the Settings screen in `androidApp/src/test/kotlin/dev/epool/waay/android/screenshots/SettingsScreenScreenshotTest.kt` (voice on and off, a selected card count and language), and review them for non-colour selection cues. Per Constitution VI, FR-027 (partial)
