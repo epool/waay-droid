@@ -151,55 +151,55 @@ navigation. **No user-story work starts until this phase is complete.**
 
 ### 2b. Core types and services
 
-- [ ] T014 [P] Write a failing test, `shared/src/commonTest/kotlin/dev/epool/waay/core/domain/ResultTest.kt`,
+- [X] T014 [P] Write a failing test, `shared/src/commonTest/kotlin/dev/epool/waay/core/domain/ResultTest.kt`,
   covering `map`, `onSuccess`, `onFailure` and `asEmptyResult`.
-- [ ] T015 [P] Implement `shared/src/commonMain/kotlin/dev/epool/waay/core/domain/Result.kt` and
+- [X] T015 [P] Implement `shared/src/commonMain/kotlin/dev/epool/waay/core/domain/Result.kt` and
   `Error.kt`, using Lackner's error-handling skill: `Result<out D, out E : Error>`, `EmptyResult`,
   and the extensions. Visibility: `internal` (plan visibility rule, C1).
-- [ ] T016 [P] Implement `shared/src/commonMain/kotlin/dev/epool/waay/core/logging/Log.kt`: a Kermit
+- [X] T016 [P] Implement `shared/src/commonMain/kotlin/dev/epool/waay/core/logging/Log.kt`: a Kermit
   `Logger` with the tag `Waay`.
-- [ ] T017 [P] Define `shared/src/commonMain/kotlin/dev/epool/waay/core/speech/Speaker.kt` and
+- [X] T017 [P] Define `shared/src/commonMain/kotlin/dev/epool/waay/core/speech/Speaker.kt` and
   `SpeechLanguage.kt`, per [platform-services](./contracts/platform-services.md). Speech must never
   throw (FR-016).
-- [ ] T018 [P] Define `shared/src/commonMain/kotlin/dev/epool/waay/core/locale/DeviceLocale.kt`
+- [X] T018 [P] Define `shared/src/commonMain/kotlin/dev/epool/waay/core/locale/DeviceLocale.kt`
   (interface), per [platform-services](./contracts/platform-services.md).
-- [ ] T019 [P] Define `shared/src/commonMain/kotlin/dev/epool/waay/core/i18n/AppLanguage.kt`
+- [X] T019 [P] Define `shared/src/commonMain/kotlin/dev/epool/waay/core/i18n/AppLanguage.kt`
   (`enum AppLanguage { English, Spanish }`) and `Strings.kt`.
   - `Strings` is the interface with every user-facing text.
   - Its members are added per story. Here, add `appTitle`, `settingsLabel`, `settingsTitle` and
     `backLabel`.
-- [ ] T020 [P] Implement `shared/src/commonMain/kotlin/dev/epool/waay/core/i18n/EnglishStrings.kt`
+- [X] T020 [P] Implement `shared/src/commonMain/kotlin/dev/epool/waay/core/i18n/EnglishStrings.kt`
   for the members defined so far.
-- [ ] T021 Create the test fakes:
+- [X] T021 Create the test fakes:
   - `shared/src/commonTest/kotlin/dev/epool/waay/fakes/FakeSpeaker.kt`, which records
     `speak(text, language)` and `stop()`;
   - `FakeDeviceLocale.kt`;
-  - `MainDispatcherExtension.kt`, a helper that sets `Dispatchers.setMain(UnconfinedTestDispatcher())`.
+  - `MainDispatcherTest.kt`, a base class that sets `Dispatchers.setMain(UnconfinedTestDispatcher())`.
 
 ### 2c. Preferences store (domain and data)
 
-- [ ] T022 [P] Write a failing test,
+- [X] T022 [P] Write a failing test,
   `shared/src/commonTest/kotlin/dev/epool/waay/settings/data/KeyValuePreferencesDataSourceTest.kt`,
   using `MapSettings`. It covers these rules:
   - the defaults are "cardCount 5, voiceEnabled true, languageChoice Device";
   - "Invalid stored values fall back to the default" for a card count outside 3–7;
   - "Unknown keys fall back to `Device`";
   - the `preferences` Flow "emits current value first" and then emits on every setter.
-- [ ] T023 [P] Implement `shared/src/commonMain/kotlin/dev/epool/waay/game/domain/CardCount.kt`:
+- [X] T023 [P] Implement `shared/src/commonMain/kotlin/dev/epool/waay/game/domain/CardCount.kt`:
   - `CardCount.of(value): Result<CardCount, CardCountError>`;
   - the rule "3–7 inclusive";
   - derived `maxNumber = 2^value − 1` and `numbersPerCard = 2^(value−1)`;
   - `DEFAULT = 5`.
 
   Visibility: `internal` (plan visibility rule, C1). Write the test first, in `shared/src/commonTest/kotlin/dev/epool/waay/game/domain/CardCountTest.kt`.
-- [ ] T024 Implement the settings domain:
+- [X] T024 Implement the settings domain:
   - `shared/src/commonMain/kotlin/dev/epool/waay/settings/domain/LanguageChoice.kt`
     (`Device, English, Spanish`, each with a stable string key);
   - `Preferences.kt`;
   - `PreferencesDataSource.kt`.
 
   Visibility: `internal` (plan visibility rule, C1).
-- [ ] T025 Implement `shared/src/commonMain/kotlin/dev/epool/waay/settings/data/KeyValuePreferencesDataSource.kt`
+- [X] T025 Implement `shared/src/commonMain/kotlin/dev/epool/waay/settings/data/KeyValuePreferencesDataSource.kt`
   over `ObservableSettings` and the multiplatform-settings coroutines extensions. This makes T022 pass.
   Visibility: `internal` (plan visibility rule, C1).
 
