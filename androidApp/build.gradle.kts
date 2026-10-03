@@ -115,6 +115,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.core)
 
     testImplementation(libs.junit4)
+    testImplementation(libs.assertk)
     testImplementation(libs.robolectric)
     testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(libs.androidx.compose.ui.test.junit4)

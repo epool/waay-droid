@@ -9,9 +9,13 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isHeading
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.lifecycle.Lifecycle
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import assertk.assertThat
+import assertk.assertions.isEqualTo
 import dev.epool.waay.android.MainActivity
 import org.junit.After
 import org.junit.Rule
@@ -39,6 +43,37 @@ class GameFlowTest {
             .assertIntro()
             .tapReady()
             .answerTruthfully(secret = 27)
+            .assertRevealed(secret = 27)
+            .tapNewGame()
+            .assertIntro()
+    }
+
+    // FR-029 / FR-016b, mirroring iOS GameFlowUITests: rotation (Activity recreation), going to the
+    // background and a Settings round trip mid-game all keep the same card and numbers.
+    @Test
+    fun playsAFullRoundSurvivingInterruptionsThenStartsANewGame() {
+        val robot =
+            GameRobot(rule)
+                .tapReady()
+                .answerTruthfully(secret = 27, cards = 2)
+        val progressBefore = robot.progress()
+        val numbersBefore = robot.numbersShown()
+
+        rule.activityRule.scenario.recreate()
+        assertThat(robot.progress()).isEqualTo(progressBefore)
+        assertThat(robot.numbersShown()).isEqualTo(numbersBefore)
+
+        rule.activityRule.scenario.moveToState(Lifecycle.State.CREATED)
+        rule.activityRule.scenario.moveToState(Lifecycle.State.RESUMED)
+        assertThat(robot.progress()).isEqualTo(progressBefore)
+
+        rule.onNodeWithTag("toolbar.settings").performClick()
+        rule.onNodeWithContentDescription("Back").performClick()
+        assertThat(robot.progress()).isEqualTo(progressBefore)
+        assertThat(robot.numbersShown()).isEqualTo(numbersBefore)
+
+        robot
+            .answerTruthfully(secret = 27, cards = 3)
             .assertRevealed(secret = 27)
             .tapNewGame()
             .assertIntro()

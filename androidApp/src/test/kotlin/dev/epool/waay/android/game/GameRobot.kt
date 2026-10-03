@@ -1,5 +1,7 @@
 package dev.epool.waay.android.game
 
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.AndroidComposeTestRule
@@ -47,6 +49,25 @@ class GameRobot(
             waitOutAnswerCooldown()
             rule.onNodeWithTag(tag).performClick()
         }
+
+    /** The visible card's progress label, e.g. "Card 2 of 5". */
+    fun progress(): String =
+        rule
+            .onNodeWithTag("card.progress")
+            .fetchSemanticsNode()
+            .config[SemanticsProperties.Text]
+            .joinToString { it.text }
+
+    /** The numbers on the visible card, as their `number.N` test tags. */
+    fun numbersShown(): Set<String> =
+        rule
+            .onAllNodes(
+                SemanticsMatcher("is a card number") {
+                    SemanticsProperties.TestTag in it.config && it.config[SemanticsProperties.TestTag].startsWith("number.")
+                },
+            ).fetchSemanticsNodes()
+            .map { it.config[SemanticsProperties.TestTag] }
+            .toSet()
 
     fun assertRevealed(secret: Int) =
         apply {
