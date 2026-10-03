@@ -35,13 +35,13 @@ demoed on its own.
 
 **Purpose**: project skeleton, build configuration and tooling. Versions come only from ADR-000.
 
-- [ ] T001 Create `settings.gradle.kts`:
+- [X] T001 Create `settings.gradle.kts`:
   - `rootProject.name = "waay"`;
   - `include(":shared", ":androidApp")`;
   - `enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")`;
   - `pluginManagement` and `dependencyResolutionManagement` repositories (google, mavenCentral);
   - the `org.gradle.toolchains.foojay-resolver-convention` plugin, version 1.0.0.
-- [ ] T002 Create `gradle/libs.versions.toml` with the ADR-000 matrix **verbatim**:
+- [X] T002 Create `gradle/libs.versions.toml` with the ADR-000 matrix **verbatim**:
   - Toolchain: kotlin 2.4.20, agp 9.3.3, skie 0.10.15.
   - Shared libraries: coroutines 1.11.0, serialization 1.11.0, jetbrains-lifecycle 2.11.0, koin 4.2.2,
     multiplatform-settings 1.3.0, kermit 2.2.0.
@@ -51,23 +51,23 @@ demoed on its own.
     androidx-lifecycle 2.11.0, navigation3 1.2.0.
   - Quality: spotless 8.10.3, ktlint 1.8.0, compose-rules 0.6.7, kover 0.9.9.
   - SDK levels: android-minSdk 26, android-compileSdk 36, android-targetSdk 36.
-- [ ] T003 Create the root `build.gradle.kts`:
+- [X] T003 Create the root `build.gradle.kts`:
   - every plugin with `apply false`;
   - Spotless: ktlint 1.8.0 plus `io.nlopez.compose.rules:ktlint` 0.6.7 for `**/*.kt` and `**/*.kts`,
     excluding `**/build/**`.
 
   Also create `.editorconfig`, with `ktlint_code_style = ktlint_official` and the compose-rules
   settings.
-- [ ] T004 [P] Create `gradle.properties`:
+- [X] T004 [P] Create `gradle.properties`:
   - `org.gradle.configuration-cache=true`;
   - `org.gradle.caching=true`;
   - `org.gradle.parallel=true`;
   - `kotlin.code.style=official`;
   - `android.useAndroidX=true`;
   - JVM args `-Xmx4g`.
-- [ ] T005 Create `shared/build.gradle.kts`:
-  - Plugins: `kotlin.multiplatform`, `com.android.kotlin.multiplatform.library`, `co.touchlab.skie`
-    and `org.jetbrains.kotlinx.kover`.
+- [X] T005 Create `shared/build.gradle.kts`:
+  - Plugins: `kotlin.multiplatform`, `com.android.kotlin.multiplatform.library` and `co.touchlab.skie`.
+    Kover is applied in T095, where it is first used.
   - `kotlin { explicitApi() }`.
   - `androidLibrary { namespace = "dev.epool.waay.shared"; compileSdk = 36; minSdk = 26; withHostTest {} }`.
   - `iosArm64()` and `iosSimulatorArm64()`, with `binaries.framework { baseName = "Shared"; isStatic = true }`.
@@ -76,9 +76,9 @@ demoed on its own.
   - commonTest dependencies: kotlin-test, assertk, coroutines-test, turbine,
     multiplatform-settings-test.
   - androidMain dependencies: koin-android.
-- [ ] T006 Create `androidApp/build.gradle.kts`:
+- [X] T006 Create `androidApp/build.gradle.kts`:
   - Plugins: `com.android.application`, `org.jetbrains.kotlin.plugin.compose`,
-    `org.jetbrains.kotlin.plugin.serialization` and Roborazzi. No `kotlin.android`, because AGP 9
+    `org.jetbrains.kotlin.plugin.serialization`. Roborazzi is applied in T088. No `kotlin.android`, because AGP 9
     has built-in Kotlin.
   - `namespace = "dev.epool.waay.android"`, `applicationId = "dev.epool.waay"`, min 26,
     compile/target 36.
@@ -91,9 +91,9 @@ demoed on its own.
       serialization-core;
     - test: junit4, robolectric, compose ui-test-junit4, roborazzi(-compose, -junit-rule),
       androidx-test-ext-junit.
-- [ ] T007 [P] Create `androidApp/stability_config.conf`, marking `kotlin.collections.List` and
+- [X] T007 [P] Create `androidApp/stability_config.conf`, marking `kotlin.collections.List` and
   `dev.epool.waay.**.presentation.**` as stable (ADR-011).
-- [ ] T008 Create `iosApp/project.yml` (XcodeGen):
+- [X] T008 Create `iosApp/project.yml` (XcodeGen):
   - app target `Waay`, bundle id `dev.epool.waay`, deployment target iOS 17.0, Swift 6 language mode;
   - synced folder `iosApp/`;
   - a pre-build script `cd "$SRCROOT/.." && ./gradlew :shared:embedAndSignAppleFrameworkForXcode`;
@@ -101,7 +101,7 @@ demoed on its own.
   - `FRAMEWORK_SEARCH_PATHS` and `OTHER_LDFLAGS` per the KMP direct-integration docs;
   - targets `WaayTests` (Swift Testing) and `WaayUITests` (XCUITest);
   - scheme `Waay`.
-- [ ] T009 Add minimal compile-only entry points:
+- [X] T009 Add minimal compile-only entry points:
   - `shared/src/commonMain/kotlin/dev/epool/waay/core/AppInfo.kt` (`public object AppInfo { public const val NAME: String = "Wáay" }`);
   - `androidApp/src/main/AndroidManifest.xml`;
   - `androidApp/src/main/kotlin/dev/epool/waay/android/MainActivity.kt`, with `enableEdgeToEdge()`
@@ -109,9 +109,9 @@ demoed on its own.
   - `iosApp/iosApp/WaayApp.swift`, a placeholder `Text(AppInfo.shared.NAME)`.
 
   Then run `xcodegen --spec iosApp/project.yml`.
-- [ ] T010 Verify the skeleton builds:
+- [X] T010 Verify the skeleton builds:
   - `./gradlew spotlessApply :shared:compileKotlinIosSimulatorArm64 :androidApp:assembleDebug`;
-  - `xcodebuild build -project iosApp/iosApp.xcodeproj -scheme Waay -destination 'platform=iOS Simulator,name=iPhone 16'`.
+  - `xcodebuild build -project iosApp/iosApp.xcodeproj -scheme Waay -destination 'platform=iOS Simulator,name=iPhone 17,OS=27.0'`.
 
   Record any Kotlin/Xcode compatibility warnings in `research.md` under ADR-000.
 

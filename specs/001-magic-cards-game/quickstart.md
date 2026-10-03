@@ -9,7 +9,7 @@ This guide proves the feature works end-to-end. Run it at the verification gate.
 
 - JDK 21. `./gradlew` provisions Gradle 9.7.0, and toolchains provision anything else.
 - **Android:**
-  - Android SDK with platform 36: `android sdk install platforms/android-36`.
+  - Android SDK with platform 37.1: `android sdk install platforms/android-37.1`.
   - Android CLI (`android`).
   - An emulator for each form factor: phone, foldable and tablet (`android emulator create …`), plus
     an **API 26 (Android 8.0)** phone emulator for the minimum-version smoke run (FR-030).
@@ -29,7 +29,7 @@ This guide proves the feature works end-to-end. Run it at the verification gate.
 ./gradlew :androidApp:assembleDebug
 xcodegen --spec iosApp/project.yml
 xcodebuild test -project iosApp/iosApp.xcodeproj -scheme Waay \
-  -destination 'platform=iOS Simulator,name=iPhone 16'           # Swift Testing + XCUITest smoke
+  -destination 'platform=iOS Simulator,name=iPhone 17,OS=27.0'   # Swift Testing + XCUITest smoke
 xcrun swift-format lint --strict --recursive iosApp/
 ```
 
@@ -68,7 +68,7 @@ Inspect the UI with `android screen` and `android layout`.
 
 ### iOS
 
-Run `xcodebuild … -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest'` and also with
+Run `xcodebuild … -destination 'platform=iOS Simulator,name=iPhone 17,OS=27.0'` and also with
 `OS=17.x`.
 
 | # | Scenario | Expected |

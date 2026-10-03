@@ -24,7 +24,7 @@ and the vendors' docs.
 | Gradle (wrapper) | **9.7.0** | KGP 2.4.20 is tested up to 9.7.0 (9.8.0 exists). |
 | Android Gradle Plugin | **9.3.3** | KGP 2.4.20 is tested up to AGP 9.3.1, so we take the latest 9.3 patch. 9.4.1 exists but is untested with KGP. |
 | JDK (toolchain) | **21** | Installed LTS. AGP 9 and Kotlin 2.4 support it. |
-| Android SDK | **compile 36 / target 36 / min 26** | API 36 is installed (36.1 if `android sdk` offers it). Min 26 is Android 8.0 (FR-030). |
+| Android SDK | **compile 37.1 / target 37 / min 26** | *Amended at T010:* the AndroidX 2026.09 artifacts (Compose 1.12.1, Navigation 3 1.2.0, Lifecycle 2.11.0) **require compileSdk ≥ 37**. Platform 37.1 is installed through `android sdk` and set with AGP's `compileSdk { version = release(37) { minorApiLevel = 1 } }`. Min 26 is Android 8.0 (FR-030). |
 | Xcode | **27.0 locally** / 26.4 in CI | Kotlin 2.4.20 is tested with Xcode 26.4. See the spike in ADR-001 and the Complexity Tracking table in the plan. |
 | iOS deployment target | **17.0** | FR-030 and the constitution. Kotlin/Native 2.4 itself only needs 15.0. |
 | SKIE | **0.10.15** | The first release that supports Kotlin 2.4.20. |
@@ -70,6 +70,17 @@ and the vendors' docs.
 - [SKIE releases](https://github.com/touchlab/SKIE/releases)
 - [Xcode 27 deployment targets](https://blakecrosley.com/blog/xcode-27-release)
 - [Kotlin/Native 2.4 iOS 15 floor](https://byteiota.com/kotlin-2-4-swift-export-alpha-k1-compiler-removed/)
+
+**Build verification (T010, 2026-10-02)**
+- Kotlin 2.4.20 with SKIE 0.10.15 links the iOS framework against **Xcode 27.0** and the iOS 27
+  SDK, with no Kotlin/Xcode compatibility warning.
+- The `iosApp` build (Swift 6 language mode, iOS 17 deployment target) succeeds with a stripped
+  environment, which mimics how the Xcode app runs the build. The pre-build script finds the JDK
+  through a `java_home` → SDKMAN fallback.
+- SKIE 0.10.15 under Gradle 9.7 logs "Configuration … was resolved during configuration time"
+  warnings. They only affect build performance, so they are tolerated; revisit with a later SKIE
+  release.
+- Simulators: iOS 27.0 provides the iPhone 17 / 18 family. The quickstart uses `iPhone 17, OS=27.0`.
 
 ---
 

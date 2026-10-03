@@ -40,7 +40,7 @@ recorded as ADRs in [research.md](./research.md); ADR-001 is the hybrid ViewMode
   - iOS: Swift Testing and XCUITest.
   - Coverage: Kover.
 - **Target Platform:**
-  - Android 8.0+ (minSdk 26, compile and target SDK 36);
+  - Android 8.0+ (minSdk 26, compileSdk 37.1, targetSdk 37; AndroidX 2026.09 requires compileSdk ≥ 37);
   - iOS 17.0+;
   - phones, tablets and foldables, in every orientation.
 - **Project Type:** a mobile app (KMP shared library plus two native app shells).
