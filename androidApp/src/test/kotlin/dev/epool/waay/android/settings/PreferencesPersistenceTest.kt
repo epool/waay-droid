@@ -2,7 +2,9 @@ package dev.epool.waay.android.settings
 
 import android.app.Application
 import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -32,6 +34,19 @@ class PreferencesPersistenceTest {
     @After
     fun tearDown() {
         stopKoin()
+    }
+
+    // FR-024, mirroring iOS PreferencesPersistenceUITests: a fresh install uses 5 cards, voice on
+    // and the device language.
+    @Test
+    fun freshInstallUsesTheDefaults() {
+        rule.onNodeWithTag("intro.message").assertTextContains("1 to 31", substring = true)
+
+        rule.onNodeWithTag("toolbar.settings").performClick()
+
+        rule.onNodeWithTag("settings.cardCount.5").assertIsSelected()
+        rule.onNodeWithTag("settings.voice").assertIsOn()
+        rule.onNodeWithTag("settings.language.Device").assertIsSelected()
     }
 
     @Test
