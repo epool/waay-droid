@@ -126,10 +126,10 @@ navigation. **No user-story work starts until this phase is complete.**
 
 ### 2a. Risk spike (ADR-001 + Xcode 27). STOP AND ESCALATE if it fails.
 
-- [ ] T011 Write a failing test, `shared/src/iosTest/kotlin/dev/epool/waay/di/ScreenScopeTest.kt`. A
+- [X] T011 Write a failing test, `shared/src/iosTest/kotlin/dev/epool/waay/di/ScreenScopeTest.kt`. A
   test-only `ProbeViewModel` registers an `onCleared` flag; asserting that `ScreenScope.close()` sets
   it must fail at this stage.
-- [ ] T012 Implement `shared/src/iosMain/kotlin/dev/epool/waay/di/ScreenScope.kt`:
+- [X] T012 Implement `shared/src/iosMain/kotlin/dev/epool/waay/di/ScreenScope.kt`:
   - a non-generic `public class ScreenScope`;
   - a private `ViewModelStore`;
   - `public fun close()`, which calls `viewModelStore.clear()`. It is idempotent and thread-safe,
