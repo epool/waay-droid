@@ -524,35 +524,35 @@ app, and everything, including speech, is in English, without restarting the gam
 
 ### Tests for User Story 5 ⚠️
 
-- [ ] T074 [P] [US5] Write `shared/src/commonTest/kotlin/dev/epool/waay/core/i18n/StringsTest.kt`
+- [X] T074 [P] [US5] Write `shared/src/commonTest/kotlin/dev/epool/waay/core/i18n/StringsTest.kt`
   (SC-004). Every `Strings` member is non-blank in EN and ES, the formatted messages include their
   arguments, and the ES reveal is a statement.
-- [ ] T075 [P] [US5] Write `shared/src/commonTest/kotlin/dev/epool/waay/core/i18n/LanguageResolverTest.kt`
+- [X] T075 [P] [US5] Write `shared/src/commonTest/kotlin/dev/epool/waay/core/i18n/LanguageResolverTest.kt`
   (FR-020):
   - `Device` + es-MX resolves to Spanish;
   - `Device` + fr-FR resolves to English;
   - English and Spanish win over any device locale;
   - the speech language prefers the device region when the language matches (es-MX), and falls back
     to the default region otherwise.
-- [ ] T076 [P] [US5] Extend `GameViewModelTest.kt` with **G8** (switching the language re-resolves
+- [X] T076 [P] [US5] Extend `GameViewModelTest.kt` with **G8** (switching the language re-resolves
   all text in place, with the phase, deck and answers unchanged, and the next speech uses the new
   language). Extend `SettingsViewModelTest.kt` with **S4** (all labels switch immediately).
 
 ### Implementation for User Story 5
 
-- [ ] T077 [US5] Implement `shared/src/commonMain/kotlin/dev/epool/waay/core/i18n/SpanishStrings.kt`
+- [X] T077 [US5] Implement `shared/src/commonMain/kotlin/dev/epool/waay/core/i18n/SpanishStrings.kt`
   for every `Strings` member, and `LanguageResolver.kt`. This makes T074 and T075 pass.
-- [ ] T078 [P] [US5] Implement the device locales:
+- [X] T078 [P] [US5] Implement the device locales:
   - `shared/src/androidMain/kotlin/dev/epool/waay/core/locale/AndroidDeviceLocale.kt`
     (`Locale.getDefault()`);
   - `shared/src/iosMain/kotlin/dev/epool/waay/core/locale/IosDeviceLocale.kt`
     (`NSLocale.preferredLanguages.first`).
 
   Bind both in the platform modules, replacing the placeholders.
-- [ ] T079 [US5] Update `GameViewModel.kt` and `SettingsViewModel.kt` to combine `languageChoice`
+- [X] T079 [US5] Update `GameViewModel.kt` and `SettingsViewModel.kt` to combine `languageChoice`
   with `DeviceLocale` into the active `Strings` and `SpeechLanguage` (FR-021, FR-022). This makes
   T076 pass.
-- [ ] T080 [US5] Add `languageLabel`, `languageOptions` and `selectedLanguage` to `SettingsState`,
+- [X] T080 [US5] Add `languageLabel`, `languageOptions` and `selectedLanguage` to `SettingsState`,
   and handle `OnLanguageSelect` in `SettingsViewModel.kt`. Add the language pickers to the Android
   `SettingsScreen.kt` and the iOS `SettingsScreen.swift`.
 - [ ] T081 [P] [US5] Localize the app display name:

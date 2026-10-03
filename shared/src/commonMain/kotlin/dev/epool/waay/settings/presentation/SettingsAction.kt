@@ -10,4 +10,8 @@ public sealed interface SettingsAction {
     public data class OnCardCountSelect(
         val value: Int,
     ) : SettingsAction
+
+    public data class OnLanguageSelect(
+        val choice: LanguageChoiceUi,
+    ) : SettingsAction
 }

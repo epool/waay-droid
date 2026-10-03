@@ -34,6 +34,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.epool.waay.android.ui.ObserveAsEvents
 import dev.epool.waay.android.ui.theme.WaayTheme
 import dev.epool.waay.settings.presentation.CardCountOptionUi
+import dev.epool.waay.settings.presentation.LanguageChoiceUi
+import dev.epool.waay.settings.presentation.LanguageOptionUi
 import dev.epool.waay.settings.presentation.SettingsAction
 import dev.epool.waay.settings.presentation.SettingsEvent
 import dev.epool.waay.settings.presentation.SettingsState
@@ -80,7 +82,7 @@ fun SettingsScreen(
         Column(modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
             VoiceRow(state = state, onAction = onAction)
             CardCountSection(state = state, onAction = onAction)
-            // Language (US5) options are added by their story.
+            LanguageSection(state = state, onAction = onAction)
         }
     }
 }
@@ -145,6 +147,41 @@ private fun CardCountSection(
     }
 }
 
+/** Single-choice group: device language, English, Español (FR-021). */
+@Composable
+private fun LanguageSection(
+    state: SettingsState,
+    onAction: (SettingsAction) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier.selectableGroup()) {
+        Text(
+            text = state.languageLabel,
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        )
+        state.languageOptions.forEach { option ->
+            val selected = option.choice == state.selectedLanguage
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp)
+                        .selectable(
+                            selected = selected,
+                            role = Role.RadioButton,
+                            onClick = { onAction(SettingsAction.OnLanguageSelect(option.choice)) },
+                        ).padding(horizontal = 16.dp)
+                        .testTag("settings.language.${option.choice.name}"),
+            ) {
+                RadioButton(selected = selected, onClick = null)
+                Text(option.label, modifier = Modifier.padding(start = 16.dp))
+            }
+        }
+    }
+}
+
 @Preview
 @Composable
 private fun SettingsScreenPreview() {
@@ -159,6 +196,14 @@ private fun SettingsScreenPreview() {
                     cardCountLabel = "Number of cards",
                     cardCountOptions = (3..7).map { CardCountOptionUi(it, "$it cards (1–${(1 shl it) - 1})") },
                     selectedCardCount = 5,
+                    languageLabel = "Language",
+                    languageOptions =
+                        listOf(
+                            LanguageOptionUi(LanguageChoiceUi.Device, "Device language"),
+                            LanguageOptionUi(LanguageChoiceUi.English, "English"),
+                            LanguageOptionUi(LanguageChoiceUi.Spanish, "Español"),
+                        ),
+                    selectedLanguage = LanguageChoiceUi.Device,
                 ),
             onAction = {},
         )

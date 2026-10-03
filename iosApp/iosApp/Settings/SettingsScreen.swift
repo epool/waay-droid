@@ -18,10 +18,23 @@ struct SettingsScreen: View {
             }
             .pickerStyle(.inline)
             .accessibilityIdentifier("settings.cardCount")
-            // Language (US5) options are added by its story.
+            Picker(state.languageLabel, selection: languageBinding) {
+                ForEach(state.languageOptions, id: \.choice) { option in
+                    Text(option.label).tag(option.choice)
+                }
+            }
+            .pickerStyle(.inline)
+            .accessibilityIdentifier("settings.language")
         }
         .navigationTitle(state.title)
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var languageBinding: Binding<LanguageChoiceUi> {
+        Binding(
+            get: { state.selectedLanguage },
+            set: { onAction(SettingsActionOnLanguageSelect(choice: $0)) }
+        )
     }
 
     private var cardCountBinding: Binding<Int32> {
@@ -49,7 +62,14 @@ struct SettingsScreen: View {
                 voiceEnabled: true,
                 cardCountLabel: "Number of cards",
                 cardCountOptions: (3...7).map { CardCountOptionUi(value: Int32($0), label: "\($0) cards (1–\((1 << $0) - 1))") },
-                selectedCardCount: 5
+                selectedCardCount: 5,
+                languageLabel: "Language",
+                languageOptions: [
+                    LanguageOptionUi(choice: .device, label: "Device language"),
+                    LanguageOptionUi(choice: .english, label: "English"),
+                    LanguageOptionUi(choice: .spanish, label: "Español"),
+                ],
+                selectedLanguage: .device
             ),
             onAction: { _ in }
         )
