@@ -3,6 +3,7 @@ package dev.epool.waay.game.domain
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import dev.epool.waay.core.domain.Result
+import kotlin.random.Random
 import kotlin.test.Test
 
 class AnswerDecoderTest {
@@ -16,7 +17,7 @@ class AnswerDecoderTest {
     fun everyNumberDecodesForEveryCardCount() {
         var cases = 0
         CardCount.all.forEach { cardCount ->
-            val deck = MagicDeck.create(cardCount)
+            val deck = MagicDeck.create(cardCount, Random(cardCount.value))
             (1..cardCount.maxNumber).forEach { secret ->
                 assertThat(AnswerDecoder.decode(deck, truthfulAnswers(deck, secret))).isEqualTo(Result.Success(secret))
                 cases++
@@ -28,7 +29,7 @@ class AnswerDecoderTest {
     // FR-005: all "No" decodes to 0, which is out of range.
     @Test
     fun allNoIsOutOfRange() {
-        val deck = MagicDeck.create(CardCount.DEFAULT)
+        val deck = MagicDeck.create(CardCount.DEFAULT, Random(1))
 
         val result = AnswerDecoder.decode(deck, List(deck.cards.size) { Answer.No })
 
@@ -37,7 +38,7 @@ class AnswerDecoderTest {
 
     @Test
     fun answerCountMustMatchTheDeck() {
-        val deck = MagicDeck.create(CardCount.DEFAULT)
+        val deck = MagicDeck.create(CardCount.DEFAULT, Random(1))
 
         assertThat(AnswerDecoder.decode(deck, listOf(Answer.Yes))).isEqualTo(Result.Error(DecodeError.IncompleteAnswers))
     }

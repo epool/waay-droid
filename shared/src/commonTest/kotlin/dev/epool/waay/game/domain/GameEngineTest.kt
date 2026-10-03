@@ -4,11 +4,13 @@ import assertk.assertThat
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isSameInstanceAs
+import kotlin.random.Random
 import kotlin.test.Test
 
 class GameEngineTest {
-    private val newDeck: (CardCount) -> Deck = { MagicDeck.create(it) }
-    private val start = GameEngine.start(MagicDeck.create(CardCount.DEFAULT))
+    private val random = Random(7)
+    private val newDeck: (CardCount) -> Deck = { MagicDeck.create(it, random) }
+    private val start = GameEngine.start(MagicDeck.create(CardCount.DEFAULT, random))
 
     private fun GameSnapshot.reduce(vararg commands: GameCommand): GameSnapshot =
         commands.fold(this) { snapshot, command -> GameEngine.reduce(snapshot, command, newDeck) }
