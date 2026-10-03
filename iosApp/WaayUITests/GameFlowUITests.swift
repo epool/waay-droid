@@ -8,6 +8,7 @@ final class GameFlowUITests: XCTestCase {
     override func setUp() {
         continueAfterFailure = false
         app = XCUIApplication()
+        app.launchArguments = ["-resetPreferences"]
         app.launch()
     }
 

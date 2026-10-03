@@ -576,21 +576,21 @@ are still in effect.
 
 ### Tests for User Story 6 ⚠️
 
-- [ ] T083 [P] [US6] Extend `KeyValuePreferencesDataSourceTest.kt`: a value written through one
+- [X] T083 [P] [US6] Extend `KeyValuePreferencesDataSourceTest.kt`: a value written through one
   instance is read back by a **new** instance over the same `Settings` (SC-005).
-- [ ] T084 [P] [US6] Write `androidApp/src/test/kotlin/dev/epool/waay/android/settings/PreferencesPersistenceTest.kt`
+- [X] T084 [P] [US6] Write `androidApp/src/test/kotlin/dev/epool/waay/android/settings/PreferencesPersistenceTest.kt`
   (Robolectric). It sets the values through the UI, recreates the Activity and a fresh Koin graph
   over the same SharedPreferences, and asserts that the values are restored.
-- [ ] T085 [P] [US6] Write `iosApp/WaayUITests/PreferencesPersistenceUITests.swift`. It changes the
+- [X] T085 [P] [US6] Write `iosApp/WaayUITests/PreferencesPersistenceUITests.swift`. It changes the
   settings, then calls `app.terminate()` and `app.launch()` and asserts that the settings were kept.
   For the defaults case it uses the launch argument `-resetPreferences`.
 
 ### Implementation for User Story 6
 
-- [ ] T086 [US6] Support the `-resetPreferences` launch argument, for test-only resets. Handle it in
+- [X] T086 [US6] Support the `-resetPreferences` launch argument, for test-only resets. Handle it in
   `iosApp/iosApp/WaayApp.swift` by clearing the `NSUserDefaults` keys before `initKoin`. Document it
   in `quickstart.md`.
-- [ ] T087 [US6] Make T083, T084 and T085 pass. Fix any gaps in `KeyValuePreferencesDataSource.kt`
+- [X] T087 [US6] Make T083, T084 and T085 pass. Fix any gaps in `KeyValuePreferencesDataSource.kt`
   or the platform modules.
 
 **Checkpoint**: all six stories pass.
