@@ -383,16 +383,16 @@ the reveal is still correct.
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T054 [P] [US2] Extend `shared/src/commonTest/kotlin/dev/epool/waay/game/domain/MagicDeckTest.kt`:
+- [X] T054 [P] [US2] Extend `shared/src/commonTest/kotlin/dev/epool/waay/game/domain/MagicDeckTest.kt`:
   - with a seeded `Random`, the deck is deterministic;
   - the cards are a permutation of the bit set;
   - each card's numbers are a permutation of its ascending set;
   - decoding is correct for all 243 cases across 20 seeds.
-- [ ] T055 [P] [US2] Write `shared/src/commonTest/kotlin/dev/epool/waay/game/domain/DeckUniformityTest.kt`
+- [X] T055 [P] [US2] Write `shared/src/commonTest/kotlin/dev/epool/waay/game/domain/DeckUniformityTest.kt`
   (SC-002). Over 10,000 seeded decks per N:
   - each card appears in each position with a frequency within ±5% of 1/N;
   - the first-shown number is the card's smallest with a frequency within ±5% of `1/numbersPerCard`.
-- [ ] T056 [P] [US2] Extend `shared/src/commonTest/kotlin/dev/epool/waay/game/presentation/GameViewModelTest.kt`
+- [X] T056 [P] [US2] Extend `shared/src/commonTest/kotlin/dev/epool/waay/game/presentation/GameViewModelTest.kt`
   with two FR-011 checks:
   - **G5:** `OnNewGameClick` produces a deck that differs from the previous one (seeded).
   - **G13:** two decks with the same displayed numbers and different bit mappings produce *equal*
@@ -400,7 +400,7 @@ the reveal is still correct.
 
 ### Implementation for User Story 2
 
-- [ ] T057 [US2] Update `shared/src/commonMain/kotlin/dev/epool/waay/game/domain/MagicDeck.kt` to
+- [X] T057 [US2] Update `shared/src/commonMain/kotlin/dev/epool/waay/game/domain/MagicDeck.kt` to
   `create(cardCount, random: Random)`. It uses `shuffled(random)` for the card order (FR-008) and
   for each card's numbers (FR-009). This makes T054 and T055 pass.
 - [ ] T058 [US2] Provide `Random.Default` through Koin in `shared/src/commonMain/kotlin/dev/epool/waay/di/SharedModule.kt`,
