@@ -18,8 +18,10 @@
 - Q: Should each game begin with a "think of a number" screen and an "I'm ready" tap before the
   first card? → A: Yes. Every game, including each "New game", starts on an intro screen that shows
   the range and has an "I'm ready" action. Cards begin only after that tap.
-- Q: What are the oldest operating system versions v1 must support? → A: iOS 15.8.8 or later, and
-  Android 8.0 or later.
+- Q: What are the oldest operating system versions v1 must support? → A: Android 8.0 or later, and
+  iOS 17.0 or later. iOS 17 is the lowest version that supports the current iOS app stack. This
+  answer was revised from an initial "iOS 15.8.8" at the owner's request, to prefer the lowest
+  version that supports that stack.
 - Q: Where does the player change the card count, voice and language? → A: On a separate Settings
   screen, opened from a settings (gear) control that is visible on the intro, card and result
   screens.
@@ -341,7 +343,7 @@ the app and reopen it. Check that all three choices are still in effect.
 
 **Platforms**
 
-- **FR-030**: The game MUST install and be fully playable on iPhones running iOS 15.8.8 or later, and
+- **FR-030**: The game MUST install and be fully playable on iPhones running iOS 17.0 or later, and
   on Android phones running Android 8.0 or later. All requirements above apply on the oldest
   supported versions.
 
@@ -396,11 +398,9 @@ the app and reopen it. Check that all three choices are still in effect.
 
 ## Assumptions
 
-- **Platforms:** phones, tablets and foldables running iOS 15.8.8 or later, or Android 8.0 or later
-  (FR-030). Layouts adapt to every orientation and window size (FR-031, FR-032).
-- **Oldest-iOS verification:** verifying on iOS 15 needs a physical device with iOS 15.8.x. Current
-  Apple developer tools only run and debug apps on iOS 17 or later, so iOS 15 checks go through a
-  test-distribution build.
+- **Platforms:** phones, tablets and foldables running iOS 17.0 or later, or Android 8.0 or later
+  (FR-030). Layouts adapt to every orientation and window size (FR-031, FR-032). The oldest supported
+  versions can be checked on simulators or emulators as well as on real devices.
 - **Offline:** the game works fully offline. There are no accounts, scores, leaderboards, analytics
   or online features.
 - **Voice:** speech uses the voices built into the device. Audio follows the device's normal volume
