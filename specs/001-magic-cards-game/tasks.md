@@ -403,7 +403,7 @@ the reveal is still correct.
 - [X] T057 [US2] Update `shared/src/commonMain/kotlin/dev/epool/waay/game/domain/MagicDeck.kt` to
   `create(cardCount, random: Random)`. It uses `shuffled(random)` for the card order (FR-008) and
   for each card's numbers (FR-009). This makes T054 and T055 pass.
-- [ ] T058 [US2] Provide `Random.Default` through Koin in `shared/src/commonMain/kotlin/dev/epool/waay/di/SharedModule.kt`,
+- [X] T058 [US2] Provide `Random.Default` through Koin in `shared/src/commonMain/kotlin/dev/epool/waay/di/SharedModule.kt`,
   and inject it into `GameViewModel` (this makes T056 pass). Re-run T042 and T043; the robot and
   XCUITest helpers must answer from the displayed numbers, not by position.
 
