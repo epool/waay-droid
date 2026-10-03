@@ -602,14 +602,14 @@ are still in effect.
 **Purpose**: FR-025–FR-029, FR-031, FR-032, SC-006 and SC-009, applied to every screen built above.
 These tasks follow the official `adaptive` and `edge-to-edge` skills (ADR-008).
 
-- [ ] T088 Write `androidApp/src/test/kotlin/dev/epool/waay/android/screenshots/GameScreenScreenshotTest.kt`
+- [X] T088 Write `androidApp/src/test/kotlin/dev/epool/waay/android/screenshots/GameScreenScreenshotTest.kt`
   (Roborazzi), for each Game phase (Intro, Card with N = 5 and N = 7, Revealed, Invalid):
   - every combination of widths 400, 610 and 900 dp with heights 400, 500 and 1000 dp;
   - plus 400×500 runs at font scale 1.5 and **2.0**, Android's largest nonlinear scale (FR-026,
     finding G4).
 
   Record the baselines only after the layouts are implemented, and ask the human to review them.
-- [ ] T089 Implement `androidApp/src/main/kotlin/dev/epool/waay/android/adaptive/AdaptiveGameLayout.kt`:
+- [X] T089 Implement `androidApp/src/main/kotlin/dev/epool/waay/android/adaptive/AdaptiveGameLayout.kt`:
   - `currentWindowAdaptiveInfo()`: compact width gives one column with the answer bar pinned at the
     bottom; medium or expanded width, or landscape, gives two panes;
   - `windowPosture.isTabletop`: numbers above the hinge, answers below;
@@ -619,7 +619,7 @@ These tasks follow the official `adaptive` and `edge-to-edge` skills (ADR-008).
   Use it in `GameScreen.kt`.
 - [ ] T090 [P] Implement `iosApp/iosApp/Game/AdaptiveGameLayout.swift`: size classes choose a stacked
   or side-by-side layout, `LazyVGrid(.adaptive)` holds the numbers, and safe areas are respected.
-- [ ] T091 Do an accessibility pass on Android (`GameScreen.kt`, `SettingsScreen.kt`):
+- [X] T091 Do an accessibility pass on Android (`GameScreen.kt`, `SettingsScreen.kt`):
   - `contentDescription` and semantics from the shared labels;
   - progress announced as a live region;
   - headings;
