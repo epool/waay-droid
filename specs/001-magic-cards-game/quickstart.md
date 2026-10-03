@@ -99,3 +99,19 @@ A first-time player completes a 5-card game in under 60 s. Time one unassisted r
   can't be answered over Remote Control. To run it, allow the prompt (System Settings → Privacy &
   Security → Local Network), then run:
   `android emulator start Pixel_9_Pro_XL && android run --apks=androidApp/build/outputs/apk/debug/androidApp-debug.apk`.
+
+**2026-10-03: US3 voice (T066)**
+
+- Automated: the speech guarantees G1–G4, G9, G10 and G12 pass in `commonTest`, on the Android host
+  and iOS. They include spoken text matching on-screen text (FR-013).
+- The Robolectric flow (API 26 and 36) and the XCUITest flow pass with the real
+  `TextToSpeechSpeaker` and `AvSpeechSpeaker` in the graph. No crash, and no blocking error.
+- **Deviation:** these manual checks were not done:
+  - listening to the voice;
+  - disabling the Android TTS engine to check FR-016.
+
+  The agent cannot hear simulator audio, and the Android emulator is blocked by `adb` (see the
+  T053 note above). To do it yourself:
+  1. Play a round with the voice on, and listen.
+  2. On Android, disable the TTS engine (Settings → Accessibility → Text-to-speech) and confirm the
+     game still plays silently.

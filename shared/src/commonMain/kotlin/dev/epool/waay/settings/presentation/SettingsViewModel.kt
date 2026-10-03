@@ -13,10 +13,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /** Thin MVI adapter over [PreferencesDataSource] (contracts/settings-viewmodel.md). */
 public class SettingsViewModel internal constructor(
-    preferencesDataSource: PreferencesDataSource,
+    private val preferencesDataSource: PreferencesDataSource,
     private val stringsProvider: StringsProvider,
 ) : ViewModel() {
     public val state: StateFlow<SettingsState> =
@@ -34,12 +35,19 @@ public class SettingsViewModel internal constructor(
     public fun onAction(action: SettingsAction) {
         when (action) {
             SettingsAction.OnBackClick -> eventChannel.trySend(SettingsEvent.NavigateBack)
+            is SettingsAction.OnVoiceToggle -> viewModelScope.launch { preferencesDataSource.setVoiceEnabled(action.enabled) }
         }
     }
 
-    private fun Preferences.toSettingsState(): SettingsState = stringsProvider.stringsFor(languageChoice).toSettingsState()
-
-    private fun Strings.toSettingsState(): SettingsState = SettingsState(title = settingsTitle, backLabel = backLabel)
+    private fun Preferences.toSettingsState(): SettingsState {
+        val strings: Strings = stringsProvider.stringsFor(languageChoice)
+        return SettingsState(
+            title = strings.settingsTitle,
+            backLabel = strings.backLabel,
+            voiceLabel = strings.voiceLabel,
+            voiceEnabled = voiceEnabled,
+        )
+    }
 
     private companion object {
         const val STOP_TIMEOUT_MILLIS = 5_000L

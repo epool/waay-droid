@@ -4,4 +4,6 @@ package dev.epool.waay.settings.presentation
 public data class SettingsState(
     val title: String,
     val backLabel: String,
+    val voiceLabel: String,
+    val voiceEnabled: Boolean,
 )

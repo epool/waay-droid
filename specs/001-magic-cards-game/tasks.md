@@ -421,7 +421,7 @@ the reveal. With the voice off, nothing is spoken, and the same text appears on 
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T059 [P] [US3] Extend `shared/src/commonTest/kotlin/dev/epool/waay/game/presentation/GameViewModelTest.kt`
+- [X] T059 [P] [US3] Extend `shared/src/commonTest/kotlin/dev/epool/waay/game/presentation/GameViewModelTest.kt`
   with the speech guarantees:
   - **G1:** the intro is spoken once, and is not repeated when re-subscribing. Every `speak(text)`
     equals the message currently shown in `state` (FR-013, finding G1);
@@ -432,23 +432,23 @@ the reveal. With the voice off, nothing is spoken, and the same text appears on 
     mid-speech;
   - **G10:** every new line calls `speak`;
   - **G12:** `onCleared` calls `stop()`.
-- [ ] T060 [P] [US3] Extend `shared/src/commonTest/kotlin/dev/epool/waay/settings/presentation/SettingsViewModelTest.kt`
+- [X] T060 [P] [US3] Extend `shared/src/commonTest/kotlin/dev/epool/waay/settings/presentation/SettingsViewModelTest.kt`
   with **S3**: `OnVoiceToggle` persists the setting and is reflected in the state.
 
 ### Implementation for User Story 3
 
-- [ ] T061 [US3] Add `voiceLabel` to `shared/src/commonMain/kotlin/dev/epool/waay/core/i18n/Strings.kt`
+- [X] T061 [US3] Add `voiceLabel` to `shared/src/commonMain/kotlin/dev/epool/waay/core/i18n/Strings.kt`
   and `EnglishStrings.kt`. *Implementation note (FR-013):* no separate `cardPrompt` string. The
   spoken card line is the on-screen progress plus the question, for example "Card 3 of 5. Is your
   number on this card?". It names the position, as clarified, and is always identical to text on
   screen.
-- [ ] T062 [US3] Add speech orchestration to `shared/src/commonMain/kotlin/dev/epool/waay/game/presentation/GameViewModel.kt`:
+- [X] T062 [US3] Add speech orchestration to `shared/src/commonMain/kotlin/dev/epool/waay/game/presentation/GameViewModel.kt`:
   - on each phase change, speak through `Speaker`, only when `voiceEnabled` is true;
   - observe `voiceEnabled` and call `stop()` when it turns false;
   - call `stop()` in `onCleared`.
 
   This makes T059 pass.
-- [ ] T063 [P] [US3] Implement `shared/src/androidMain/kotlin/dev/epool/waay/core/speech/TextToSpeechSpeaker.kt`
+- [X] T063 [P] [US3] Implement `shared/src/androidMain/kotlin/dev/epool/waay/core/speech/TextToSpeechSpeaker.kt`
   (ADR-004):
   - lazy `TextToSpeech` initialisation;
   - a single pending utterance until the engine is ready;
@@ -458,7 +458,7 @@ the reveal. With the voice off, nothing is spoken, and the same text appears on 
 
   Add `<queries><intent><action android:name="android.intent.action.TTS_SERVICE"/></intent></queries>`
   to `androidApp/src/main/AndroidManifest.xml`, and bind the speaker in `PlatformModule.android.kt`.
-- [ ] T064 [P] [US3] Implement `shared/src/iosMain/kotlin/dev/epool/waay/core/speech/AvSpeechSpeaker.kt`
+- [X] T064 [P] [US3] Implement `shared/src/iosMain/kotlin/dev/epool/waay/core/speech/AvSpeechSpeaker.kt`
   (ADR-004):
   - `stopSpeakingAtBoundary(AVSpeechBoundaryImmediate)` before each speak;
   - the regional voice preferred, with the `AVSpeechSynthesisVoice` language falling back to the
@@ -466,7 +466,7 @@ the reveal. With the voice off, nothing is spoken, and the same text appears on 
   - the default audio session.
 
   Bind it in `PlatformModule.ios.kt`.
-- [ ] T065 [US3] Add `voiceEnabled` and `voiceLabel` to `SettingsState` and handle `OnVoiceToggle` in
+- [X] T065 [US3] Add `voiceEnabled` and `voiceLabel` to `SettingsState` and handle `OnVoiceToggle` in
   `SettingsViewModel.kt` (this makes T060 pass). Add the switch row to
   `androidApp/.../settings/SettingsScreen.kt` and `iosApp/iosApp/Settings/SettingsScreen.swift`
   (`Toggle`).
