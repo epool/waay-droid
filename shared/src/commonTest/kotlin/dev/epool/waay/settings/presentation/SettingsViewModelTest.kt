@@ -60,4 +60,31 @@ class SettingsViewModelTest : MainDispatcherTest() {
             }
             assertThat(KeyValuePreferencesDataSource(settings).preferences.first().voiceEnabled).isFalse()
         }
+
+    // S2: card count selection is persisted for 3–7 inclusive; out-of-range values are ignored (FR-017).
+    @Test
+    fun cardCountSelectionIsPersistedWithinThreeToSeven() =
+        runTest {
+            val settings = MapSettings()
+            val viewModel = viewModel(settings)
+            viewModel.state.test {
+                val initial = awaitItem()
+                assertThat(initial.cardCountLabel).isEqualTo("Number of cards")
+                assertThat(initial.cardCountOptions.map { it.value }).isEqualTo(listOf(3, 4, 5, 6, 7))
+                assertThat(initial.cardCountOptions.first { it.value == 5 }.label).isEqualTo("5 cards (1–31)")
+                assertThat(initial.selectedCardCount).isEqualTo(5)
+
+                viewModel.onAction(SettingsAction.OnCardCountSelect(7))
+                assertThat(awaitItem().selectedCardCount).isEqualTo(7)
+
+                viewModel.onAction(SettingsAction.OnCardCountSelect(9))
+                expectNoEvents()
+            }
+            assertThat(
+                KeyValuePreferencesDataSource(settings)
+                    .preferences
+                    .first()
+                    .cardCount.value,
+            ).isEqualTo(7)
+        }
 }
