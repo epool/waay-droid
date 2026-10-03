@@ -280,22 +280,22 @@ for 1 and 31. Answering "No" to everything gives the invalid message.
 
 ### Tests for User Story 1 (write first, they must FAIL) ⚠️
 
-- [ ] T038 [P] [US1] Write `shared/src/commonTest/kotlin/dev/epool/waay/game/domain/MagicDeckTest.kt`.
+- [X] T038 [P] [US1] Write `shared/src/commonTest/kotlin/dev/epool/waay/game/domain/MagicDeckTest.kt`.
   It checks "Card membership is bit-exact" for N = 3…7: each card holds exactly the
   `n ∈ 1..maxNumber` with `n and bitValue ≠ 0`, with size `numbersPerCard`. It also checks that the
   set of `bitValue`s is exactly {1, 2, …, 2^(N−1)}.
-- [ ] T039 [P] [US1] Write `shared/src/commonTest/kotlin/dev/epool/waay/game/domain/AnswerDecoderTest.kt`:
+- [X] T039 [P] [US1] Write `shared/src/commonTest/kotlin/dev/epool/waay/game/domain/AnswerDecoderTest.kt`:
   - exhaustive: all 243 cases (every n, every N = 3…7) decode to n (SC-001);
   - all "No" gives `DecodeError.OutOfRange` (FR-005);
   - `answers.size ≠ N` gives `IncompleteAnswers`.
-- [ ] T040 [P] [US1] Write `shared/src/commonTest/kotlin/dev/epool/waay/game/domain/GameEngineTest.kt`.
+- [X] T040 [P] [US1] Write `shared/src/commonTest/kotlin/dev/epool/waay/game/domain/GameEngineTest.kt`.
   It covers the phase table in data-model.md:
   - `Intro --Ready--> Asking(0)`;
   - answers advance through the cards;
   - the last answer gives `Revealed(n)` or `Invalid`;
   - `NewGame` from any phase gives Intro with a fresh deck;
   - "Commands that a phase doesn't allow are no-ops", including extra answers (FR-028).
-- [ ] T041 [P] [US1] Write `shared/src/commonTest/kotlin/dev/epool/waay/game/presentation/GameViewModelTest.kt`,
+- [X] T041 [P] [US1] Write `shared/src/commonTest/kotlin/dev/epool/waay/game/presentation/GameViewModelTest.kt`,
   covering guarantees G1–G6, G11 and G13 of [game contract](./contracts/game-viewmodel.md), using
   Turbine and `FakeSpeaker` (speech assertions come in US3).
 - [ ] T042 [P] [US1] Write `androidApp/src/test/kotlin/dev/epool/waay/android/game/GameRobot.kt` and

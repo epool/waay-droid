@@ -1,0 +1,161 @@
+package dev.epool.waay.game.presentation
+
+import app.cash.turbine.ReceiveTurbine
+import app.cash.turbine.test
+import assertk.assertThat
+import assertk.assertions.contains
+import assertk.assertions.hasSize
+import assertk.assertions.isEqualTo
+import assertk.assertions.isInstanceOf
+import com.russhwolf.settings.MapSettings
+import dev.epool.waay.core.i18n.StringsProvider
+import dev.epool.waay.fakes.MainDispatcherTest
+import dev.epool.waay.game.domain.Answer
+import dev.epool.waay.game.domain.DeckFactory
+import dev.epool.waay.game.domain.MagicDeck
+import dev.epool.waay.settings.data.KeyValuePreferencesDataSource
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+
+class GameViewModelTest : MainDispatcherTest() {
+    private fun viewModel() =
+        GameViewModel(
+            preferencesDataSource = KeyValuePreferencesDataSource(MapSettings()),
+            stringsProvider = StringsProvider(),
+            deckFactory = DeckFactory { MagicDeck.create(it) },
+        )
+
+    private suspend fun ReceiveTurbine<GameState>.answerTruthfully(
+        viewModel: GameViewModel,
+        secret: Int,
+        cards: Int = 5,
+    ): GameState {
+        var state = expectMostRecentItem()
+        repeat(cards) {
+            val card = state.content as GameContentUi.Card
+            val answer = if (card.numbers.any { it.value == secret }) Answer.Yes else Answer.No
+            viewModel.onAction(GameAction.OnAnswerClick(answer))
+            state = awaitItem()
+        }
+        return state
+    }
+
+    // G1: first subscription shows the intro for the current card count.
+    @Test
+    fun firstSubscriptionShowsTheIntro() =
+        runTest {
+            viewModel().state.test {
+                val state = awaitItem()
+                val intro = state.content as GameContentUi.Intro
+                assertThat(intro.message).contains("1 to 31")
+                assertThat(intro.readyLabel).isEqualTo("I'm ready")
+                assertThat(state.settingsLabel).isEqualTo("Settings")
+                assertThat(state.newGameLabel).isEqualTo("New game")
+            }
+        }
+
+    // G2: ready shows card 1 of N with numbersPerCard numbers.
+    @Test
+    fun readyShowsTheFirstCard() =
+        runTest {
+            val viewModel = viewModel()
+            viewModel.state.test {
+                awaitItem()
+                viewModel.onAction(GameAction.OnReadyClick)
+
+                val card = awaitItem().content as GameContentUi.Card
+                assertThat(card.progress).isEqualTo("Card 1 of 5")
+                assertThat(card.numbers).hasSize(16)
+                assertThat(card.yesLabel).isEqualTo("Yes")
+                assertThat(card.noLabel).isEqualTo("No")
+            }
+        }
+
+    // G3: truthful answers reveal the secret as a statement (FR-004, FR-007).
+    @Test
+    fun truthfulAnswersRevealTheSecret() =
+        runTest {
+            val viewModel = viewModel()
+            viewModel.state.test {
+                awaitItem()
+                viewModel.onAction(GameAction.OnReadyClick)
+                awaitItem()
+
+                val revealed = answerTruthfully(viewModel, secret = 27).content as GameContentUi.Revealed
+                assertThat(revealed.number).isEqualTo(27)
+                assertThat(revealed.message).isEqualTo("The number you thought of is… 27!")
+            }
+        }
+
+    // G4: all "No" ends invalid (FR-005).
+    @Test
+    fun allNoEndsInvalid() =
+        runTest {
+            val viewModel = viewModel()
+            viewModel.state.test {
+                awaitItem()
+                viewModel.onAction(GameAction.OnReadyClick)
+                awaitItem()
+
+                val state = answerTruthfully(viewModel, secret = 0)
+                assertThat(state.content).isInstanceOf(GameContentUi.Invalid::class)
+                assertThat((state.content as GameContentUi.Invalid).message).contains("1 to 31")
+            }
+        }
+
+    // G5: new game from any phase returns to the intro (FR-006).
+    @Test
+    fun newGameReturnsToTheIntro() =
+        runTest {
+            val viewModel = viewModel()
+            viewModel.state.test {
+                awaitItem()
+                viewModel.onAction(GameAction.OnReadyClick)
+                awaitItem()
+                viewModel.onAction(GameAction.OnAnswerClick(Answer.Yes))
+                awaitItem()
+
+                viewModel.onAction(GameAction.OnNewGameClick)
+
+                assertThat(awaitItem().content).isInstanceOf(GameContentUi.Intro::class)
+            }
+        }
+
+    // G6: answers outside the Card phase change nothing (FR-028).
+    @Test
+    fun answersOutsideTheCardPhaseAreIgnored() =
+        runTest {
+            val viewModel = viewModel()
+            viewModel.state.test {
+                awaitItem()
+                viewModel.onAction(GameAction.OnAnswerClick(Answer.Yes))
+                expectNoEvents()
+            }
+        }
+
+    // G11: settings click emits NavigateToSettings exactly once (FR-016a).
+    @Test
+    fun settingsClickEmitsNavigateToSettingsOnce() =
+        runTest {
+            val viewModel = viewModel()
+            viewModel.events.test {
+                viewModel.onAction(GameAction.OnSettingsClick)
+                assertThat(awaitItem()).isEqualTo(GameEvent.NavigateToSettings)
+                expectNoEvents()
+            }
+        }
+
+    // G13: the card UI carries only the displayed numbers and labels — no bit information (FR-011).
+    @Test
+    fun cardUiExposesOnlyDisplayedNumbers() =
+        runTest {
+            val viewModel = viewModel()
+            viewModel.state.test {
+                awaitItem()
+                viewModel.onAction(GameAction.OnReadyClick)
+
+                val card = awaitItem().content as GameContentUi.Card
+                card.numbers.forEach { assertThat(it.label).isEqualTo(it.value.toString()) }
+            }
+        }
+}
