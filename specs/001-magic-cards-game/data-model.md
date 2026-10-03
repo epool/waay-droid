@@ -102,6 +102,7 @@ read-only `List`s, which bridge to Swift `[T]` (ADR-011). Their contracts are in
 | `title` | String | App or screen title |
 | `content` | `GameContentUi` (sealed) | One case per phase, below |
 | `settingsLabel` | String | Accessibility label for the gear button (FR-025) |
+| `newGameLabel` | String | "New game" action, visible in every phase (FR-006, SC-008) |
 
 `GameContentUi` cases:
 - **`Intro`**: `message` (for example "Think of a number from 1 to 31…") and `readyLabel`.

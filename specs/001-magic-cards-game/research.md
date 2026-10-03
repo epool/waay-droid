@@ -90,10 +90,21 @@ and the vendors' docs.
      only `close()`, which calls `ViewModelStore.clear()`, so `onCleared` and the closeables run.
    - `ViewModelProvider.gameViewModel(scope:)` and `settingsViewModel(scope:)` create the ViewModels
      inside that store through Koin.
-4. **One iOS ownership pattern.** `<Screen>Root` creates the scope and the ViewModel inside
-   `.task`, and closes them when the task is cancelled (KaMPKit style).
-   - This avoids throwaway `@State` initial values creating extra ViewModels.
-   - ViewModel `init` is inert: side effects start on the first subscription or action.
+4. **One iOS ownership pattern: the model owns the scope; `.task` only collects.**
+   - `<Screen>Root` holds an `@Observable @MainActor` model in `@State`. Its `init` is **inert**, so
+     throwaway `@State` initial values create nothing.
+   - The first `run()` lazily creates the `ScreenScope` and the ViewModel. Later `run()` calls reuse
+     them.
+   - `.task { await model.run() }` only drives the `for await` collection. Cancelling it (for
+     example when Settings is pushed and the root disappears) stops collecting and **does not
+     clear** the ViewModel. When the view reappears, collection resumes from the current `StateFlow`
+     value (FR-016b).
+   - The scope is closed in the model's `deinit`, when the screen leaves the navigation hierarchy.
+     `ScreenScope.close()` is thread-safe and hops to the main thread before clearing.
+   - The ViewModel itself is also inert: side effects start on the first subscription or action,
+     guarded by a `hasStarted` flag, so re-subscribing never repeats the intro.
+   - *Amended 2026-10-02 after `/speckit-analyze` finding D1.* The first version closed the scope
+     when `.task` was cancelled. That would have cleared the game whenever Settings was pushed.
 
 **Rationale**
 
@@ -426,7 +437,7 @@ Explicit API mode keeps the exported header small.
   - `xcrun swift-format lint --strict`;
   - Android Lint with `warningsAsErrors` for `androidApp`.
 - **Coverage:** Kover 0.9.9 on `shared`, with `koverVerify` at ≥ 90% line coverage for the
-  `game.domain` and `presentation` packages.
+  `game.domain`, `*.presentation` and `core.i18n` packages.
 - **CI:** GitHub Actions, with two jobs.
   - `android` on ubuntu-latest, JDK 21:
     `spotlessCheck :androidApp:lintDebug :shared:testAndroidHostTest :androidApp:testDebugUnitTest koverVerify :androidApp:assembleDebug`.

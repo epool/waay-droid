@@ -11,7 +11,8 @@ This guide proves the feature works end-to-end. Run it at the verification gate.
 - **Android:**
   - Android SDK with platform 36: `android sdk install platforms/android-36`.
   - Android CLI (`android`).
-  - An emulator for each form factor: phone, foldable and tablet (`android emulator create …`).
+  - An emulator for each form factor: phone, foldable and tablet (`android emulator create …`), plus
+    an **API 26 (Android 8.0)** phone emulator for the minimum-version smoke run (FR-030).
 - **iOS:**
   - Xcode 27 selected (`xcode-select -p`).
   - `xcodegen`.

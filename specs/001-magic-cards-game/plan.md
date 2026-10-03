@@ -54,7 +54,14 @@ recorded as ADRs in [research.md](./research.md); ADR-001 is the hybrid ViewMode
   - no analytics or accounts;
   - commonMain must stay platform-free and its dependencies must support jvm and wasmJs;
   - no Compose Multiplatform;
-  - no generics or lifecycle types on Swift-facing APIs.
+  - no generics or lifecycle types on Swift-facing APIs;
+  - **visibility rule** (constitution V, analyze finding C1):
+    - in `shared`, everything under `core`, `game.domain`, `settings.domain` and `settings.data`
+      is `internal`;
+    - only these are `public`: the presentation contracts (`…ViewModel`, `…State`, `…Action`,
+      `…Event`, `…Ui`, `LanguageChoiceUi`), `Answer`, `ScreenScope`, `ViewModelProvider` and
+      `initKoin`;
+    - `commonTest` reaches `internal` code because it is in the same module.
 - **Scale/Scope:**
   - 2 screens (Game with 4 phases, and Settings);
   - about 30 strings × 2 languages;
@@ -153,8 +160,8 @@ iosApp/
 │   ├── WaayApp.swift (initKoin), Info.plist, InfoPlist.xcstrings (display name EN/ES)
 │   ├── Game/GameRoot.swift, GameModel.swift (@Observable), GameScreen.swift (+ #Preview)
 │   └── Settings/SettingsRoot.swift, SettingsModel.swift, SettingsScreen.swift
-├── iosAppTests/                    # Swift Testing
-└── iosAppUITests/                  # XCUITest smoke
+├── WaayTests/                      # Swift Testing (target WaayTests)
+└── WaayUITests/                    # XCUITest smoke (target WaayUITests)
 ```
 
 **Structure decision**:

@@ -132,7 +132,8 @@ navigation. **No user-story work starts until this phase is complete.**
 - [ ] T012 Implement `shared/src/iosMain/kotlin/dev/epool/waay/di/ScreenScope.kt`:
   - a non-generic `public class ScreenScope`;
   - a private `ViewModelStore`;
-  - `public fun close()`, which calls `viewModelStore.clear()`;
+  - `public fun close()`, which calls `viewModelStore.clear()`. It is idempotent and thread-safe,
+    hopping to the main thread before clearing, because Swift calls it from `deinit`;
   - an internal `inline fun <reified VM : ViewModel> obtain(factory)` that uses
     `ViewModelProvider.create(store, factory)`.
 
@@ -140,10 +141,13 @@ navigation. **No user-story work starts until this phase is complete.**
 - [ ] T013 Verify from Swift:
   1. Add `iosApp/WaayTests/ScreenScopeTests.swift` (Swift Testing). It creates a `ScreenScope()`,
      calls `close()` twice (idempotent), and asserts there is no crash.
-  2. Build and test with Xcode 27: `xcodebuild test -scheme Waay`.
-  3. **If the build fails:** stop. Report to the human with the logs, and propose the fallbacks
+  2. Add `iosApp/WaayUITests/NavigationLifecycleUITests.swift`. A probe screen's model must survive
+     a `NavigationStack` push and pop without `onCleared`: the probe shows a counter that has to
+     keep its value after the pop (analyze finding D1).
+  3. Build and test with Xcode 27: `xcodebuild test -scheme Waay`.
+  4. **If the build fails:** stop. Report to the human with the logs, and propose the fallbacks
      (Xcode 26.4 through `DEVELOPER_DIR`, or the Touchlab expect/actual base) per ADR-001.
-  4. Record the outcome in the "Verification" section of ADR-001 in `research.md`.
+  5. Record the outcome in the "Verification" section of ADR-001 in `research.md`.
 
 ### 2b. Core types and services
 
@@ -151,7 +155,7 @@ navigation. **No user-story work starts until this phase is complete.**
   covering `map`, `onSuccess`, `onFailure` and `asEmptyResult`.
 - [ ] T015 [P] Implement `shared/src/commonMain/kotlin/dev/epool/waay/core/domain/Result.kt` and
   `Error.kt`, using Lackner's error-handling skill: `Result<out D, out E : Error>`, `EmptyResult`,
-  and the extensions.
+  and the extensions. Visibility: `internal` (plan visibility rule, C1).
 - [ ] T016 [P] Implement `shared/src/commonMain/kotlin/dev/epool/waay/core/logging/Log.kt`: a Kermit
   `Logger` with the tag `Waay`.
 - [ ] T017 [P] Define `shared/src/commonMain/kotlin/dev/epool/waay/core/speech/Speaker.kt` and
@@ -187,14 +191,17 @@ navigation. **No user-story work starts until this phase is complete.**
   - derived `maxNumber = 2^value − 1` and `numbersPerCard = 2^(value−1)`;
   - `DEFAULT = 5`.
 
-  Write the test first, in `shared/src/commonTest/kotlin/dev/epool/waay/game/domain/CardCountTest.kt`.
+  Visibility: `internal` (plan visibility rule, C1). Write the test first, in `shared/src/commonTest/kotlin/dev/epool/waay/game/domain/CardCountTest.kt`.
 - [ ] T024 Implement the settings domain:
   - `shared/src/commonMain/kotlin/dev/epool/waay/settings/domain/LanguageChoice.kt`
     (`Device, English, Spanish`, each with a stable string key);
   - `Preferences.kt`;
   - `PreferencesDataSource.kt`.
+
+  Visibility: `internal` (plan visibility rule, C1).
 - [ ] T025 Implement `shared/src/commonMain/kotlin/dev/epool/waay/settings/data/KeyValuePreferencesDataSource.kt`
   over `ObservableSettings` and the multiplatform-settings coroutines extensions. This makes T022 pass.
+  Visibility: `internal` (plan visibility rule, C1).
 
 ### 2d. DI and app shells
 
@@ -242,9 +249,13 @@ navigation. **No user-story work starts until this phase is complete.**
   - a stateless `SettingsScreen(state, onAction)`, with a top app bar and a back button;
   - `@Preview`.
 - [ ] T036 [P] Implement the iOS settings screen:
-  - `iosApp/iosApp/Settings/SettingsModel.swift` (`@Observable @MainActor`, with an inert `init`,
-    and `run()` creating a `ScreenScope` and the ViewModel inside `.task` and closing them on
-    cancellation, per [ios-bridge](./contracts/ios-bridge.md));
+  - `iosApp/iosApp/Settings/SettingsModel.swift` (`@Observable @MainActor`, per
+    [ios-bridge](./contracts/ios-bridge.md)):
+    - an inert `init`;
+    - `run()` lazily creates the `ScreenScope` and the ViewModel on the first call, reuses them
+      afterwards, and only drives collection;
+    - cancelling `.task` does **not** close the scope;
+    - `deinit` calls `scope?.close()`;
   - `SettingsRoot.swift`;
   - `SettingsScreen.swift` (stateless, with `#Preview`).
 - [ ] T037 Wire the iOS root: `iosApp/iosApp/ContentView.swift`, a `NavigationStack` with
@@ -289,23 +300,31 @@ for 1 and 31. Answering "No" to everything gives the invalid message.
   Turbine and `FakeSpeaker` (speech assertions come in US3).
 - [ ] T042 [P] [US1] Write `androidApp/src/test/kotlin/dev/epool/waay/android/game/GameRobot.kt` and
   `GameFlowTest.kt` (Robolectric, robot pattern). The flow is Intro → "I'm ready" → 5 answers for 27
-  → reveal shows 27 → New game → Intro.
+  → reveal shows 27 → New game → Intro. Run it with Robolectric `@Config(sdk = [26, 36])` so the
+  Android 8.0 minimum is exercised (FR-030, analyze finding G2).
 - [ ] T043 [P] [US1] Write `iosApp/WaayUITests/GameFlowUITests.swift` (XCUITest). It runs the same
   flow using accessibility identifiers `intro.ready`, `card.yes`, `card.no`, `result.message` and
-  `result.newGame`.
+  `toolbar.newGame`. Mid-game, it also:
+  - rotates with `XCUIDevice.shared.orientation = .landscapeLeft` and back;
+  - backgrounds and reactivates the app;
+  - opens Settings and returns.
+
+  After each step, it asserts that the same card and progress are shown (FR-029, FR-016b, findings
+  G3 and D1).
 
 ### Implementation for User Story 1
 
 - [ ] T044 [P] [US1] Implement the domain types in `shared/src/commonMain/kotlin/dev/epool/waay/game/domain/`:
-  - `Answer.kt` (`enum Answer { Yes, No }`);
-  - `Card.kt` (`bitValue` is internal and hidden; `numbers: List<Int>`);
-  - `Deck.kt`.
+  - `Answer.kt` (`public enum Answer { Yes, No }`, the only public domain type, because the UI
+    actions use it);
+  - `Card.kt` (`internal`; `bitValue` hidden; `numbers: List<Int>`);
+  - `Deck.kt` (`internal`).
 - [ ] T045 [US1] Implement `shared/src/commonMain/kotlin/dev/epool/waay/game/domain/MagicDeck.kt`:
   `create(cardCount)` builds the bit-exact cards in ascending order (makes T038 pass).
 - [ ] T046 [US1] Implement `shared/src/commonMain/kotlin/dev/epool/waay/game/domain/AnswerDecoder.kt`.
   It returns `Result<Int, DecodeError>` (makes T039 pass).
 - [ ] T047 [US1] Implement `shared/src/commonMain/kotlin/dev/epool/waay/game/domain/GameEngine.kt`
-  (the pure reducer), `GameSnapshot`, `GamePhase` and `GameCommand` (makes T040 pass).
+  (the pure reducer), `GameSnapshot`, `GamePhase` and `GameCommand` (makes T040 pass). Visibility: `internal` (plan visibility rule, C1).
 - [ ] T048 [US1] Add the Story 1 members to `shared/src/commonMain/kotlin/dev/epool/waay/core/i18n/Strings.kt` and `EnglishStrings.kt`:
   - `intro(max: Int)`, `readyLabel`;
   - `progress(current: Int, total: Int)`, `cardQuestion`;
@@ -315,12 +334,15 @@ for 1 and 31. Answering "No" to everything gives the invalid message.
   - `numberLabel(n)`.
 - [ ] T049 [US1] Implement the game presentation layer in
   `shared/src/commonMain/kotlin/dev/epool/waay/game/presentation/`:
-  - `GameState.kt`, `GameAction.kt`, `GameEvent.kt`, per the contract;
+  - `GameState.kt`, including the top-level `newGameLabel` for every phase (FR-006, SC-008),
+    `GameAction.kt` and `GameEvent.kt`, per the contract;
   - `GameUiMapper.kt`, a pure `(GameSnapshot, Strings) -> GameState` that never maps `bitValue`.
 - [ ] T050 [US1] Implement `shared/src/commonMain/kotlin/dev/epool/waay/game/presentation/GameViewModel.kt`:
   - the `_state`/`state` pair with `stateIn(WhileSubscribed(5_000))`;
   - a `Channel` for events;
-  - an inert init.
+  - an inert init, with a `hasStarted` flag so re-subscribing never repeats start-up effects;
+  - an internal `StringsProvider` returning `EnglishStrings` until T079 replaces it with the
+    language-aware resolver (finding U2).
 
   Register it in `SharedModule.kt`, and add `ViewModelProvider.gameViewModel(scope)`. This makes
   T041 pass.
@@ -329,15 +351,18 @@ for 1 and 31. Answering "No" to everything gives the invalid message.
     for `NavigateToSettings`;
   - a stateless `GameScreen`, which renders Intro, Card (`LazyVerticalGrid(GridCells.Adaptive(...))`
     of numbers plus the Yes/No buttons), Revealed and Invalid;
-  - a gear action in the top app bar;
+  - a gear action and a "New game" action in the top app bar, both visible in every phase (FR-006,
+    FR-016a);
   - previews for each phase.
 
   Wire it into `WaayNavDisplay`. This makes T042 pass.
 - [ ] T052 [P] [US1] Implement the iOS game screen:
-  - `iosApp/iosApp/Game/GameModel.swift`;
+  - `iosApp/iosApp/Game/GameModel.swift`, which follows the same ownership as T036: lazy scope,
+    `.task` only collects, close in `deinit`;
   - `GameRoot.swift`;
   - `GameScreen.swift`, rendering the phases with `onEnum(of:)` and `LazyVGrid(.adaptive)`, with a
-    gear toolbar item and `#Preview`s.
+    gear item and a "New game" item (`toolbar.newGame`) in the toolbar for every phase, and
+    `#Preview`s.
 
   Replace the placeholder in `ContentView.swift`. This makes T043 pass.
 - [ ] T053 [US1] Run `./gradlew :shared:allTests :androidApp:testDebugUnitTest` and `xcodebuild test`.
@@ -398,7 +423,8 @@ the reveal. With the voice off, nothing is spoken, and the same text appears on 
 
 - [ ] T059 [P] [US3] Extend `shared/src/commonTest/kotlin/dev/epool/waay/game/presentation/GameViewModelTest.kt`
   with the speech guarantees:
-  - **G1:** the intro is spoken once;
+  - **G1:** the intro is spoken once, and is not repeated when re-subscribing. Every `speak(text)`
+    equals the message currently shown in `state` (FR-013, finding G1);
   - **G2:** the card prompt is spoken, and it never contains card numbers;
   - **G3:** the reveal is spoken;
   - **G4:** the invalid message is spoken;
@@ -463,7 +489,8 @@ the reveal. With the voice off, nothing is spoken, and the same text appears on 
   "5 cards (1–31)".
 - [ ] T068 [P] [US4] Extend `GameViewModelTest.kt` with **G7**: changing the card count resets to
   Intro with the new N. The invitation states the new range, and Card shows `numbersPerCard`
-  numbers.
+  numbers. When the change happens with **no subscriber** (the player is in Settings), the intro
+  speech stays pending and is spoken only on the next subscription (finding U1).
 
 ### Implementation for User Story 4
 
@@ -471,7 +498,8 @@ the reveal. With the voice off, nothing is spoken, and the same text appears on 
   `EnglishStrings`. Add `cardCountOptions` and `selectedCardCount` to `SettingsState`, and handle
   `OnCardCountSelect` in `SettingsViewModel.kt` (makes T067 pass).
 - [ ] T070 [US4] Make `GameViewModel.kt` observe `cardCount` from `PreferencesDataSource`. A change
-  resets the game to Intro with a fresh deck (FR-018), which makes T068 pass.
+  resets the game to Intro with a fresh deck (FR-018). Intro speech is deferred while `state` has
+  no subscribers, using `subscriptionCount`. This makes T068 pass.
 - [ ] T071 [P] [US4] Add the card-count picker to the Android settings screen,
   `androidApp/.../settings/SettingsScreen.kt` (single-choice rows, accessible).
 - [ ] T072 [P] [US4] Add the card-count picker to the iOS settings screen,
@@ -574,7 +602,8 @@ These tasks follow the official `adaptive` and `edge-to-edge` skills (ADR-008).
 - [ ] T088 Write `androidApp/src/test/kotlin/dev/epool/waay/android/screenshots/GameScreenScreenshotTest.kt`
   (Roborazzi), for each Game phase (Intro, Card with N = 5 and N = 7, Revealed, Invalid):
   - every combination of widths 400, 610 and 900 dp with heights 400, 500 and 1000 dp;
-  - plus a 400×500 run at font scale 1.5.
+  - plus 400×500 runs at font scale 1.5 and **2.0**, Android's largest nonlinear scale (FR-026,
+    finding G4).
 
   Record the baselines only after the layouts are implemented, and ask the human to review them.
 - [ ] T089 Implement `androidApp/src/main/kotlin/dev/epool/waay/android/adaptive/AdaptiveGameLayout.kt`:
@@ -607,7 +636,7 @@ These tasks follow the official `adaptive` and `edge-to-edge` skills (ADR-008).
   mid-game keeps the card and the answers).
 - [ ] T094 Verify manually on the foldable and tablet emulators (`android emulator create`) and on
   an iPad simulator. Cover `specs/001-magic-cards-game/quickstart.md` scenarios A8–A10 and I8–I10, including the **iOS 17.x simulator**
-  (FR-030).
+  (FR-030). Also run a smoke game on an **API 26 (Android 8.0)** emulator (finding G2).
 
 **Checkpoint**: SC-006 and SC-009 are verified, along with the screenshot baselines.
 
