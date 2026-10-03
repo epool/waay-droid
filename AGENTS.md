@@ -37,7 +37,7 @@ on `master`.
 | `AGENTS.md` / `CLAUDE.md` | Agent instructions (this file / `@AGENTS.md` import). |
 | `.specify/` | Spec Kit: `memory/constitution.md`, templates, scripts, git extension. |
 | `specs/NNN-slug/` | One folder per feature: `spec.md`, `plan.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md`, `tasks.md`. |
-| `.claude/skills/` | Project skills: `speckit-*` (Spec Kit), and the official Android skills `android-cli`, `navigation-3`, `edge-to-edge`, `adaptive`, `testing-setup`, `styles`, `r8-analyzer`. |
+| `.claude/skills/` | Project skills: `speckit-*` (Spec Kit), and the official Android skills `android-cli`, `navigation-3`, `edge-to-edge`, `adaptive`, `testing-setup`, `styles`, `r8-analyzer`. Philipp Lackner's `android-*` architecture skills are installed locally and git-ignored; see §6. |
 | `.claude/settings.json` | Project permissions allowlist + JetBrains `kotlin-agent-skills` plugin. |
 | `gradle/`, `gradlew*` | Gradle wrapper (9.7.0) and, later, the `libs.versions.toml` version catalog. |
 | `shared/` *(planned)* | KMP library: domain, presentation (ViewModels), DI, localized strings, platform services. |
@@ -188,6 +188,33 @@ Build, test and lint commands are added here by spec 001's tasks once the module
 - The official Android skills in `.claude/skills/`.
 - The JetBrains `kotlin-agent-skills` plugin, e.g. `kotlin-tooling-agp9-migration` for the
   KMP + AGP 9 module structure and `kotlin-tooling-native-build-performance`.
+
+### Philipp Lackner's architecture skills (local, optional)
+
+These are the 8 skills `android-module-structure`, `android-presentation-mvi`, `android-di-koin`,
+`android-data-layer`, `android-error-handling`, `android-navigation`, `android-testing` and
+`android-compose-ui`. They are a free download from
+[pl-coding.com/claude-skills](https://pl-coding.com/claude-skills). Install them into
+`.claude/skills/`; they are git-ignored, so they are not redistributed with this repo.
+
+They encode the same MVI / Koin / typed-error / fakes-over-mocks style this project uses. Follow them
+**except where they conflict with the constitution**, in which case the constitution and the rules
+below win.
+
+| Skill says | This project does | Why |
+|---|---|---|
+| Multi-module `:feature:x:{domain,data,presentation}` + `:core:*` + `build-logic` from day one | A single `shared` module with feature-first **packages**. The skill's layer dependency rules still apply, at package level. `androidApp` plays the role of `:app`. | Constitution X. Modules are split only on a documented trigger. |
+| DataStore for preferences | multiplatform-settings | Constitution III: commonMain dependencies must support `wasmJs`. |
+| `UiText.StringResource(R.string…)` and `stringResource(...)` | Localized strings live in `shared` (EN/ES) and reach both UIs as resolved text or shared keys (ADR in spec 001) | Constitution II: strings are shared with iOS and spoken by TTS. |
+| Type-safe Navigation 2 (`NavHost`, `@Serializable` routes) | **Navigation 3**, per the official `navigation-3` skill and Lackner's NativeKMPDemo. The skill's principles still apply: routes in presentation, callbacks across features. | Current Google guidance, and the newer Lackner code. |
+| JUnit5 + AssertK | `kotlin.test` as the runner in `commonTest`, because JUnit5 is JVM-only. AssertK is a candidate assertion library, decided by ADR in the plan. Turbine, `UnconfinedTestDispatcher`, fakes and the robot pattern are adopted as-is. | Constitution VI: tests must run on every KMP target. |
+| `startKoin` in `:app` | Shared `initKoin()` in `shared/di`, called from the Android `Application` and the iOS `App` | Both platforms share the same module graph. |
+
+The skill naming conventions are adopted:
+- `<Screen>ViewModel`, `<Screen>State`, `<Screen>Action`, `<Screen>Event`, `<Screen>Root`,
+  `<Screen>Screen`, and `<Model>Ui`.
+- Implementations are named for what makes them unique, never with an `Impl` suffix.
+- `Result<D, E : Error>` with `DataError`.
 
 ## 7. Reference playbook
 

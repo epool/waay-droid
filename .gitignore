@@ -34,3 +34,15 @@ iosApp/build/
 
 # Claude Code (machine-local settings only; shared settings are committed)
 .claude/settings.local.json
+
+# Philipp Lackner's architecture skills (free download via pl-coding.com/claude-skills;
+# installed locally, not redistributed in this repo)
+.claude/skills/android-compose-ui/
+.claude/skills/android-data-layer/
+.claude/skills/android-di-koin/
+.claude/skills/android-error-handling/
+.claude/skills/android-module-structure/
+.claude/skills/android-navigation/
+.claude/skills/android-presentation-mvi/
+.claude/skills/android-testing/
+skills.zip
