@@ -53,12 +53,14 @@ private struct IntroView: View {
     let onReady: () -> Void
 
     var body: some View {
-        VStack(spacing: 32) {
+        AdaptiveGameLayout(keepTogether: true) {
             Text(intro.message)
                 .font(.title2)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 480)
+                .accessibilityAddTraits(.isHeader)
                 .accessibilityIdentifier("intro.message")
+        } secondary: {
             Button(intro.readyLabel, action: onReady)
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
@@ -71,41 +73,65 @@ private struct CardView: View {
     let card: GameContentUiCard
     let onAnswer: (Answer) -> Void
 
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+    /// Grows with Dynamic Type so numbers never clip, up to the largest accessibility sizes (FR-026).
+    @ScaledMetric(relativeTo: .title3) private var minimumCellWidth: CGFloat = 56
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(card.progress)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .accessibilityIdentifier("card.progress")
-            Text(card.question)
-                .font(.headline)
+        AdaptiveGameLayout {
+            // The header scrolls with the numbers, so short landscape windows at AX sizes never clip it.
             ScrollView {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 56), spacing: 8)], spacing: 8) {
-                    ForEach(card.numbers, id: \.value) { number in
-                        Text("\(number.value)")
-                            .font(.title3.monospacedDigit())
-                            .frame(maxWidth: .infinity, minHeight: 44)
-                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(.secondary))
-                            .accessibilityLabel(number.label)
-                            .accessibilityIdentifier("number.\(number.value)")
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(card.progress)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .accessibilityIdentifier("card.progress")
+                    Text(card.question)
+                        .font(.headline)
+                        .accessibilityAddTraits(.isHeader)
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: minimumCellWidth), spacing: 8)], spacing: 8) {
+                        ForEach(card.numbers, id: \.value) { number in
+                            Text("\(number.value)")
+                                .font(.title3.monospacedDigit())
+                                .frame(maxWidth: .infinity, minHeight: 44)
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(.secondary))
+                                .accessibilityLabel(number.label)
+                                .accessibilityIdentifier("number.\(number.value)")
+                        }
                     }
                 }
             }
-            HStack(spacing: 12) {
-                Button { onAnswer(.yes) } label: {
-                    Text(card.yesLabel).frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .accessibilityIdentifier("card.yes")
-
-                Button { onAnswer(.no) } label: {
-                    Text(card.noLabel).frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .accessibilityIdentifier("card.no")
-            }
-            .controlSize(.large)
+            .scrollBounceBehavior(.basedOnSize)
+        } secondary: {
+            answerButtons
         }
+        // Screen-reader users hear each new card's position as it appears (FR-025).
+        .onChange(of: card.progress, initial: true) { _, progress in
+            AccessibilityNotification.Announcement(progress).post()
+        }
+    }
+
+    @ViewBuilder
+    private var answerButtons: some View {
+        let layout = AdaptiveGameLayout<EmptyView, EmptyView>.isSideBySide(
+            horizontal: horizontalSizeClass,
+            vertical: verticalSizeClass
+        ) ? AnyLayout(VStackLayout(spacing: 12)) : AnyLayout(HStackLayout(spacing: 12))
+        layout {
+            Button { onAnswer(.yes) } label: {
+                Text(card.yesLabel).frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .accessibilityIdentifier("card.yes")
+
+            Button { onAnswer(.no) } label: {
+                Text(card.noLabel).frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .accessibilityIdentifier("card.no")
+        }
+        .controlSize(.large)
     }
 }
 
@@ -115,12 +141,15 @@ private struct ResultView: View {
     let onNewGame: () -> Void
 
     var body: some View {
-        VStack(spacing: 32) {
+        AdaptiveGameLayout(keepTogether: true) {
             Text(message)
                 .font(.title)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 480)
+                .accessibilityAddTraits(.isHeader)
                 .accessibilityIdentifier("result.message")
+                .onAppear { AccessibilityNotification.Announcement(message).post() }
+        } secondary: {
             Button(newGameLabel, action: onNewGame)
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
