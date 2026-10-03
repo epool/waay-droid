@@ -146,6 +146,26 @@ and the vendors' docs.
 - Swift compiles against `ScreenScope` and `ViewModelProvider`.
 - The SKIE framework builds with Xcode 27.
 
+**Verification result (T011–T013, 2026-10-02): PASSED** on Xcode 27.0, Swift 6 language mode and
+the iOS 27.0 simulator (iPhone 17).
+- `iosSimulatorArm64Test` `ScreenScopeTest` passes 3 of 3 tests, which shows:
+  - `ViewModelStore()` and AndroidX `ViewModelProvider.create(store, viewModelFactory { … })` work
+    from `iosMain`;
+  - `close()` runs `onCleared` exactly once and is idempotent.
+
+  The AndroidX provider is imported as `AndroidXViewModelProvider`, so it does not clash with our
+  Swift-facing `ViewModelProvider`.
+- Swift Testing passes 4 of 4 tests. `close()` is idempotent and safe from a detached background
+  task, and the lazily created ViewModel is reused by its scope.
+- The `@MainActor @Observable` model compiles under Swift 6 with `@ObservationIgnored nonisolated(unsafe) private var scope: ScreenScope?`.
+  The model creates the scope lazily, the ViewModel is only collected in `.task`, and `deinit` calls
+  `scope?.close()`. This shape needs no `@preconcurrency import` and no Swift 5 fallback.
+- **XCUITest `testViewModelSurvivesPushAndPop` passes.** A counter held by the shared ViewModel keeps
+  its value across a `NavigationStack` push and pop, which confirms the D1 fix.
+- The spike probes (`SpikeProbes`, `LifecycleProbeViewModel`, `LifecycleProbeScreen`,
+  `NavigationLifecycleUITests`) are temporary. They are removed in T043, once the real game flow
+  covers the same Settings round trip.
+
 **Revisit triggers**
 - Swift export reaches Beta or Stable.
 - The iOS bridge grows beyond about 50 lines.

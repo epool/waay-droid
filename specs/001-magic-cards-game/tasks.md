@@ -138,7 +138,7 @@ navigation. **No user-story work starts until this phase is complete.**
     `ViewModelProvider.create(store, factory)`.
 
   Make T011 pass with `./gradlew :shared:iosSimulatorArm64Test`.
-- [ ] T013 Verify from Swift:
+- [X] T013 Verify from Swift:
   1. Add `iosApp/WaayTests/ScreenScopeTests.swift` (Swift Testing). It creates a `ScreenScope()`,
      calls `close()` twice (idempotent), and asserts there is no crash.
   2. Add `iosApp/WaayUITests/NavigationLifecycleUITests.swift`. A probe screen's model must survive
