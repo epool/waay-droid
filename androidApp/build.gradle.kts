@@ -5,6 +5,12 @@ plugins {
     // No org.jetbrains.kotlin.android: AGP 9 has built-in Kotlin.
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.roborazzi)
+}
+
+roborazzi {
+    // Baselines are committed and reviewed like code (ADR-010, T088).
+    outputDir.set(layout.projectDirectory.dir("src/test/screenshots"))
 }
 
 kotlin {
@@ -92,6 +98,7 @@ dependencies {
     implementation(libs.bundles.androidx.compose)
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.compose.material3.adaptive)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.bundles.navigation3)
     implementation(libs.koin.android)
@@ -103,5 +110,8 @@ dependencies {
     testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(libs.androidx.compose.ui.test.junit4)
     testImplementation(libs.androidx.test.ext.junit)
+    testImplementation(libs.roborazzi)
+    testImplementation(libs.roborazzi.compose)
+    testImplementation(libs.roborazzi.junit.rule)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

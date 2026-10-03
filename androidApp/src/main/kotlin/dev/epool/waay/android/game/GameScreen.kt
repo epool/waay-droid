@@ -32,12 +32,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.epool.waay.android.adaptive.AdaptiveGameLayout
+import dev.epool.waay.android.adaptive.GameLayout
+import dev.epool.waay.android.adaptive.GameLayoutMode
+import dev.epool.waay.android.adaptive.rememberGameLayout
 import dev.epool.waay.android.ui.ObserveAsEvents
 import dev.epool.waay.android.ui.theme.WaayTheme
 import dev.epool.waay.game.domain.Answer
@@ -72,6 +79,7 @@ fun GameScreen(
     state: GameState,
     onAction: (GameAction) -> Unit,
     modifier: Modifier = Modifier,
+    layout: GameLayout = rememberGameLayout(),
 ) {
     Scaffold(
         modifier = modifier,
@@ -97,10 +105,10 @@ fun GameScreen(
     ) { padding ->
         val contentModifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)
         when (val content = state.content) {
-            is GameContentUi.Intro -> IntroContent(content, onAction, contentModifier)
-            is GameContentUi.Card -> CardContent(content, onAction, contentModifier)
-            is GameContentUi.Revealed -> ResultContent(content.message, content.newGameLabel, onAction, contentModifier)
-            is GameContentUi.Invalid -> ResultContent(content.message, content.newGameLabel, onAction, contentModifier)
+            is GameContentUi.Intro -> IntroContent(content, layout, onAction, contentModifier)
+            is GameContentUi.Card -> CardContent(content, layout, onAction, contentModifier)
+            is GameContentUi.Revealed -> ResultContent(content.message, content.newGameLabel, layout, onAction, contentModifier)
+            is GameContentUi.Invalid -> ResultContent(content.message, content.newGameLabel, layout, onAction, contentModifier)
         }
     }
 }
@@ -108,57 +116,97 @@ fun GameScreen(
 @Composable
 private fun IntroContent(
     content: GameContentUi.Intro,
+    layout: GameLayout,
     onAction: (GameAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
+    AdaptiveGameLayout(
+        layout = layout,
+        keepTogether = true,
         modifier = modifier,
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = content.message,
-            style = MaterialTheme.typography.headlineSmall,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.widthIn(max = 480.dp).testTag("intro.message"),
-        )
-        Spacer(Modifier.padding(16.dp))
-        Button(onClick = { onAction(GameAction.OnReadyClick) }, modifier = Modifier.testTag("intro.ready")) {
-            Text(content.readyLabel)
-        }
-    }
+        primary = {
+            Text(
+                text = content.message,
+                style = MaterialTheme.typography.headlineSmall,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.widthIn(max = 480.dp).semantics { heading() }.testTag("intro.message"),
+            )
+        },
+        secondary = {
+            Button(onClick = { onAction(GameAction.OnReadyClick) }, modifier = Modifier.testTag("intro.ready")) {
+                Text(content.readyLabel)
+            }
+        },
+    )
 }
 
 @Composable
 private fun CardContent(
     content: GameContentUi.Card,
+    layout: GameLayout,
     onAction: (GameAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(content.progress, style = MaterialTheme.typography.labelLarge, modifier = Modifier.testTag("card.progress"))
-        Text(content.question, style = MaterialTheme.typography.titleMedium)
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 64.dp),
-            modifier = Modifier.weight(1f).fillMaxWidth().testTag("card.numbers"),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+    AdaptiveGameLayout(
+        layout = layout,
+        modifier = modifier,
+        primary = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = content.progress,
+                    style = MaterialTheme.typography.labelLarge,
+                    // Announced on every new card for screen-reader users (FR-025).
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }.testTag("card.progress"),
+                )
+                Text(content.question, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 64.dp),
+                    modifier = Modifier.fillMaxWidth().testTag("card.numbers"),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(content.numbers, key = { it.value }) { number -> NumberCell(number) }
+                }
+            }
+        },
+        secondary = {
+            AnswerButtons(content, isVertical = layout.mode == GameLayoutMode.SideBySide, onAction = onAction)
+        },
+    )
+}
+
+@Composable
+private fun AnswerButtons(
+    content: GameContentUi.Card,
+    isVertical: Boolean,
+    onAction: (GameAction) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val yes: @Composable (Modifier) -> Unit = { buttonModifier ->
+        Button(
+            onClick = { onAction(GameAction.OnAnswerClick(Answer.Yes, content.index)) },
+            modifier = buttonModifier.testTag("card.yes"),
         ) {
-            items(content.numbers, key = { it.value }) { number -> NumberCell(number) }
+            Text(content.yesLabel)
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-            Button(
-                onClick = { onAction(GameAction.OnAnswerClick(Answer.Yes, content.index)) },
-                modifier = Modifier.weight(1f).testTag("card.yes"),
-            ) {
-                Text(content.yesLabel)
-            }
-            OutlinedButton(
-                onClick = { onAction(GameAction.OnAnswerClick(Answer.No, content.index)) },
-                modifier = Modifier.weight(1f).testTag("card.no"),
-            ) {
-                Text(content.noLabel)
-            }
+    }
+    val no: @Composable (Modifier) -> Unit = { buttonModifier ->
+        OutlinedButton(
+            onClick = { onAction(GameAction.OnAnswerClick(Answer.No, content.index)) },
+            modifier = buttonModifier.testTag("card.no"),
+        ) {
+            Text(content.noLabel)
+        }
+    }
+    if (isVertical) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = modifier.fillMaxWidth()) {
+            yes(Modifier.fillMaxWidth())
+            no(Modifier.fillMaxWidth())
+        }
+    } else {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = modifier.fillMaxWidth()) {
+            yes(Modifier.weight(1f))
+            no(Modifier.weight(1f))
         }
     }
 }
@@ -185,25 +233,34 @@ private fun NumberCell(
 private fun ResultContent(
     message: String,
     newGameLabel: String,
+    layout: GameLayout,
     onAction: (GameAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
+    AdaptiveGameLayout(
+        layout = layout,
+        keepTogether = true,
         modifier = modifier,
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = message,
-            style = MaterialTheme.typography.headlineMedium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.widthIn(max = 480.dp).testTag("result.message"),
-        )
-        Spacer(Modifier.padding(16.dp))
-        Button(onClick = { onAction(GameAction.OnNewGameClick) }, modifier = Modifier.testTag("result.newGame")) {
-            Text(newGameLabel)
-        }
-    }
+        primary = {
+            Text(
+                text = message,
+                style = MaterialTheme.typography.headlineMedium,
+                textAlign = TextAlign.Center,
+                modifier =
+                    Modifier
+                        .widthIn(max = 480.dp)
+                        .semantics {
+                            heading()
+                            liveRegion = LiveRegionMode.Polite
+                        }.testTag("result.message"),
+            )
+        },
+        secondary = {
+            Button(onClick = { onAction(GameAction.OnNewGameClick) }, modifier = Modifier.testTag("result.newGame")) {
+                Text(newGameLabel)
+            }
+        },
+    )
 }
 
 private fun previewState(content: GameContentUi) =
