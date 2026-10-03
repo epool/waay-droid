@@ -36,4 +36,12 @@ internal interface Strings {
 
     // US3 — voice
     val voiceLabel: String
+
+    // US4 — card count
+    val cardCountLabel: String
+
+    fun cardCountOption(
+        count: Int,
+        max: Int,
+    ): String
 }

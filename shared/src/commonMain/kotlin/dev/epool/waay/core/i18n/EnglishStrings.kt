@@ -29,4 +29,11 @@ internal object EnglishStrings : Strings {
     override fun numberLabel(number: Int): String = number.toString()
 
     override val voiceLabel: String = "Magician's voice"
+
+    override val cardCountLabel: String = "Number of cards"
+
+    override fun cardCountOption(
+        count: Int,
+        max: Int,
+    ): String = "$count cards (1–$max)"
 }

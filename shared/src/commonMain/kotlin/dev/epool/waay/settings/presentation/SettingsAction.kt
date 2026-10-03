@@ -6,4 +6,8 @@ public sealed interface SettingsAction {
     public data class OnVoiceToggle(
         val enabled: Boolean,
     ) : SettingsAction
+
+    public data class OnCardCountSelect(
+        val value: Int,
+    ) : SettingsAction
 }

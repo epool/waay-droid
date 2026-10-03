@@ -2,8 +2,10 @@ package dev.epool.waay.settings.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.epool.waay.core.domain.Result
 import dev.epool.waay.core.i18n.Strings
 import dev.epool.waay.core.i18n.StringsProvider
+import dev.epool.waay.game.domain.CardCount
 import dev.epool.waay.settings.domain.Preferences
 import dev.epool.waay.settings.domain.PreferencesDataSource
 import kotlinx.coroutines.channels.Channel
@@ -36,6 +38,7 @@ public class SettingsViewModel internal constructor(
         when (action) {
             SettingsAction.OnBackClick -> eventChannel.trySend(SettingsEvent.NavigateBack)
             is SettingsAction.OnVoiceToggle -> viewModelScope.launch { preferencesDataSource.setVoiceEnabled(action.enabled) }
+            is SettingsAction.OnCardCountSelect -> selectCardCount(action.value)
         }
     }
 
@@ -46,7 +49,16 @@ public class SettingsViewModel internal constructor(
             backLabel = strings.backLabel,
             voiceLabel = strings.voiceLabel,
             voiceEnabled = voiceEnabled,
+            cardCountLabel = strings.cardCountLabel,
+            cardCountOptions = CardCount.all.map { CardCountOptionUi(it.value, strings.cardCountOption(it.value, it.maxNumber)) },
+            selectedCardCount = cardCount.value,
         )
+    }
+
+    /** Only 3–7 are accepted; anything else is ignored (FR-017). */
+    private fun selectCardCount(value: Int) {
+        val cardCount = (CardCount.of(value) as? Result.Success)?.data ?: return
+        viewModelScope.launch { preferencesDataSource.setCardCount(cardCount) }
     }
 
     private companion object {
