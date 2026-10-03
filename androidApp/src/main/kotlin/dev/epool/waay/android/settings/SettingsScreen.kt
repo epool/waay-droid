@@ -6,12 +6,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -27,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.epool.waay.android.ui.ObserveAsEvents
 import dev.epool.waay.android.ui.theme.WaayTheme
+import dev.epool.waay.settings.presentation.CardCountOptionUi
 import dev.epool.waay.settings.presentation.SettingsAction
 import dev.epool.waay.settings.presentation.SettingsEvent
 import dev.epool.waay.settings.presentation.SettingsState
@@ -70,9 +77,10 @@ fun SettingsScreen(
             )
         },
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+        Column(modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
             VoiceRow(state = state, onAction = onAction)
-            // Card count (US4) and language (US5) options are added by their stories.
+            CardCountSection(state = state, onAction = onAction)
+            // Language (US5) options are added by their story.
         }
     }
 }
@@ -102,12 +110,56 @@ private fun VoiceRow(
     }
 }
 
+/** Single-choice group of 3–7 cards (FR-017); each row is one accessible radio button. */
+@Composable
+private fun CardCountSection(
+    state: SettingsState,
+    onAction: (SettingsAction) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier.selectableGroup()) {
+        Text(
+            text = state.cardCountLabel,
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        )
+        state.cardCountOptions.forEach { option ->
+            val selected = option.value == state.selectedCardCount
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp)
+                        .selectable(
+                            selected = selected,
+                            role = Role.RadioButton,
+                            onClick = { onAction(SettingsAction.OnCardCountSelect(option.value)) },
+                        ).padding(horizontal = 16.dp)
+                        .testTag("settings.cardCount.${option.value}"),
+            ) {
+                RadioButton(selected = selected, onClick = null)
+                Text(option.label, modifier = Modifier.padding(start = 16.dp))
+            }
+        }
+    }
+}
+
 @Preview
 @Composable
 private fun SettingsScreenPreview() {
     WaayTheme {
         SettingsScreen(
-            state = SettingsState(title = "Settings", backLabel = "Back", voiceLabel = "Magician's voice", voiceEnabled = true),
+            state =
+                SettingsState(
+                    title = "Settings",
+                    backLabel = "Back",
+                    voiceLabel = "Magician's voice",
+                    voiceEnabled = true,
+                    cardCountLabel = "Number of cards",
+                    cardCountOptions = (3..7).map { CardCountOptionUi(it, "$it cards (1–${(1 shl it) - 1})") },
+                    selectedCardCount = 5,
+                ),
             onAction = {},
         )
     }
