@@ -15,7 +15,7 @@ import kotlin.random.Random
 internal val sharedModule =
     module {
         single<PreferencesDataSource> { KeyValuePreferencesDataSource(get()) }
-        single { StringsProvider() }
+        single { StringsProvider(get()) }
         // Randomness is injected (constitution IV); tests use seeded Random instances instead.
         single<Random> { Random.Default }
         single { DeckFactory { cardCount -> MagicDeck.create(cardCount, get()) } }
