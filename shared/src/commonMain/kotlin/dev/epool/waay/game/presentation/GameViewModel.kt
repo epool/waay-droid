@@ -15,21 +15,21 @@ import dev.epool.waay.settings.domain.PreferencesDataSource
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
  * Thin MVI adapter over the pure [GameEngine] (ADR-001, contracts/game-viewmodel.md).
- * The constructor is inert: the game, speech and preference observation start on the first
- * subscription to [state], once (re-subscribing never repeats them).
+ *
+ * The game screen counts as "visible" while it collects [state] (its `subscriptionCount`). The
+ * game starts on the first subscription. Lines spoken while the screen is away, e.g. the new intro
+ * after a card-count change made in Settings, stay pending until it returns (finding U1).
  */
 public class GameViewModel internal constructor(
     private val preferencesDataSource: PreferencesDataSource,
@@ -37,25 +37,33 @@ public class GameViewModel internal constructor(
     private val deckFactory: DeckFactory,
     private val speaker: Speaker,
 ) : ViewModel() {
-    private val snapshot = MutableStateFlow<GameSnapshot?>(null)
+    private var snapshot: GameSnapshot? = null
     private var preferences = Preferences()
     private var hasStarted = false
+    private var isScreenVisible = false
+    private var hasPendingSpeech = false
 
-    public val state: StateFlow<GameState> =
-        combine(snapshot.filterNotNull(), preferencesDataSource.preferences) { snapshot, preferences ->
-            snapshot.toGameState(stringsProvider.stringsFor(preferences.languageChoice))
-        }.onStart { startIfNeeded() }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
-                initialValue =
-                    GameEngine
-                        .start(deckFactory.create(CardCount.DEFAULT))
-                        .toGameState(stringsProvider.stringsFor(LanguageChoice.Device)),
-            )
+    private val _state =
+        MutableStateFlow(
+            GameEngine.start(deckFactory.create(CardCount.DEFAULT)).toGameState(stringsProvider.stringsFor(LanguageChoice.Device)),
+        )
+    public val state: StateFlow<GameState> = _state.asStateFlow()
 
     private val eventChannel = Channel<GameEvent>(Channel.BUFFERED)
     public val events: Flow<GameEvent> = eventChannel.receiveAsFlow()
+
+    init {
+        // Inert until someone watches: no game, speech or preference work happens before that.
+        viewModelScope.launch {
+            _state.subscriptionCount
+                .map { it > 0 }
+                .distinctUntilChanged()
+                .collect { visible ->
+                    isScreenVisible = visible
+                    if (visible) onScreenVisible()
+                }
+        }
+    }
 
     public fun onAction(action: GameAction) {
         when (action) {
@@ -70,42 +78,59 @@ public class GameViewModel internal constructor(
         speaker.stop()
     }
 
-    private suspend fun startIfNeeded() {
-        if (hasStarted) return
+    private suspend fun onScreenVisible() {
+        if (!hasStarted) {
+            start()
+        } else if (hasPendingSpeech) {
+            hasPendingSpeech = false
+            speakCurrentLine()
+        }
+    }
+
+    private suspend fun start() {
         hasStarted = true
         preferences = preferencesDataSource.preferences.first()
-        snapshot.value = GameEngine.start(deckFactory.create(preferences.cardCount))
+        snapshot = GameEngine.start(deckFactory.create(preferences.cardCount))
+        publish()
         speakCurrentLine()
         viewModelScope.launch { observePreferences() }
     }
 
     private suspend fun observePreferences() {
         preferencesDataSource.preferences.drop(1).collect { updated ->
-            val voiceTurnedOff = preferences.voiceEnabled && !updated.voiceEnabled
+            val previous = preferences
             preferences = updated
-            if (voiceTurnedOff) speaker.stop()
+            if (previous.voiceEnabled && !updated.voiceEnabled) speaker.stop()
+            if (updated.cardCount != previous.cardCount) {
+                reduce(GameCommand.CardCountChanged(updated.cardCount))
+            } else {
+                publish()
+            }
         }
     }
 
     private fun reduce(command: GameCommand) {
-        val current = snapshot.value ?: return
+        val current = snapshot ?: return
         val next = GameEngine.reduce(current, command, deckFactory::create)
         if (next === current) return
-        snapshot.value = next
+        snapshot = next
+        publish()
         speakCurrentLine()
+    }
+
+    private fun publish() {
+        val current = snapshot ?: return
+        _state.value = current.toGameState(stringsProvider.stringsFor(preferences.languageChoice))
     }
 
     /** Speaks exactly what the screen shows (FR-012, FR-013), only when the voice is on (FR-014). */
     private fun speakCurrentLine() {
         if (!preferences.voiceEnabled) return
-        val current = snapshot.value ?: return
-        val choice = preferences.languageChoice
-        val line = current.toGameState(stringsProvider.stringsFor(choice)).content.spokenLine()
-        speaker.speak(line, stringsProvider.speechLanguageFor(choice))
-    }
-
-    private companion object {
-        const val STOP_TIMEOUT_MILLIS = 5_000L
+        if (!isScreenVisible) {
+            hasPendingSpeech = true
+            return
+        }
+        speaker.speak(_state.value.content.spokenLine(), stringsProvider.speechLanguageFor(preferences.languageChoice))
     }
 }
 
