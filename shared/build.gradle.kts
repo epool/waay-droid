@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.skie)
+    alias(libs.plugins.kover)
 }
 
 kotlin {
@@ -66,6 +67,26 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.koin.android)
+        }
+    }
+}
+
+// Constitution VIII / ADR-011: line coverage of the shared brain, measured by the Android host tests.
+kover {
+    reports {
+        filters {
+            includes {
+                classes(
+                    "dev.epool.waay.game.domain.*",
+                    "dev.epool.waay.*.presentation.*",
+                    "dev.epool.waay.core.i18n.*",
+                )
+            }
+        }
+        verify {
+            rule {
+                minBound(90)
+            }
         }
     }
 }

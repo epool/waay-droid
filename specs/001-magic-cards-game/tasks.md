@@ -655,7 +655,7 @@ These tasks follow the official `adaptive` and `edge-to-edge` skills (ADR-008).
 
 ## Phase 10: Polish & Quality Gates
 
-- [ ] T095 [P] Configure Kover in `shared/build.gradle.kts`: `koverVerify` requires a minimum of 90%
+- [X] T095 [P] Configure Kover in `shared/build.gradle.kts`: `koverVerify` requires a minimum of 90%
   line coverage, filtered to the packages `dev.epool.waay.game.domain`, `*.presentation` and
   `core.i18n`. If the Android-KMP host tests aren't supported, report coverage from host tests only
   and note it in ADR-011.

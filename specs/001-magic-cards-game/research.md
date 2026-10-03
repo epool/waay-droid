@@ -486,6 +486,19 @@ Explicit API mode keeps the exported header small.
 
 **Revisit**: ktlint or Detekt 2 stable releases with full Kotlin 2.4 support.
 
+**Coverage verification (T095, 2026-10-03)**
+- Kover 0.9.9 instruments the Android-KMP host tests: `koverVerify` depends on
+  `:shared:testAndroidHostTest`. Kotlin/Native (iOS) tests run the same `commonTest` code but
+  aren't measured, because Kover only supports JVM targets.
+- First report:
+  - `game.domain`: 98.4%;
+  - `game.presentation`: 99.2%;
+  - `settings.presentation`: 96.1%;
+  - `core.i18n`: 100%;
+  - overall: 98.5%, against the 90% bound.
+- To check that the gate really fails, `minBound(99)` was tried: "Rule violated: lines covered
+  percentage is 98.47, but expected minimum is 99".
+
 ---
 
 ## ADR-012 — Rapid-input guard (FR-028), added during Phase 9
