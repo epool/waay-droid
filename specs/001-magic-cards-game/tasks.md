@@ -670,7 +670,7 @@ These tasks follow the official `adaptive` and `edge-to-edge` skills (ADR-008).
     Roborazzi runs in verify mode.
   - `ios` (macos-latest with Xcode 26.4 selected): `./gradlew :shared:iosSimulatorArm64Test`, then
     `brew install xcodegen && xcodegen`, then `xcodebuild test`, then the swift-format lint script.
-- [ ] T099 [P] Create `renovate.json`:
+- [X] T099 [P] Create `renovate.json`:
   - the `config:recommended` preset;
   - a group for Kotlin, KGP, Compose compiler and SKIE;
   - a group for the AGP;
