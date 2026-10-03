@@ -3,12 +3,14 @@ package dev.epool.waay.game.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.epool.waay.core.i18n.StringsProvider
+import dev.epool.waay.core.speech.Speaker
 import dev.epool.waay.game.domain.CardCount
 import dev.epool.waay.game.domain.DeckFactory
 import dev.epool.waay.game.domain.GameCommand
 import dev.epool.waay.game.domain.GameEngine
 import dev.epool.waay.game.domain.GameSnapshot
 import dev.epool.waay.settings.domain.LanguageChoice
+import dev.epool.waay.settings.domain.Preferences
 import dev.epool.waay.settings.domain.PreferencesDataSource
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -16,23 +18,27 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 /**
  * Thin MVI adapter over the pure [GameEngine] (ADR-001, contracts/game-viewmodel.md).
- * The constructor is inert: the game starts on the first subscription to [state].
+ * The constructor is inert: the game, speech and preference observation start on the first
+ * subscription to [state], once (re-subscribing never repeats them).
  */
 public class GameViewModel internal constructor(
     private val preferencesDataSource: PreferencesDataSource,
     private val stringsProvider: StringsProvider,
     private val deckFactory: DeckFactory,
+    private val speaker: Speaker,
 ) : ViewModel() {
     private val snapshot = MutableStateFlow<GameSnapshot?>(null)
+    private var preferences = Preferences()
     private var hasStarted = false
 
     public val state: StateFlow<GameState> =
@@ -60,18 +66,54 @@ public class GameViewModel internal constructor(
         }
     }
 
+    override fun onCleared() {
+        speaker.stop()
+    }
+
     private suspend fun startIfNeeded() {
         if (hasStarted) return
         hasStarted = true
-        val cardCount = preferencesDataSource.preferences.first().cardCount
-        snapshot.value = GameEngine.start(deckFactory.create(cardCount))
+        preferences = preferencesDataSource.preferences.first()
+        snapshot.value = GameEngine.start(deckFactory.create(preferences.cardCount))
+        speakCurrentLine()
+        viewModelScope.launch { observePreferences() }
+    }
+
+    private suspend fun observePreferences() {
+        preferencesDataSource.preferences.drop(1).collect { updated ->
+            val voiceTurnedOff = preferences.voiceEnabled && !updated.voiceEnabled
+            preferences = updated
+            if (voiceTurnedOff) speaker.stop()
+        }
     }
 
     private fun reduce(command: GameCommand) {
-        snapshot.update { current -> current?.let { GameEngine.reduce(it, command, deckFactory::create) } }
+        val current = snapshot.value ?: return
+        val next = GameEngine.reduce(current, command, deckFactory::create)
+        if (next === current) return
+        snapshot.value = next
+        speakCurrentLine()
+    }
+
+    /** Speaks exactly what the screen shows (FR-012, FR-013), only when the voice is on (FR-014). */
+    private fun speakCurrentLine() {
+        if (!preferences.voiceEnabled) return
+        val current = snapshot.value ?: return
+        val choice = preferences.languageChoice
+        val line = current.toGameState(stringsProvider.stringsFor(choice)).content.spokenLine()
+        speaker.speak(line, stringsProvider.speechLanguageFor(choice))
     }
 
     private companion object {
         const val STOP_TIMEOUT_MILLIS = 5_000L
     }
 }
+
+/** The line the magician says for each phase: always text that is also on screen (FR-013). */
+internal fun GameContentUi.spokenLine(): String =
+    when (this) {
+        is GameContentUi.Intro -> message
+        is GameContentUi.Card -> "$progress. $question"
+        is GameContentUi.Revealed -> message
+        is GameContentUi.Invalid -> message
+    }
