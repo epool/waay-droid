@@ -1,7 +1,5 @@
 package mx.eduardopool.waaydroid;
 
-import java.util.List;
-
 import android.content.Context;
 import android.view.Gravity;
 import android.view.View;
@@ -28,7 +26,7 @@ public class CardAdapter extends BaseAdapter {
     }
 
     public int getCount() {
-        return visibleCard().size();
+        return magicCardsGenerator.getCards().get(currentCard).size();
     }
 
     public Object getItem(int position) {
@@ -44,15 +42,14 @@ public class CardAdapter extends BaseAdapter {
         TextView textView;
         if (convertView == null) {  // if it's not recycled, initialize some attributes
             textView = new TextView(mContext);
-            int cellSize = mContext.getResources().getDimensionPixelSize(R.dimen.card_cell_size);
-            textView.setLayoutParams(new GridView.LayoutParams(cellSize, cellSize));
+            textView.setLayoutParams(new GridView.LayoutParams(150, 150));
             textView.setGravity(Gravity.CENTER);
             textView.setBackgroundResource(R.drawable.black_border);
         } else {
             textView = (TextView) convertView;
         }
 
-        textView.setText(visibleCard().get(position).toString());
+        textView.setText(magicCardsGenerator.getCards().get(currentCard).get(position).toString());
         return textView;
     }
 
@@ -70,17 +67,5 @@ public class CardAdapter extends BaseAdapter {
 
     public Integer getCardsNumber() {
         return cardsNumber;
-    }
-
-    /** Highest number the cards can reveal: (2 ^ cardsNumber) - 1. */
-    public int getMaxNumber() {
-        return (1 << cardsNumber) - 1;
-    }
-
-    // Once every card has been answered currentCard equals cardsNumber, which is one past
-    // the last card; keep showing the last card instead of indexing out of bounds.
-    private List<Integer> visibleCard() {
-        int index = Math.min(currentCard, cardsNumber - 1);
-        return magicCardsGenerator.getCards().get(index);
     }
 }
