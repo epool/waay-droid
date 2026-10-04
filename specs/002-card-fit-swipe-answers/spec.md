@@ -25,6 +25,18 @@ still holds unless a requirement below says it replaces part of it.
 - Q: Should the Yes/No buttons be reordered to mirror the swipe directions? → A: Yes. "No" is on the
   left and "Yes" on the right in every layout. Where spec 001 stacked the buttons beside the numbers,
   they now sit side by side under the card (FR-012a).
+- Q: What should the card screen look like? → A: Like Slack's "Catch up", from the owner's reference
+  screenshots for phone portrait and a wide window:
+  - a full-bleed dark brand backdrop;
+  - a top bar with the progress in the middle and the screen's controls at its ends;
+  - the current card as a large, light, rounded card filling most of the space, with a hint of the
+    stack behind it;
+  - in compact layouts, two large buttons side by side under the card: "No" on the left (outlined) and
+    "Yes" on the right (filled);
+  - in wide layouts, the two answers become tall panels flanking the card: "No" on its left, "Yes" on
+    its right.
+
+  See FR-019 to FR-021.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -70,8 +82,8 @@ The current card behaves like a real card the player can handle. Dragging it to 
 my number is on this card"; dragging it to the left means "No". While the player drags, the card
 follows the finger and tilts, and the answer it is about to give appears on it. If the player lets go
 far enough, or flicks it, the card flies off-screen in that direction and the next card comes in. If
-the player lets go too early, the card springs back to the middle and nothing is answered. The style
-follows Slack's "Catch up" card stack.
+the player lets go too early, the card springs back to the middle and nothing is answered. The layout
+and style follow Slack's "Catch up" card stack (FR-019 to FR-021).
 
 **Why this priority**: It makes answering faster and more playful, and closer to handling real magic cards.
 It builds on Story 1: a card that fits without scrolling can be dragged without fighting a scroll
@@ -124,6 +136,8 @@ system's reduce-motion setting and play a game. Answers work, and cards change w
    matching direction (right for Yes, left for No), the same as a swipe.
 3. **Given** any layout (portrait, landscape, tablet, foldable posture, split screen), **When** a card is
    shown, **Then** the "No" button is to the left of the "Yes" button, on the same sides as the swipes.
+   On a phone in portrait they are two large buttons side by side under the card. On a tablet, in
+   landscape or on an unfolded foldable, they are tall panels on either side of the card.
 4. **Given** the system's reduce-motion setting is on, **When** a card is answered, **Then** it is replaced
    by a short cross-fade instead of flying and tilting, and dragging still answers.
 
@@ -202,8 +216,8 @@ Requirement IDs are local to this spec. "001/FR-xxx" refers to [spec 001](../001
   player. A game MUST stay completable with the buttons alone and with the platform screen reader alone
   (001/FR-025). Swiping is an additional way to answer, not a replacement.
 - **FR-012a**: The buttons MUST mirror the swipe directions in every layout: "No" on the left and "Yes"
-  on the right, side by side. This replaces spec 001's order ("Yes" first) and its vertical stacking
-  beside the numbers in side-by-side layouts. There the buttons sit side by side under the card.
+  on the right. This replaces spec 001's order ("Yes" first) and its vertical stacking beside the
+  numbers. Where the buttons sit depends on the layout (FR-020, FR-021).
 - **FR-013**: Answering with a button MUST trigger the same exit animation as a swipe, in the matching
   direction: right for Yes, left for No.
 - **FR-014**: When the device's reduce-motion setting is on, cards MUST change with a short cross-fade
@@ -214,6 +228,28 @@ Requirement IDs are local to this spec. "001/FR-xxx" refers to [spec 001](../001
   changed: rotation, fold, resize, app switch, opening Settings, or "New game".
 - **FR-017**: Progress ("Card N of M") and the screen's other controls (New game, Settings) MUST stay
   visible and usable while a card is shown and while it is dragged.
+
+**Card screen layout (Slack "Catch up" style)**
+
+- **FR-019**: During the card phase the screen MUST show:
+  - a full-bleed brand backdrop;
+  - a top bar with the progress ("Card N of M") centred and the screen's controls (New game,
+    Settings) at its ends;
+  - the current card as a large, light, rounded card in front of the backdrop, filling most of the
+    remaining space;
+  - the card's question ("Is your number on this card?") as the card's header, and the numbers as its
+    body (FR-001 to FR-004);
+  - a hint of the stack behind the card, showing no numbers (FR-015).
+
+  Text and controls on the backdrop MUST meet the same contrast as elsewhere (001/FR-027).
+- **FR-020**: In compact layouts (phone portrait, narrow split screen), the "No" and "Yes" buttons MUST
+  be two large buttons side by side under the card, spanning its width:
+  - "No" on the left, in a secondary (outlined) style;
+  - "Yes" on the right, in the primary (filled) style.
+- **FR-021**: In wide layouts (tablets, phone landscape, unfolded foldables, wide split screen), the
+  answers MUST be tall panels flanking the card: "No" to its left and "Yes" to its right, each
+  labelled, with the card centred between them. In folded postures, the card and the answers MUST be
+  on opposite sides of the fold, with "No" still left of "Yes" (001/FR-032).
 
 **Unchanged**
 
@@ -253,13 +289,18 @@ Requirement IDs are local to this spec. "001/FR-xxx" refers to [spec 001](../001
 
 - **Swipe direction:** right means Yes and left means No in both languages, as the owner specified. Both
   supported languages read left to right.
-- **Scope:** only the card phase changes. The intro and result screens keep their buttons as in spec 001;
-  swiping them is out of scope.
+- **Scope:** the card phase gets the new interaction. The intro and result screens only take on the
+  shared look (see below).
 - **Card stack look:** a hint of further cards behind the current one, showing backs only, is allowed but
   not required (FR-015).
 - **Haptics:** a light haptic tick when the card crosses the answer threshold is a reasonable default
   where the device supports it, and respects the system's settings.
 - **Threshold:** the answer threshold and flick speed are tuned for comfort (about a third of the card's
   width, or a clear flick). Exact values are a design decision recorded in the plan.
-- **No undo:** answers stay final, as in spec 001.
+- **No undo:** answers stay final, as in spec 001. Slack's "Undo" and "close" controls are not copied.
+  The top bar holds this game's own controls (New game, Settings).
+- **Intro and result screens:** they share the same backdrop and card styling for a consistent look,
+  and keep their single action ("I'm ready", "New game") as in spec 001. Swiping them is out of scope.
+- **Reference screenshots:** the owner's Slack screenshots set the layout direction only. They contain
+  third-party content and are not stored in the repository.
 - **Out of scope:** undoing an answer, new game modes, web and desktop.
