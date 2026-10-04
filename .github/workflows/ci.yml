@@ -1,5 +1,9 @@
 # Quality gates for every change (constitution VIII, ADR-011). Runner images and their Xcode,
 # simulator and JDK sets are documented in github.com/actions/runner-images.
+#
+# Speed (T113): the Gradle cache is written on trunk pushes; ~/.konan is cached; simulators boot
+# (and the iOS 17.5 runtime downloads) while the app builds; Kotlin/Native shared tests run on the
+# short macOS job, off the iOS critical path.
 name: CI
 
 on:
@@ -27,7 +31,11 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+      # setup-gradle only writes its cache on the default branch unless told otherwise; trunk pushes
+      # (kmp, master) write it, pull requests read it.
       - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
       - name: Check, test and build
         run: >
           ./gradlew
@@ -46,32 +54,14 @@ jobs:
             androidApp/build/reports/
             shared/build/reports/
 
-  android-screenshots:
-    # The Roborazzi baselines were recorded on macOS arm64. Native-graphics rendering can differ by
-    # host OS and architecture, so they are verified on the same kind of host (ADR-011).
-    name: Android — screenshot baselines
+  macos-gradle:
+    # Gradle work that needs a Mac, kept off the Xcode jobs' critical path:
+    # - Kotlin/Native shared tests on the iOS simulator;
+    # - the Roborazzi baselines, verified on the host type that recorded them (macOS arm64), since
+    #   native-graphics rendering can differ by host OS and architecture (ADR-011).
+    name: Shared iOS tests and Android screenshots (macOS)
     runs-on: macos-26
     timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: 21
-      - uses: gradle/actions/setup-gradle@v6
-      - name: Verify Roborazzi baselines
-        run: ./gradlew :androidApp:verifyRoborazziDebug
-      - name: Upload screenshot diffs
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: roborazzi-diffs
-          path: androidApp/build/outputs/roborazzi/
-
-  ios:
-    name: iOS — shared tests, format, app and UI tests
-    runs-on: macos-26
-    timeout-minutes: 75
     env:
       # Kotlin 2.4.20 is tested against Xcode 26.4 (ADR-000); macos-26 ships it side by side.
       DEVELOPER_DIR: /Applications/Xcode_26.4.1.app/Contents/Developer
@@ -82,27 +72,66 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
       - name: Cache Kotlin/Native toolchain
         uses: actions/cache@v6
         with:
           path: ~/.konan
           key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}
-      - name: Shared tests on the iOS simulator
-        run: ./gradlew :shared:iosSimulatorArm64Test
+      - name: Shared tests on the iOS simulator and Roborazzi baselines
+        run: ./gradlew :shared:iosSimulatorArm64Test :androidApp:verifyRoborazziDebug
+      - name: Upload screenshot diffs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: roborazzi-diffs
+          path: androidApp/build/outputs/roborazzi/
+
+  ios:
+    name: iOS — format, app and UI tests
+    runs-on: macos-26
+    timeout-minutes: 60
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.4.1.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v7
+      # Booting takes minutes on a fresh runner; it carries on while everything below runs.
+      - name: Boot an iPhone 17 on the newest iOS runtime
+        run: echo "SIMULATOR_UDID=$(scripts/ci-boot-simulator.sh 'iPhone 17')" >> "$GITHUB_ENV"
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+      - name: Cache Kotlin/Native toolchain
+        uses: actions/cache@v6
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}
       - name: Swift format
         run: scripts/swift-format-lint.sh
       - name: Regenerate the Xcode project from project.yml
         run: |
           brew install xcodegen
           xcodegen --spec iosApp/project.yml
-      # OS=latest: the image's runtimes carry patch versions (e.g. 26.4.1), so an exact "26.4" matches
-      # nothing. iOS 17.5 is covered by ios-minimum-os.
-      - name: App and UI tests
+      - name: Build the app and tests
         run: >
-          xcodebuild test
+          xcodebuild build-for-testing
           -project iosApp/iosApp.xcodeproj
           -scheme Waay
-          -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest'
+          -destination "platform=iOS Simulator,id=$SIMULATOR_UDID"
+          -derivedDataPath build/DerivedData
+          COMPILER_INDEX_STORE_ENABLE=NO
+      - name: App and UI tests
+        run: >
+          xcodebuild test-without-building
+          -project iosApp/iosApp.xcodeproj
+          -scheme Waay
+          -destination "platform=iOS Simulator,id=$SIMULATOR_UDID"
+          -derivedDataPath build/DerivedData
           -resultBundlePath build/Waay.xcresult
           -collect-test-diagnostics never
       - name: Upload test results
@@ -114,37 +143,65 @@ jobs:
 
   ios-minimum-os:
     # FR-030: the full suite on the minimum supported OS. No runner image preinstalls an iOS 17
-    # runtime, so it is downloaded (~8 GB). Skipped on pull requests to keep them fast.
+    # runtime, so it is downloaded (~7 GB), in the background while the app builds. Skipped on pull
+    # requests to keep them fast.
     name: iOS 17.5 — minimum OS
     if: github.event_name != 'pull_request'
     runs-on: macos-26
-    timeout-minutes: 90
+    timeout-minutes: 75
     env:
-      # Kotlin 2.4.20 is tested against Xcode 26.4 (ADR-000); macos-26 ships it side by side.
       DEVELOPER_DIR: /Applications/Xcode_26.4.1.app/Contents/Developer
     steps:
       - uses: actions/checkout@v7
+      - name: Start downloading the iOS 17.5 simulator runtime
+        run: nohup xcodebuild -downloadPlatform iOS -buildVersion 17.5 > "$RUNNER_TEMP/ios17-runtime.log" 2>&1 &
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v6
-      - name: Install the iOS 17.5 simulator runtime
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+      - name: Cache Kotlin/Native toolchain
+        uses: actions/cache@v6
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}
+      # A generic destination needs no installed runtime; arm64 only, like the Kotlin framework.
+      - name: Build the app and tests
+        run: >
+          xcodebuild build-for-testing
+          -project iosApp/iosApp.xcodeproj
+          -scheme Waay
+          -destination 'generic/platform=iOS Simulator'
+          -derivedDataPath build/DerivedData
+          ARCHS=arm64
+          COMPILER_INDEX_STORE_ENABLE=NO
+      - name: Wait for the runtime, then boot an iPhone 15 on iOS 17.5
+        timeout-minutes: 20
         run: |
-          xcodebuild -downloadPlatform iOS -buildVersion 17.5
-          xcrun simctl list runtimes
-      - name: Create an iPhone 15 on iOS 17.5
-        run: |
+          until xcrun simctl list runtimes | grep -q "iOS 17.5"; do
+            if ! pgrep -f "downloadPlatform iOS" > /dev/null; then
+              cat "$RUNNER_TEMP/ios17-runtime.log"
+              xcrun simctl list runtimes | grep -q "iOS 17.5" && break
+              echo "::error::The iOS 17.5 runtime download ended without installing it"
+              exit 1
+            fi
+            sleep 10
+          done
+          tail -n 3 "$RUNNER_TEMP/ios17-runtime.log"
           udid=$(xcrun simctl create "iPhone 15 (iOS 17.5)" \
             com.apple.CoreSimulator.SimDeviceType.iPhone-15 \
             com.apple.CoreSimulator.SimRuntime.iOS-17-5)
+          xcrun simctl boot "$udid"
           echo "SIMULATOR_UDID=$udid" >> "$GITHUB_ENV"
       - name: App and UI tests on iOS 17.5
         run: >
-          xcodebuild test
+          xcodebuild test-without-building
           -project iosApp/iosApp.xcodeproj
           -scheme Waay
           -destination "platform=iOS Simulator,id=$SIMULATOR_UDID"
+          -derivedDataPath build/DerivedData
           -resultBundlePath build/Waay-ios17.xcresult
           -collect-test-diagnostics never
       - name: Upload test results
