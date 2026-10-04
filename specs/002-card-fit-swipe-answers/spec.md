@@ -1,4 +1,4 @@
-# Feature Specification: Card Fit and Swipe Answers
+# Feature Specification: Card Fit, Swipe Answers and Native Look
 
 **Feature Branch**: `002-card-fit-swipe-answers`
 
@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Two new requirements: 1. The numbers layout should fill the screen without needing to scroll. 2. New UI to answer yes or no with a swipe right and left gesture with animation, similar to Slack's Catch up feature."
+**Input**: User description: "Two new requirements: 1. The numbers layout should fill the screen without needing to scroll. 2. New UI to answer yes or no with a swipe right and left gesture with animation, similar to Slack's Catch up feature." Follow-ups: "Layout should be similar to Slack's" (with reference screenshots); "the app must follow Material You on Android and crystal glass on iOS".
 
 Builds on [spec 001 — Magic Cards Game v1](../001-magic-cards-game/spec.md). Everything spec 001 requires
 still holds unless a requirement below says it replaces part of it.
@@ -37,6 +37,11 @@ still holds unless a requirement below says it replaces part of it.
     its right.
 
   See FR-019 to FR-021.
+- Q: What visual style should each platform follow? → A: Each platform's current design language,
+  across the whole app. On Android that is Material You: colours come from the user's wallpaper and
+  theme, with Material 3 components, shapes and motion. On iOS it is Apple's Liquid Glass (the owner
+  said "crystal glass"): translucent glass for controls and bars over the content. Older OS versions
+  without these get the closest native look (FR-022 to FR-026).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -143,6 +148,44 @@ system's reduce-motion setting and play a game. Answers work, and cards change w
 
 ---
 
+### User Story 4 - Feels at home on each platform (Priority: P2)
+
+On Android the game looks and moves like a Material You app: its colours follow the player's
+wallpaper and theme, and its buttons, cards, shapes and motion are Material 3. On iOS it looks like a
+current iPhone or iPad app: the top bar and the answer controls are Liquid Glass, floating over the
+content and reacting to it. On older OS versions without these styles the game still looks native, in
+the closest style the device offers. Light and dark mode both work, and the numbers stay perfectly
+readable.
+
+**Why this priority**: A game that looks native feels polished and trustworthy, and matches the
+other apps around it. It also shapes how the new card screen is drawn, so it belongs with Stories 1–3.
+
+**Independent Test**:
+- On an Android 12+ phone, change the wallpaper and theme colours: the game's colours follow.
+- On an Android 8–11 phone: the game shows its own Material 3 colour scheme.
+- On iOS 26+: the top bar and Yes/No controls are glass.
+- On iOS 17–25: the controls use the system's materials.
+- In every case, light and dark mode work and the accessibility checks pass.
+
+**Acceptance Scenarios**:
+
+1. **Given** an Android 12+ device with dynamic colours, **When** the player changes their wallpaper or
+   theme colours and returns to the game, **Then** the backdrop, card, buttons and Settings use the new
+   colours.
+2. **Given** an Android device without dynamic colours (Android 8–11), **When** the game opens,
+   **Then** it uses Wáay's own Material 3 colour scheme, in light or dark to match the device.
+3. **Given** iOS 26 or later, **When** a card is shown, **Then** the top bar and the "No" and "Yes"
+   controls are glass that lets the backdrop show through, and the "Yes" control is tinted to stand out.
+4. **Given** iOS 17 to 25, **When** a card is shown, **Then** the same controls use the system's
+   translucent materials, and everything else works the same.
+5. **Given** any platform, **When** a card is shown, **Then** the numbers sit on a solid, opaque card,
+   never on glass or a busy background, and meet the contrast rules in light and dark mode.
+6. **Given** the device's Reduce Transparency or Increase Contrast setting is on, **When** the game
+   is shown, **Then** glass and translucent surfaces become solid enough for the text on them to meet
+   contrast rules.
+
+---
+
 ### Edge Cases
 
 - **Mostly vertical drag:** a drag that is mostly up or down does not answer and does not move the card
@@ -232,7 +275,7 @@ Requirement IDs are local to this spec. "001/FR-xxx" refers to [spec 001](../001
 **Card screen layout (Slack "Catch up" style)**
 
 - **FR-019**: During the card phase the screen MUST show:
-  - a full-bleed brand backdrop;
+  - a full-bleed backdrop in the platform's style (FR-022, FR-023);
   - a top bar with the progress ("Card N of M") centred and the screen's controls (New game,
     Settings) at its ends;
   - the current card as a large, light, rounded card in front of the backdrop, filling most of the
@@ -250,6 +293,28 @@ Requirement IDs are local to this spec. "001/FR-xxx" refers to [spec 001](../001
   answers MUST be tall panels flanking the card: "No" to its left and "Yes" to its right, each
   labelled, with the card centred between them. In folded postures, the card and the answers MUST be
   on opposite sides of the fold, with "No" still left of "Yes" (001/FR-032).
+
+**Platform design language (whole app: intro, card, result, Settings)**
+
+- **FR-022**: On Android the app MUST follow Material You:
+  - colours MUST come from the device's dynamic colour scheme (wallpaper and theme) where available,
+    in light and dark;
+  - buttons, cards, top bar, settings controls, shapes, typography and motion MUST use Material 3;
+  - where dynamic colour is unavailable (Android 8–11), a Wáay Material 3 colour scheme MUST be used.
+- **FR-023**: On iOS 26 and later the app MUST follow Liquid Glass:
+  - the top bar, the "No" and "Yes" controls (buttons or flanking panels) and the screen's other
+    floating controls MUST use the system glass material;
+  - the "Yes" control MUST be tinted (prominent), and the "No" control untinted;
+  - Settings MUST use the system's standard glass-era styling.
+- **FR-024**: On iOS 17 to 25, which have no Liquid Glass, the same controls MUST use the closest native
+  style (the system's translucent materials and standard controls). Behaviour stays identical.
+- **FR-025**: Content legibility comes first. The numbers card MUST be a solid, opaque surface. Glass and
+  translucency MUST only be used for controls and bars, never behind the numbers or messages. All text
+  MUST meet the contrast rules (001/FR-027) in light and dark mode, with dynamic colours, and when
+  Reduce Transparency or Increase Contrast is on.
+- **FR-026**: The swipe hint labels, card motion and exit animations (FR-009, FR-010) MUST use each
+  platform's own motion style (for example spring-based movement). Reduce motion (FR-014) still
+  applies.
 
 **Unchanged**
 
@@ -284,6 +349,11 @@ Requirement IDs are local to this spec. "001/FR-xxx" refers to [spec 001](../001
   reader, on both platforms. With reduce motion on, no card flies or tilts.
 - **SC-007**: Rapid or repeated input (double swipes, swipe plus tap, flick during the exit animation)
   never records more than one answer per card in testing.
+- **SC-008**: On Android 12+, changing the wallpaper or theme colours changes the game's colours on the
+  next visit, in 100% of tests. On every supported OS version of both platforms, the accessibility
+  checks (labels, contrast, text size) pass in light and dark mode.
+- **SC-009**: On iOS 26+, every floating control on the card screen (top bar, No, Yes) renders as
+  glass. On iOS 17–25 and Android 8–11, players complete games exactly as on the newest versions.
 
 ## Assumptions
 
@@ -299,6 +369,11 @@ Requirement IDs are local to this spec. "001/FR-xxx" refers to [spec 001](../001
   width, or a clear flick). Exact values are a design decision recorded in the plan.
 - **No undo:** answers stay final, as in spec 001. Slack's "Undo" and "close" controls are not copied.
   The top bar holds this game's own controls (New game, Settings).
+- **Design language names:** "Material You" means Google's current Material 3 with dynamic colour.
+  "Crystal glass" is read as Apple's Liquid Glass, introduced with iOS 26.
+- **Brand colours as fallback:** Wáay's brand colours (from the app icon, and iOS's accent colour) are
+  used where the platform offers no user-derived colours: on Android 8–11, and as iOS's tint and
+  backdrop.
 - **Intro and result screens:** they share the same backdrop and card styling for a consistent look,
   and keep their single action ("I'm ready", "New game") as in spec 001. Swiping them is out of scope.
 - **Reference screenshots:** the owner's Slack screenshots set the layout direction only. They contain

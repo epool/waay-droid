@@ -33,4 +33,5 @@
 
 - Both clarifications were resolved on 2026-10-04: the text size wins over fitting (FR-004), and the
   Yes/No buttons stay alongside swiping (FR-012).
-- "Slack's Catch up" is named only as a reference for the interaction style, not as a technology.
+- "Slack's Catch up", "Material You" and "Liquid Glass" are named as user-visible design references, not
+  as technologies. How each is implemented is decided in the plan.
