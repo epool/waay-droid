@@ -28,6 +28,9 @@ targets:
       base:
         PRODUCT_NAME: Waay
         PRODUCT_BUNDLE_IDENTIFIER: dev.epool.waay
+        # Brand tint from the app icon, chosen for WCAG AA contrast (white on tint and tint on the
+        # background) in light and dark mode; the system blue fails 4.5:1 under white button text.
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Wáay
         INFOPLIST_KEY_UILaunchScreen_Generation: YES

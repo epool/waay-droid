@@ -441,6 +441,20 @@ in the 2014 icon's red to orange, on deep indigo.
   iOS 26 and later. The asset catalog covers the whole iOS 17+ range. Revisit when the minimum OS
   moves to 26.
 
+**Accessibility audit fixes (T112, 2026-10-03).** Xcode's `performAccessibilityAudit` flagged
+contrast below 4.5:1 in three places:
+- The system blue under white button text. Replaced by a brand accent colour (`AccentColor` in the
+  asset catalog, set through `ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME`):
+  - light mode `#4527A0`: 10.2:1 for white on the tint and for the tint on white;
+  - dark mode `#8257F1`: 4.58:1 for white on the tint and for the tint on black. That is the narrow
+    luminance band where both pass.
+- The secondary-grey progress label, now the primary text colour, as on Android.
+- The grey Settings section headers, now custom headers in `Color.primary` with a scalable font.
+
+One remaining finding is accepted as a false positive: the audit reports those section headers'
+Dynamic Type support as "partial", because grouped lists cap header text below body text. The
+headers were checked at Accessibility XXXL and do scale.
+
 ---
 
 ## ADR-010 — Testing stack

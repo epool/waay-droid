@@ -87,9 +87,9 @@ private struct CardView: View {
             // The header scrolls with the numbers, so short landscape windows at AX sizes never clip it.
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
+                    // Primary text colour: the secondary grey fails the 4.5:1 contrast audit (FR-025).
                     Text(card.progress)
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
                         .accessibilityIdentifier("card.progress")
                     Text(card.question)
                         .font(.headline)

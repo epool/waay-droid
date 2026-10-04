@@ -806,7 +806,7 @@ fixed against its existing requirement.
 - [X] T109 [P] Android `PreferencesPersistenceTest.freshInstallUsesTheDefaults`: the 1–31 intro, plus 5 cards, voice on and device language selected in Settings. Mirrors the iOS test of the same name (FR-024)
 - [X] T110 Android `AccessibilityTest`: a full round at font scale 2.0 in portrait and landscape, with every control on screen (scrolling allowed). Mirrors the iOS `AccessibilityUITests`. Fix any clipping it exposes (FR-026, SC-006)
 - [X] T111 [P] iOS `RapidInputUITests`: a double tap on Yes records one answer. Mirrors the Android `RapidInputTest` (FR-028)
-- [ ] T112 [P] iOS `AccessibilitySemanticsUITests`: the toolbar, answers and numbers carry their labels, and Xcode's accessibility audit passes on the intro, card, result and Settings. Mirrors the Android `gameIsUsableThroughSemantics` (FR-025)
+- [X] T112 [P] iOS `AccessibilitySemanticsUITests`: the toolbar, answers and numbers carry their labels, and Xcode's accessibility audit passes on the intro, card, result and Settings. Mirrors the Android `gameIsUsableThroughSemantics` (FR-025)
 - [ ] T113 CI speed-ups in `.github/workflows/ci.yml`, measured before and after and recorded in ADR-011:
   - Gradle cache writable on trunk pushes (`setup-gradle` defaults to read-only off the default branch);
   - `~/.konan` cache in `ios-minimum-os`;

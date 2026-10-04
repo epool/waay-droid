@@ -12,7 +12,9 @@ struct SettingsScreen: View {
             Toggle(state.voiceLabel, isOn: voiceBinding)
                 .accessibilityIdentifier("settings.voice")
             // Section headers are visible and carry the header trait for VoiceOver's rotor (FR-025).
-            Section(state.cardCountLabel) {
+            // Custom headers: the system's grey, non-scaling header text fails the accessibility audit
+            // (4.5:1 contrast, Dynamic Type).
+            Section {
                 Picker(state.cardCountLabel, selection: cardCountBinding) {
                     ForEach(state.cardCountOptions, id: \.value) { option in
                         Text(option.label).tag(option.value)
@@ -21,8 +23,10 @@ struct SettingsScreen: View {
                 .pickerStyle(.inline)
                 .labelsHidden()
                 .accessibilityIdentifier("settings.cardCount")
+            } header: {
+                sectionHeader(state.cardCountLabel)
             }
-            Section(state.languageLabel) {
+            Section {
                 Picker(state.languageLabel, selection: languageBinding) {
                     ForEach(state.languageOptions, id: \.choice) { option in
                         Text(option.label).tag(option.choice)
@@ -31,10 +35,18 @@ struct SettingsScreen: View {
                 .pickerStyle(.inline)
                 .labelsHidden()
                 .accessibilityIdentifier("settings.language")
+            } header: {
+                sectionHeader(state.languageLabel)
             }
         }
         .navigationTitle(state.title)
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(Color.primary)
     }
 
     private var languageBinding: Binding<LanguageChoiceUi> {
