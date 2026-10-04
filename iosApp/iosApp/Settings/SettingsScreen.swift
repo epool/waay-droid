@@ -47,6 +47,7 @@ struct SettingsScreen: View {
         Text(title)
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(Color.primary)
+            .textCase(nil)  // sentence case on every iOS version, as on Android
     }
 
     private var languageBinding: Binding<LanguageChoiceUi> {

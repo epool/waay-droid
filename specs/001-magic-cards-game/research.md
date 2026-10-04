@@ -451,9 +451,13 @@ contrast below 4.5:1 in three places:
 - The secondary-grey progress label, now the primary text colour, as on Android.
 - The grey Settings section headers, now custom headers in `Color.primary` with a scalable font.
 
-One remaining finding is accepted as a false positive: the audit reports those section headers'
-Dynamic Type support as "partial", because grouped lists cap header text below body text. The
-headers were checked at Accessibility XXXL and do scale.
+Two kinds of finding are accepted on Settings, and only there. Both were checked by eye at
+Accessibility XXXL on iOS 18.6 and 27:
+- The section headers' Dynamic Type support is reported as "partial", because grouped lists cap
+  header text below body text. The headers do scale.
+- Findings the audit can't attach to any element (`element == nil`). On iOS 18 these come from the
+  system navigation bar (inline title and back button), which doesn't scale with Dynamic Type.
+  iOS 26 and later report none.
 
 ---
 
@@ -516,6 +520,27 @@ headers were checked at Accessibility XXXL and do scale.
   parse them reliably, so we use the classic `_state` / `state` pair (Lackner's MVI skill).
 
 **Revisit**: ktlint or Detekt 2 stable releases with full Kotlin 2.4 support.
+
+**CI speed-ups (T113, 2026-10-03).** The first green run (37161441986) took 12 min for `ios`,
+11 min for `ios-minimum-os`, and about 3.5 min for each Android job. Per-step timings showed:
+- `setup-gradle` never wrote its cache on `kmp`: it is read-only off the default branch, so every
+  run started Gradle cold (about 2 min);
+- `ios-minimum-os` had no `~/.konan` cache;
+- about 3.5 min of simulator boot ran after the build, serially;
+- the 2 min runtime download also ran before the build.
+
+Changes:
+- `cache-read-only` is set only for pull requests;
+- `~/.konan` is cached in every Mac job;
+- simulators boot at job start, and the iOS 17.5 runtime downloads in the background during
+  `build-for-testing`, which uses a generic arm64 destination;
+- `test-without-building` follows the build;
+- `COMPILER_INDEX_STORE_ENABLE=NO`;
+- the Kotlin/Native shared tests moved to the short macOS Gradle job (`macos-gradle`, alongside
+  Roborazzi), off the Xcode critical path.
+
+Measured results are recorded below once the new workflow has run twice (the first run fills the
+caches).
 
 **CI as built (T098, 2026-10-03)** — `.github/workflows/ci.yml`. It passes `actionlint` 1.7.12 but
 has **not run yet**, because nothing has been pushed. It has four jobs:
