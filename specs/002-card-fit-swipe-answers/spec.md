@@ -22,6 +22,9 @@ still holds unless a requirement below says it replaces part of it.
 - Q: Do the visible Yes/No buttons stay alongside swiping? → A: Yes. Both buttons stay visible on
   every card, and tapping one throws the card in the matching direction, as a swipe does. Swiping is
   an additional, faster way to answer (FR-012, FR-013).
+- Q: Should the Yes/No buttons be reordered to mirror the swipe directions? → A: Yes. "No" is on the
+  left and "Yes" on the right in every layout. Where spec 001 stacked the buttons beside the numbers,
+  they now sit side by side under the card (FR-012a).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -119,7 +122,9 @@ system's reduce-motion setting and play a game. Answers work, and cards change w
    swipe (FR-012).
 2. **Given** a non-gesture answer is given, **When** it is recorded, **Then** the card leaves in the
    matching direction (right for Yes, left for No), the same as a swipe.
-3. **Given** the system's reduce-motion setting is on, **When** a card is answered, **Then** it is replaced
+3. **Given** any layout (portrait, landscape, tablet, foldable posture, split screen), **When** a card is
+   shown, **Then** the "No" button is to the left of the "Yes" button, on the same sides as the swipes.
+4. **Given** the system's reduce-motion setting is on, **When** a card is answered, **Then** it is replaced
    by a short cross-fade instead of flying and tilting, and dragging still answers.
 
 ---
@@ -196,6 +201,9 @@ Requirement IDs are local to this spec. "001/FR-xxx" refers to [spec 001](../001
 - **FR-012**: Visible "Yes" and "No" buttons MUST remain on every card alongside swiping, for every
   player. A game MUST stay completable with the buttons alone and with the platform screen reader alone
   (001/FR-025). Swiping is an additional way to answer, not a replacement.
+- **FR-012a**: The buttons MUST mirror the swipe directions in every layout: "No" on the left and "Yes"
+  on the right, side by side. This replaces spec 001's order ("Yes" first) and its vertical stacking
+  beside the numbers in side-by-side layouts. There the buttons sit side by side under the card.
 - **FR-013**: Answering with a button MUST trigger the same exit animation as a swipe, in the matching
   direction: right for Yes, left for No.
 - **FR-014**: When the device's reduce-motion setting is on, cards MUST change with a short cross-fade
