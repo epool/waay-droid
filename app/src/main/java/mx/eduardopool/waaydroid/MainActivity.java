@@ -3,7 +3,6 @@ package mx.eduardopool.waaydroid;
 import java.util.Locale;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.view.Menu;
@@ -12,8 +11,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.Toast;
@@ -26,6 +23,7 @@ public class MainActivity extends Activity {
     private GridView gridview;
 
     private TextToSpeech reader;
+    private boolean readerReady;
 
     private Animation fadeIn = new AlphaAnimation(0, 1);
 
@@ -57,31 +55,18 @@ public class MainActivity extends Activity {
 
         isGuessing = true;
 
-        gridview.setOnItemClickListener(new OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                Toast.makeText(MainActivity.this, "" + position, Toast.LENGTH_SHORT).show();
-            }
-        });
-
         reader = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
-                if (status == TextToSpeech.SUCCESS) {
-                    int result = TextToSpeech.LANG_COUNTRY_AVAILABLE;
-                    if (result == TextToSpeech.LANG_MISSING_DATA
-                            || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-//						Toast.makeText(getApplication(), "Lenguaje no soportado",
-//								Toast.LENGTH_LONG).show();
-                    } else {
-//						Toast.makeText(getApplication(), "Lenguaje soportado",
-//								Toast.LENGTH_LONG).show();
-                        reader.speak("piensa en un número del 1 al 31 y déjame adivinar cual es...", TextToSpeech.QUEUE_ADD, null);
-                    }
-
+                if (status == TextToSpeech.SUCCESS && setSpanishLanguage()) {
+                    readerReady = true;
+                    speak(getString(R.string.intro_think_of_number, cardAdapter.getMaxNumber()));
+                } else {
+                    Toast.makeText(MainActivity.this, R.string.tts_spanish_unavailable,
+                            Toast.LENGTH_LONG).show();
                 }
             }
         });
-        reader.isLanguageAvailable(new Locale("spa"));
 
         fadeIn.setDuration(800);
     }
@@ -101,21 +86,44 @@ public class MainActivity extends Activity {
     private String numberInMind = "";
 
     private void processSelection(String selection) {
-        if (isGuessing) {
-            cardAdapter.passCard();
-            stringBuilder.insert(0, selection);
-        } else {
-            Toast.makeText(this, "¿El número que pensaste fue " + numberInMind + "?", Toast.LENGTH_LONG).show();
-            reader.speak("¿El número que pensaste fue " + numberInMind + "?", TextToSpeech.QUEUE_ADD, null);
+        if (!isGuessing) {
+            // The game is over; the buttons just repeat the answer.
+            announceResult();
+            return;
         }
+        cardAdapter.passCard();
+        stringBuilder.insert(0, selection);
         if (cardAdapter.getCurrentCard() < cardAdapter.getCardsNumber()) {
             gridview.startAnimation(fadeIn);
             cardAdapter.notifyDataSetChanged();
         } else {
             isGuessing = false;
             numberInMind = String.valueOf(Integer.parseInt(stringBuilder.toString(), 2));
-            Toast.makeText(this, "¿El número que pensaste fue " + numberInMind + "?", Toast.LENGTH_LONG).show();
-            reader.speak("¿El número que pensaste fue " + numberInMind + "?", TextToSpeech.QUEUE_ADD, null);
+            announceResult();
+        }
+    }
+
+    private void announceResult() {
+        String question = getString(R.string.result_question, numberInMind);
+        Toast.makeText(this, question, Toast.LENGTH_LONG).show();
+        speak(question);
+    }
+
+    private boolean setSpanishLanguage() {
+        int result = reader.setLanguage(new Locale("es", "MX"));
+        if (isLanguageUnavailable(result)) {
+            result = reader.setLanguage(new Locale("es"));
+        }
+        return !isLanguageUnavailable(result);
+    }
+
+    private boolean isLanguageUnavailable(int result) {
+        return result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED;
+    }
+
+    private void speak(String text) {
+        if (readerReady) {
+            reader.speak(text, TextToSpeech.QUEUE_ADD, null);
         }
     }
 
@@ -131,7 +139,7 @@ public class MainActivity extends Activity {
         switch (item.getItemId()) {
             case R.id.action_reset:
                 restartGuess();
-                Toast.makeText(this, "Reset!", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.reset_done, Toast.LENGTH_LONG).show();
                 break;
         }
         return super.onOptionsItemSelected(item);

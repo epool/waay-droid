@@ -3,9 +3,14 @@
 
     <string name="app_name">Wáay! Droid</string>
     <string name="reset">Reset</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="reset_done">Reset!</string>
     <string name="isYourNumberQuestion">¿Está el número que pensaste en esta lista?</string>
     <string name="yes">Si</string>
     <string name="no">No</string>
+    <!-- %1$d: highest number the cards can reveal -->
+    <string name="intro_think_of_number">piensa en un número del 1 al %1$d y déjame adivinar cual es...</string>
+    <!-- %1$s: the guessed number -->
+    <string name="result_question">¿El número que pensaste fue %1$s?</string>
+    <string name="tts_spanish_unavailable">La voz en español no está disponible en este dispositivo</string>
 
 </resources>
