@@ -55,14 +55,26 @@ xcodebuild test -project iosApp/iosApp.xcodeproj -scheme Waay \
 | Exhaustive decode, every n in 1..2^N−1 for N = 3…7 (243 cases) | SC-001, FR-002, FR-004, FR-010 |
 | Uniformity, 10,000 seeded games per N: each position within ±5%, and the first-shown number ≈ 1/numbersPerCard | SC-002, FR-008, FR-009 |
 | All "No" gives Invalid | FR-005 |
-| GameViewModel guarantees G1–G13 and SettingsViewModel guarantees S1–S6, with Turbine | Stories 1–6 |
+| GameViewModel guarantees G1–G14 and SettingsViewModel guarantees S1–S6, with Turbine | Stories 1–6 |
 | Strings: every `Strings` member is non-blank in EN and ES, and no state mixes languages | SC-004, FR-019 |
 | Roborazzi: 3 widths × 3 heights, font scale 1.5 and 2.0, and the tabletop and book postures, for each Game phase | SC-009, FR-026, FR-031, FR-032 |
-| Robolectric robot flow, Intro → Ready → N answers → Revealed → New game, on API 26 and 36, plus a semantics-only run | US1, FR-025 |
-| `RapidInputTest`, `ConfigurationChangeTest`, `CardScrollTest`, `PreferencesPersistenceTest` | FR-028, FR-029, FR-003a, SC-005 |
 | `GameViewModelTest.speechFailuresNeverBlockTheGame` (a speaker that throws on every call) and Robolectric `TextToSpeechSpeakerTest` (flush queue mode, pending first line, `stop`, failed init) | FR-016, FR-015 |
 | Roborazzi `SettingsScreenScreenshotTest`: EN with voice on, ES with voice off, font 2.0; reviewed for non-colour selection cues | FR-027, FR-026, FR-019 |
-| XCUITest: `GameFlowUITests` (rotation, background, Settings round trip), `AccessibilityUITests` (AX5, both orientations), `CardScrollUITests`, `LanguageSwitchUITests`, `PreferencesPersistenceUITests` | US1, FR-025, FR-026, FR-003a, US5, SC-005 |
+
+UI tests, kept the same on both platforms (Phase 13):
+
+| Scenario | Android (Robolectric) | iOS (XCUITest) | Proves |
+|---|---|---|---|
+| Full round, reveal, new game | `GameFlowTest.playsAFullRoundThenStartsANewGame` (API 26 and 36) | `LaunchUITests`, `GameFlowUITests` | US1 |
+| Rotation, background and a Settings round trip mid-game | `GameFlowTest.playsAFullRoundSurvivingInterruptionsThenStartsANewGame` (API 26 and 36) | `GameFlowUITests` | FR-029, FR-016b |
+| A new card starts at the top | `CardScrollTest` | `CardScrollUITests` (skips where the grid fits) | FR-003a |
+| A rapid double tap records one answer | `RapidInputTest` | `RapidInputUITests` | FR-028 |
+| Spanish device, then English mid-game | `LanguageSwitchTest` | `LanguageSwitchUITests` | US5 |
+| Fresh install defaults; settings survive a restart | `PreferencesPersistenceTest` | `PreferencesPersistenceUITests` | FR-024, SC-005 |
+| A full round at the largest text size, portrait and landscape | `AccessibilityTest` (font 2.0) | `AccessibilityUITests` (AX5) | FR-026, SC-006 |
+| Headings, labels and announcements | `GameFlowTest.gameIsUsableThroughSemantics` | `AccessibilitySemanticsUITests` (Xcode accessibility audit on every screen) | FR-025 |
+| Activity recreation | `ConfigurationChangeTest` | covered by the rotation in `GameFlowUITests` | FR-029 |
+| Screenshot baselines (sizes, fonts, fold postures, Settings) | `GameScreenScreenshotTest`, `SettingsScreenScreenshotTest` | none: see the T114 note in the run log | SC-009 |
 
 ## 2. Manual scenarios
 
@@ -253,3 +265,19 @@ plus `adb shell input`, reading the screen the way a player would.
 
 The owner accepted spec 001 at the verification gate. The checks listed under T101 in `tasks.md`
 were waived. iOS 17.x is still covered by CI's `ios-minimum-os` job once the branch is pushed.
+
+**2026-10-03: first CI runs, test parity and CI speed-ups (T107–T114)**
+
+- **I10 verified in CI:** run 37161441986 passed the full UI suite on an iPhone 15 with iOS 17.5,
+  which is the minimum OS (FR-030). This was waived at acceptance and is now covered.
+- **Test parity:** Android gained interruption, language-switch, fresh-install and largest-font
+  tests; iOS gained rapid-double-tap and accessibility-audit tests.
+  - The iOS audit found contrast below 4.5:1, which is fixed with a brand accent colour, primary-colour
+    progress text and primary-colour Settings headers (ADR notes in `research.md`).
+  - The Android tests found no new defects. The landscape-largest-font check uses a 640×360 dp phone.
+  - iOS has no screenshot baselines. Adding them needs a snapshot-testing dependency, and a simulator
+    runtime that is the same locally and in CI; that is a separate decision.
+- **Local results:** Android has 19 Robolectric tests. iOS has 13 tests (3 unit + 10 UI), all passing
+  on iPhone 16 (iOS 18.6) and iPhone 17 (iOS 27.0).
+- **CI speed-ups:** see ADR-011. The before and after timings are recorded there once the new
+  workflow has run twice.

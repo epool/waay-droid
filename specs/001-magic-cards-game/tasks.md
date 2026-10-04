@@ -813,4 +813,4 @@ fixed against its existing requirement.
   - simulators booted at job start so the boot overlaps the build;
   - `build-for-testing` / `test-without-building`;
   - no index store in CI builds.
-- [ ] T114 Update `quickstart.md` with the parity test table and the CI run log, including I10: the full UI suite passed on iOS 17.5 in CI run 37161441986.
+- [X] T114 Update `quickstart.md` with the parity test table and the CI run log, including I10: the full UI suite passed on iOS 17.5 in CI run 37161441986.
