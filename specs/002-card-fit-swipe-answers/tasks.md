@@ -220,7 +220,7 @@ scheme shows. On iOS 26, the controls are glass. Light and dark modes pass the a
 
 ### Tests first
 
-- [ ] T028 [P] [US4] Write `A/test/kotlin/dev/epool/waay/android/ui/ThemeTest.kt`:
+- [X] T028 [P] [US4] Write `A/test/kotlin/dev/epool/waay/android/ui/ThemeTest.kt`:
   - at `sdk = 30`, `MaterialTheme.colorScheme` equals the generated fallback in light and dark;
   - at `sdk = 36`, it uses the dynamic scheme.
 
