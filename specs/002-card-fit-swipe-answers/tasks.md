@@ -167,7 +167,7 @@ No, with tilt, hint labels, a flick and a spring-back. A card leaves only when i
     the left;
   - a tap checks `canAnswer`, then starts the stage's exit animation and sends `OnAnswerClick`
     (FR-013).
-- [ ] T021 [US2] Create `A/main/kotlin/dev/epool/waay/android/game/CardStage.kt`, following ADR-015:
+- [X] T021 [US2] Create `A/main/kotlin/dev/epool/waay/android/game/CardStage.kt`, following ADR-015:
   - the card's question header and `CardGridView`;
   - `Modifier.draggable(Horizontal)` with an `Animatable` offset, and tilt of ±12°;
   - hint labels `card.hint.*` that fade in, using `yesLabel` and `noLabel`;
