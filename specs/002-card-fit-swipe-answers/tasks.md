@@ -84,7 +84,7 @@ at accessibility sizes.
   - 7 cards at `w360dp-h640dp`, default font: all 64 `number.N` nodes are fully within the root bounds,
     and `card.numbers` has no `VerticalScrollAxisRange`;
   - 3 cards at `w800dp-h1280dp`: the numbers' bounds cover ≥ 80% of `card.numbers` (SC-002).
-- [ ] T009 [P] [US1] Write `I/WaayUITests/CardFitUITests.swift`: 7 cards on the smallest CI iPhone class
+- [X] T009 [P] [US1] Write `I/WaayUITests/CardFitUITests.swift`: 7 cards on the smallest CI iPhone class
   (iPhone 16e or 17e). Every `number.N` element is hittable without any swipe or scroll.
 - [ ] T010 [US1] Move FR-003a's coverage to FR-004's fallback configuration. Rework
   `A/test/kotlin/dev/epool/waay/android/game/CardScrollTest.kt` (font scale 2.0 on `w360dp-h640dp`)
