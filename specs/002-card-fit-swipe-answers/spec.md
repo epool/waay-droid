@@ -46,6 +46,13 @@ still holds unless a requirement below says it replaces part of it.
   said "crystal glass"): translucent glass for controls and bars over the content. Older OS versions
   without these get the closest native look (FR-022 to FR-026).
 
+### Session 2026-10-05
+
+- Q: At the verification gate, should the spec match the as-built iOS styles (ADR-017) and the
+  narrowed SC-001 everywhere? → A: Yes (T046, T047). Glass "No" is tinted with the system background,
+  and iOS 17–25 use solid standard controls, because translucent surfaces took on the violet backdrop
+  and failed contrast (FR-025). US1's landscape and split-screen promises follow SC-001's exceptions.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See the whole card at once (Priority: P1)
@@ -60,16 +67,19 @@ their number, answer "No" by mistake and get a wrong reveal. Spec 001 had to add
 scrolled to the top) to limit that risk. Showing everything at once removes it, and the trick feels faster
 and more magical.
 
-**Independent Test**: Play a 7-card game on the smallest supported phone in landscape, and a 3-card game
+**Independent Test**: Play a 7-card game on the smallest supported phone in portrait, and a 3-card game
 on a tablet. On every card, every number is visible and readable without scrolling, and the numbers fill
-the card's area instead of sitting in a small block.
+the card's area instead of sitting in a small block. In SC-001's exceptions (small phones in landscape,
+phone split-screen halves) a 7-card game may scroll, starting at the top (FR-004).
 
 **Acceptance Scenarios**:
 
 1. **Given** a 7-card game on a small phone in portrait, **When** a card appears, **Then** all 64 numbers
    are visible at once, none is cut off or overlapping, and nothing scrolls.
-2. **Given** the same game in landscape or in a half-width split-screen window, **When** a card appears,
-   **Then** all 64 numbers are still visible at once without scrolling.
+2. **Given** the same game in landscape on a phone at least about 375 dp/pt tall, or in a half-width
+   split-screen window on a tablet, **When** a card appears, **Then** all 64 numbers are still visible at
+   once without scrolling. In the smaller windows SC-001 exempts, the card scrolls, starting at the top
+   (FR-004).
 3. **Given** a 3-card game on a tablet, **When** a card appears, **Then** its 4 numbers are shown large,
    using the available space, not as small cells in one corner.
 4. **Given** a foldable in tabletop or book posture, **When** a card appears, **Then** all its numbers are
@@ -167,7 +177,7 @@ other apps around it. It also shapes how the new card screen is drawn, so it bel
 - On an Android 12+ phone, change the wallpaper and theme colours: the game's colours follow.
 - On an Android 8–11 phone: the game shows its own Material 3 colour scheme.
 - On iOS 26+: the top bar and Yes/No controls are glass.
-- On iOS 17–25: the controls use the system's materials.
+- On iOS 17–25: the controls use the system's standard controls.
 - In every case, light and dark mode work and the accessibility checks pass.
 
 **Acceptance Scenarios**:
@@ -178,9 +188,10 @@ other apps around it. It also shapes how the new card screen is drawn, so it bel
 2. **Given** an Android device without dynamic colours (Android 8–11), **When** the game opens,
    **Then** it uses Wáay's own Material 3 colour scheme, in light or dark to match the device.
 3. **Given** iOS 26 or later, **When** a card is shown, **Then** the top bar and the "No" and "Yes"
-   controls are glass that lets the backdrop show through, and the "Yes" control is tinted to stand out.
+   controls are Liquid Glass, and the "Yes" control is tinted to stand out. The "No" glass is tinted
+   enough for its label to meet the contrast rules.
 4. **Given** iOS 17 to 25, **When** a card is shown, **Then** the same controls use the system's
-   translucent materials, and everything else works the same.
+   standard controls with solid fills, and everything else works the same.
 5. **Given** any platform, **When** a card is shown, **Then** the numbers sit on a solid, opaque card,
    never on glass or a busy background, and meet the contrast rules in light and dark mode.
 6. **Given** the device's Reduce Transparency or Increase Contrast setting is on, **When** the game
@@ -290,8 +301,8 @@ Requirement IDs are local to this spec. "001/FR-xxx" refers to [spec 001](../001
   Text and controls on the backdrop MUST meet the same contrast as elsewhere (001/FR-027).
 - **FR-020**: In compact layouts (phone portrait, narrow split screen), the "No" and "Yes" buttons MUST
   be two large buttons side by side under the card, spanning its width:
-  - "No" on the left, in a secondary (outlined) style;
-  - "Yes" on the right, in the primary (filled) style.
+  - "No" on the left, in the platform's secondary style (outlined on Android; a light control on iOS);
+  - "Yes" on the right, in the primary (filled or tinted) style.
 - **FR-021**: In wide layouts (tablets, phone landscape, unfolded foldables, wide split screen), the
   answers MUST be tall panels flanking the card: "No" to its left and "Yes" to its right, each
   labelled, with the card centred between them. In folded postures, the card and the answers MUST be
@@ -307,10 +318,12 @@ Requirement IDs are local to this spec. "001/FR-xxx" refers to [spec 001](../001
 - **FR-023**: On iOS 26 and later the app MUST follow Liquid Glass:
   - the top bar, the "No" and "Yes" controls (buttons or flanking panels) and the screen's other
     floating controls MUST use the system glass material;
-  - the "Yes" control MUST be tinted (prominent), and the "No" control untinted;
+  - the "Yes" control MUST be prominent glass tinted with Wáay's violet; the "No" control MUST be
+    regular glass tinted with the system background, so its label keeps contrast over the backdrop;
   - Settings MUST use the system's standard glass-era styling.
 - **FR-024**: On iOS 17 to 25, which have no Liquid Glass, the same controls MUST use the closest native
-  style (the system's translucent materials and standard controls). Behaviour stays identical.
+  style: the system's standard controls with solid fills. Translucent materials would take on the
+  backdrop's colour and lose contrast (FR-025). Behaviour stays identical.
 - **FR-025**: Content legibility comes first. The numbers card MUST be a solid, opaque surface. Glass and
   translucency MUST only be used for controls and bars, never behind the numbers or messages. All text
   MUST meet the contrast rules (001/FR-027) in light and dark mode, with dynamic colours, and when
