@@ -19,7 +19,7 @@ final class AccessibilitySemanticsUITests: XCTestCase {
         XCTAssertTrue(ready.waitForExistence(timeout: 10))
         XCTAssertEqual(app.buttons["toolbar.newGame"].label, "New game")
         XCTAssertEqual(app.buttons["toolbar.settings"].label, "Settings")
-        try app.performAccessibilityAudit()
+        try audit()
 
         ready.tap()
         let yes = app.buttons["card.yes"]
@@ -28,7 +28,7 @@ final class AccessibilitySemanticsUITests: XCTestCase {
         XCTAssertEqual(app.buttons["card.no"].label, "No")
         let number = app.staticTexts.matching(NSPredicate(format: "identifier BEGINSWITH 'number.'")).firstMatch
         XCTAssertEqual(number.label, String(number.identifier.dropFirst("number.".count)))
-        try app.performAccessibilityAudit()
+        try audit()
 
         let progress = app.staticTexts["card.progress"]
         for _ in 0..<5 {
@@ -39,7 +39,7 @@ final class AccessibilitySemanticsUITests: XCTestCase {
             wait(for: [XCTNSPredicateExpectation(predicate: answered, object: nil)], timeout: 5)
         }
         XCTAssertTrue(app.staticTexts["result.message"].waitForExistence(timeout: 5))
-        try app.performAccessibilityAudit()
+        try audit()
 
         app.buttons["toolbar.settings"].tap()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
@@ -51,9 +51,27 @@ final class AccessibilitySemanticsUITests: XCTestCase {
         //   system navigation bar (inline title, back button), which does not scale; iOS 26+ reports none.
         // Every other issue still fails.
         let sectionHeaders: Set<String> = ["Number of cards", "Language"]
-        try app.performAccessibilityAudit { issue in
+        try audit { issue in
             guard let element = issue.element else { return true }
             return issue.auditType == .dynamicType && sectionHeaders.contains(element.label)
+        }
+    }
+
+    /// Runs Xcode's accessibility audit, retrying only when the audit itself times out ("Audit failed
+    /// to complete in time", seen on busy CI runners). Real accessibility findings fail at once.
+    @MainActor
+    private func audit(_ accept: ((XCUIAccessibilityAuditIssue) throws -> Bool)? = nil) throws {
+        let attempts = 3
+        for attempt in 1...attempts {
+            do {
+                try app.performAccessibilityAudit(for: .all, accept)
+                return
+            } catch let error as NSError
+                where error.domain == "com.apple.xcode.xctest.accessibilityAudit" && error.code == -56
+                && attempt < attempts
+            {
+                continue
+            }
         }
     }
 }
