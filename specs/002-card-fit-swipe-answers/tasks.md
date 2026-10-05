@@ -280,7 +280,7 @@ cross-fade.
   - with `Settings.Global.ANIMATOR_DURATION_SCALE = 0`, `rememberReduceMotion()` is true, a swipe
     still answers, and the card shows no tilt mid-drag (`rotationZ == 0` in the graphics layer);
   - a button tap answers once.
-- [ ] T035 [P] [US3] Extend `A/test/kotlin/dev/epool/waay/android/game/GameFlowTest.kt` (`gameIsUsableThroughSemantics`)
+- [X] T035 [P] [US3] Extend `A/test/kotlin/dev/epool/waay/android/game/GameFlowTest.kt` (`gameIsUsableThroughSemantics`)
   and `I/WaayUITests/AccessibilitySemanticsUITests.swift`: the card surface reads its header and
   numbers, and a game completes with the buttons alone.
 

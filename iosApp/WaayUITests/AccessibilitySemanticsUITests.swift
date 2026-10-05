@@ -52,6 +52,11 @@ final class AccessibilitySemanticsUITests: XCTestCase {
         XCTAssertEqual(app.buttons["card.no"].label, "No")
         let number = app.staticTexts.matching(NSPredicate(format: "identifier BEGINSWITH 'number.'")).firstMatch
         XCTAssertEqual(number.label, String(number.identifier.dropFirst("number.".count)))
+        // Spec 002 FR-012, FR-019: the draggable card reads as its question, then every number.
+        let surface = app.otherElements["card.surface"]
+        XCTAssertEqual(surface.staticTexts.firstMatch.label, "Is your number on this card?")
+        let numbersOnCard = surface.staticTexts.matching(NSPredicate(format: "identifier BEGINSWITH 'number.'"))
+        XCTAssertEqual(numbersOnCard.count, 16)
         try audit()
         assertGlassAnswerContrast()
 
@@ -63,6 +68,7 @@ final class AccessibilitySemanticsUITests: XCTestCase {
             let answered = NSPredicate { _, _ in !progress.exists || progress.label != before }
             wait(for: [XCTNSPredicateExpectation(predicate: answered, object: nil)], timeout: 5)
         }
+        // ...and the game completed with the Yes button alone, no gestures (FR-012).
         XCTAssertTrue(app.staticTexts["result.message"].waitForExistence(timeout: 5))
         try audit()
 
