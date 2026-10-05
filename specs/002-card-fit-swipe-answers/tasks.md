@@ -276,7 +276,7 @@ cross-fade.
 
 ### Tests first
 
-- [ ] T034 [P] [US3] Write `A/test/kotlin/dev/epool/waay/android/game/ReduceMotionTest.kt`:
+- [X] T034 [P] [US3] Write `A/test/kotlin/dev/epool/waay/android/game/ReduceMotionTest.kt`:
   - with `Settings.Global.ANIMATOR_DURATION_SCALE = 0`, `rememberReduceMotion()` is true, a swipe
     still answers, and the card shows no tilt mid-drag (`rotationZ == 0` in the graphics layer);
   - a button tap answers once.

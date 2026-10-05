@@ -17,6 +17,7 @@ import androidx.compose.ui.test.swipeUp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import assertk.assertions.isGreaterThan
 import assertk.assertions.isInstanceOf
 import assertk.assertions.isNotEqualTo
 import com.github.takahirom.roborazzi.captureRoboImage
@@ -118,6 +119,23 @@ class SwipeAnswerTest {
         }
         rule.waitForIdle()
         progressIs("Card 1 of 5")
+    }
+
+    // U10 / FR-008: the card tilts as it follows the finger, which widens its bounds. This is the
+    // control for ReduceMotionTest, where the bounds must not change shape.
+    @Test
+    fun theCardTiltsWhileDragging() {
+        startGame()
+        GameRobot.waitOutAnswerCooldown()
+        val rest = card.fetchSemanticsNode().boundsInRoot
+        card.performTouchInput {
+            down(center)
+            moveBy(Offset(width * 0.3f, 0f))
+        }
+        rule.waitForIdle()
+        val dragged = card.fetchSemanticsNode().boundsInRoot
+        assertThat(dragged.height - rest.height).isGreaterThan(5f)
+        card.performTouchInput { up() }
     }
 
     // U9 / FR-016: an interruption mid-drag (here a configuration change) records nothing.
