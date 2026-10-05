@@ -308,9 +308,17 @@ cross-fade.
 
   `CardGridFitTest` already matched it, from US1. The F6 contract row, the ADR-013 note and the
   quickstart table now say the same.
-- [ ] T040 Re-record the full Roborazzi set (intro, card and result × sizes × fonts × postures ×
+- [X] T040 Re-record the full Roborazzi set (intro, card and result × sizes × fonts × postures ×
   light/dark × dynamic/fallback, plus Settings). Review every image, delete obsolete baselines, and
   commit.
+
+  Done:
+  - All 69 baselines were deleted and re-recorded. They came back byte-identical, and none was
+    obsolete.
+  - Every image was reviewed on contact sheets. That review found an Android regression from T022:
+    at font scale 2.0, the result's "New game" was pushed off the card and couldn't be scrolled to.
+    It is fixed, with `MessageCardTest` added.
+  - The drag frame is now seeded (`SeededWaayApp`), so it is stable.
 - [ ] T041 [P] Update the documentation:
   - the quickstart run log in `specs/002-card-fit-swipe-answers/quickstart.md`;
   - the `README.md` status row for 002;
