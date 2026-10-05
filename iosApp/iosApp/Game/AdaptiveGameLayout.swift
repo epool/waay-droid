@@ -89,9 +89,11 @@ struct CardStageLayout<Card: View, Answers: View>: View {
         } else {
             VStack(spacing: 16) {
                 card.frame(maxHeight: .infinity)
-                HStack(spacing: 12) {
-                    answer(.no, .button)
-                    answer(.yes, .button)
+                AnswerGroup {
+                    HStack(spacing: 12) {
+                        answer(.no, .button)
+                        answer(.yes, .button)
+                    }
                 }
             }
         }

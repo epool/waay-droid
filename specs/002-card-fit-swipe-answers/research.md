@@ -218,14 +218,68 @@ availability were read from the SDK interfaces.
 | Element | iOS 26+ (Liquid Glass) | iOS 17–25 (fallback) |
 |---|---|---|
 | Top bar | System navigation bar with toolbar items: glass automatically on 26 | System navigation bar |
-| "Yes" button / panel | `.buttonStyle(.glassProminent)` tinted with the accent | `.buttonStyle(.borderedProminent)` |
-| "No" button / panel | `.buttonStyle(.glass)` | `.buttonStyle(.bordered)` on `.thinMaterial` |
+| "Yes" button / panel | `.buttonStyle(.glassProminent)` tinted with the fixed brand violet `#4527A0` | `.buttonStyle(.borderedProminent)` tinted `#8257F1`, white label |
+| "No" button / panel | `.buttonStyle(.glass(.regular.tint(systemBackground at 85%)))` | `.buttonStyle(.borderedProminent)` tinted `systemBackground`, `label` text |
 | Answer controls group | `GlassEffectContainer` so the two glass shapes blend and morph | `HStack` |
 | Card (numbers) | **Opaque** `Color(.systemBackground)` rounded rectangle, no glass (FR-025) | same |
 | Backdrop | Accent-tinted gradient (`#23143F` → `#4527A0`) for the glass to refract | same |
 
 - Reduce Transparency and Increase Contrast are honoured by the system glass and materials.
 - Text on the backdrop is white on `#23143F`/`#4527A0`, which is at least 10:1.
+
+**As built (T031, T032).** Four changes from the first draft of this table, each forced by a
+measured contrast failure:
+- **Fallback "No" is solid, not `.bordered` on `.thinMaterial`** (changed in US2). A translucent
+  material takes on the backdrop's violet, and the audit failed its label. Slack's Catch up also uses
+  solid buttons.
+- **Glass "No" is tinted with the system background.** Plain `.glass` turned violet the same way. The
+  85% `systemBackground` tint keeps it light in light mode and dark in dark mode, so the label colour
+  the system picks stays readable.
+- **Glass "Yes" is tinted with the fixed brand violet `#4527A0` in both modes.** Prominent glass
+  mixes its tint with what is behind it. The accent's dark-mode `#8257F1` measured 4.0:1 under white
+  text there.
+- **Fills under white labels use the fixed brand violet, not the adaptive accent.** This covers the
+  intro's "I'm ready", the result's "New game", the "Yes" swipe hint and glass "Yes" (`Theme/Brand.swift`).
+  With Increase Contrast in dark mode, the system lightens the accent for contrast with dark
+  backgrounds. "I'm ready" then measured 3.1:1 on iOS 27 and about 1.9:1 (`#C5B0FF`) on iOS 18.6, and
+  the audit failed both. A fixed colour is drawn as given: `#4527A0` measures 10.2:1 in every mode.
+
+**Contrast checks on glass.** Xcode's accessibility audit misreads Liquid Glass in both directions,
+on iOS 27:
+- It reported "Contrast failed" for the glass "Yes", whose pixels measure 13.4:1 (white on `#301880`).
+- In a deliberate mutation (white text forced onto near-white glass), it reported nothing, although
+  the pixels measure 1.03:1 and the label is invisible.
+
+So on iOS 26+ the UI tests measure both answer controls from their rendered pixels on every card
+screen, in light and dark (`WaayUITests/MeasuredContrast.swift`). The fill is the average colour of
+the dominant colour bin, it is compared with the label's extreme luminance, and the result must be
+at least 4.5:1. The audit's own contrast findings on those two controls are accepted only because
+the measurement replaces them. The mutation now fails in both modes (1.00:1). Everywhere else the
+audit's check applies unchanged. That includes the filled buttons: with the adaptive accent and
+Increase Contrast, the audit correctly flagged "I'm ready" on iOS 27.
+
+**Dark mode in the UI tests.** On iOS 27 simulators, `XCUIDevice.shared.appearance = .dark` switches
+the system, but the app it relaunches stays light. Until T032, the "dark" audit on iOS 26+ was
+silently auditing light mode. The dark test now also launches the app with `-forceDarkMode`, which
+applies `.preferredColorScheme(.dark)` at the root. It then asserts that the intro card's fill is dark
+(luminance below 0.1), so the test fails rather than silently auditing light mode again. With real dark
+mode, glass "Yes" on the accent failed (4.0:1), which led to the brand-violet tint above.
+
+**Reduce Transparency and Increase Contrast (quickstart M12), checked 2026-10-04.** Settings were
+switched on the simulator with `simctl ui … increase_contrast` and the `com.apple.Accessibility`
+`EnhancedBackgroundContrastEnabled` default. A screenshot diff confirmed that Reduce Transparency took
+effect: the toolbar's glass buttons turned opaque (`#1E192A` instead of `#594685`). The accessibility
+audit class (light and dark, with the glass measurements) passed with each combination:
+
+| Setting | iOS 27 (glass) | iOS 18.6 (materials) |
+|---|---|---|
+| Increase Contrast | pass; buttons ≥ 10.2:1, "No" ≥ 19:1 | pass |
+| Reduce Transparency | pass; buttons ≥ 10.2:1, "No" ≥ 18.9:1 | — |
+| Both | pass; buttons ≥ 10.2:1, "No" ≥ 19:1 | pass |
+
+The swipe hint never shows during an audit. Its "Yes" is white on the fixed `#4527A0` (10.2:1), and
+its "No" is white on 20% grey (`Color(white: 0.2)`, 12.6:1). Neither colour adapts, so the settings
+can't change them.
 
 **Rationale**:
 - Apple's guidance puts glass on the navigation and control layer, never on content, and that is
@@ -329,7 +383,10 @@ The audit accepts a computed size as long as it follows the content size categor
   - A no-scroll check: 7 cards on the smallest CI iPhone, with all 64 number elements hittable
     without scrolling.
   - Button order.
-  - The accessibility audit on every screen. The existing allowances stay, and nothing new is
-    allowed without evidence.
+  - The accessibility audit on every screen, in light and in dark mode. The existing allowances stay,
+    and nothing new is allowed without evidence. The one added (T032) is contrast on the glass answer
+    controls on iOS 26+, which is replaced by a pixel measurement (ADR-017).
+  - Dark mode is forced with the `-forceDarkMode` launch argument, next to `-resetPreferences`. A guard
+    checks that the app really renders dark (ADR-017).
 - **CI:** the same four jobs. They run with the Xcode 26.4 SDK, which has Liquid Glass, and on iOS
   17.5, which takes the fallback path.

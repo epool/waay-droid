@@ -22,12 +22,18 @@ final class AccessibilitySemanticsUITests: XCTestCase {
         try auditEveryScreen()
     }
 
-    // Spec 002 FR-025 / SC-008: the same checks in dark mode (the backdrop and glass change).
+    // Spec 002 FR-025 / SC-008: the same checks in dark mode (the card and glass change).
+    // The system appearance switches the status bar; -forceDarkMode switches the app, because on iOS 27
+    // simulators the relaunched app stays light. The guard makes sure the audit really sees dark mode.
     @MainActor
     func testEveryScreenPassesTheAccessibilityAuditInDarkMode() throws {
         XCUIDevice.shared.appearance = .dark
         app.terminate()
+        app.launchArguments += ["-forceDarkMode"]
         app.launch()
+        let message = app.staticTexts["intro.message"]
+        XCTAssertTrue(message.waitForExistence(timeout: 10))
+        XCTAssertLessThan(MeasuredContrast.fillLuminance(of: message), 0.1, "the app is not in dark mode")
         try auditEveryScreen()
     }
 
@@ -47,6 +53,7 @@ final class AccessibilitySemanticsUITests: XCTestCase {
         let number = app.staticTexts.matching(NSPredicate(format: "identifier BEGINSWITH 'number.'")).firstMatch
         XCTAssertEqual(number.label, String(number.identifier.dropFirst("number.".count)))
         try audit()
+        assertGlassAnswerContrast()
 
         let progress = app.staticTexts["card.progress"]
         for _ in 0..<5 {
@@ -86,6 +93,12 @@ final class AccessibilitySemanticsUITests: XCTestCase {
             if issue.auditType == .dynamicType, let element = issue.element, navigationBar.contains(element.frame) {
                 return true
             }
+            // Glass answer controls are measured instead, on every run (assertGlassAnswerContrast).
+            if issue.auditType == .contrast, Self.isGlass, let element = issue.element,
+                Self.answerControls.contains(element.identifier)
+            {
+                return true
+            }
             return try accept?(issue) ?? false
         }
         let attempts = 3
@@ -99,6 +112,22 @@ final class AccessibilitySemanticsUITests: XCTestCase {
             {
                 continue
             }
+        }
+    }
+
+    private static let answerControls: Set = ["card.yes", "card.no"]
+    private static let isGlass = ProcessInfo.processInfo.operatingSystemVersion.majorVersion >= 26
+
+    /// Liquid Glass answer controls (iOS 26+): the audit misreads glass both ways. It flagged white text
+    /// on a `#301880` glass fill that measures 13.4:1, and it missed white text on near-white glass that
+    /// measures 1.03:1 (spec 002 T032). So their contrast is measured from the rendered pixels on every
+    /// run, and must reach 4.5:1 (FR-025). Every other control keeps the audit's own check.
+    @MainActor
+    private func assertGlassAnswerContrast() {
+        guard Self.isGlass else { return }
+        for identifier in Self.answerControls.sorted() {
+            let measured = MeasuredContrast.of(app.buttons[identifier])
+            XCTAssertGreaterThanOrEqual(measured, 4.5, "\(identifier) measures \(measured):1")
         }
     }
 }

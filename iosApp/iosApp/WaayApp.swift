@@ -16,6 +16,12 @@ struct WaayApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .preferredColorScheme(Self.forcedColorScheme)
         }
     }
+
+    /// UI tests launch with -forceDarkMode to audit dark mode. On iOS 27 simulators,
+    /// `XCUIDevice.appearance` switches the system but not the app it relaunches (spec 002 T032).
+    private static let forcedColorScheme: ColorScheme? =
+        ProcessInfo.processInfo.arguments.contains("-forceDarkMode") ? .dark : nil
 }

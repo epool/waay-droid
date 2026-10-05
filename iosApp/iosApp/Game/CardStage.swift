@@ -104,7 +104,7 @@ private struct SwipeHint: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(isYes ? Color.accentColor : Color(white: 0.2), in: Capsule())
+                .background(isYes ? Brand.violet : Color(white: 0.2), in: Capsule())
                 .opacity(min(abs(offset) / (width * CardMotion.thresholdFraction), 1))
                 .padding(24)
                 .accessibilityIdentifier(isYes ? "card.hint.yes" : "card.hint.no")

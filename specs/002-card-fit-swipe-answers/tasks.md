@@ -238,18 +238,28 @@ scheme shows. On iOS 26, the controls are glass. Light and dark modes pass the a
     `AnswerControls` and `GameScreen`;
   - `shapes.extraLarge` for the card;
   - Material 3 components on intro, result and Settings.
-- [ ] T031 [US4] Add Liquid Glass in `I/iosApp/Game/AnswerControls.swift` and
+- [X] T031 [US4] Add Liquid Glass in `I/iosApp/Game/AnswerControls.swift` and
   `I/iosApp/Game/GameScreen.swift`, choosing the style through `AnswerControlStyle` (T029's helper):
   - under `if #available(iOS 26, *)`, `.glassProminent` with the accent tint for Yes, `.glass` for No,
     and a `GlassEffectContainer` around the answers;
   - the fallback is `.borderedProminent`, and `.bordered` on `.thinMaterial`;
   - the toolbar is the system bar;
   - the card stays an opaque `systemBackground`.
-- [ ] T032 [US4] Verify contrast:
+
+  As built (ADR-017): glass Yes is tinted with the fixed brand violet `#4527A0`, and glass No with
+  `systemBackground` at 85%. Both fallbacks are solid `.borderedProminent` fills.
+- [X] T032 [US4] Verify contrast:
   - Android: review the screenshot pairs (text on the backdrop, the panels and the card) in light and
     dark;
   - iOS: the audit passes in light and dark;
   - check Reduce Transparency and Increase Contrast by hand (quickstart M12), and record the result.
+
+  Done (ADR-017):
+  - The Android pairs were reviewed with T033.
+  - The iOS dark audit now really runs in dark mode (`-forceDarkMode` plus a guard).
+  - On iOS 26+ the glass answer controls are measured from their pixels.
+  - Fills under white labels use the fixed brand violet (`Theme/Brand.swift`).
+  - M12 passes on iOS 27 and 18.6, and the results are recorded in ADR-017.
 - [X] T033 [US4] Re-record and review the Roborazzi baselines for light/dark × dynamic/fallback.
 
 **Checkpoint**: each platform looks native, and both pass their accessibility checks.

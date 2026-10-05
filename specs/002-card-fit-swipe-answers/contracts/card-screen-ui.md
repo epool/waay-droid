@@ -53,10 +53,13 @@ still takes `state` and `onAction` (constitution II). It also takes `canAnswer: 
 | Backdrop | `primaryContainer` | Accent gradient `#23143F` → `#4527A0` | same gradient |
 | Top bar content | `onPrimaryContainer` | System bar (glass) | System bar |
 | Card | `surfaceContainerLowest`, `onSurface` numbers, `shapes.extraLarge` | `systemBackground`, opaque, 28 pt corners | same |
-| Yes | Filled `Button` (`primary`) | `.glassProminent`, accent tint | `.borderedProminent` |
-| No | `OutlinedButton` on `surface` | `.glass` | `.bordered` on `.thinMaterial` |
+| Yes | Filled `Button` (`primary`) | `.glassProminent`, brand violet `#4527A0` tint | `.borderedProminent`, `#8257F1`, white label |
+| No | `OutlinedButton` on `surface` | `.glass` tinted `systemBackground` (85%) | `.borderedProminent`, `systemBackground`, `label` text |
 | Wide panels | Tonal surfaces with large labels, same roles | Glass panels in a `GlassEffectContainer` | Material panels |
 | Motion | `spring` specs (ADR-015) | `.snappy` / `.bouncy` | same |
 
 Contrast for every text-on-surface pair MUST meet 4.5:1 (3:1 for large text). On iOS this is enforced
-by the accessibility audit; on Android by the Material 3 roles plus the screenshot review.
+by the accessibility audit in light and dark, plus a pixel measurement of the glass answer controls
+on iOS 26+, where the audit misreads glass (ADR-017). Fills under white labels use the fixed brand
+violet, never the adaptive accent, which Increase Contrast lightens. On Android it is enforced by the Material 3 roles plus the
+screenshot review.

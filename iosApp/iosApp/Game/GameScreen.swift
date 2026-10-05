@@ -164,6 +164,7 @@ private struct IntroView: View {
             } secondary: {
                 Button(intro.readyLabel, action: onReady)
                     .buttonStyle(.borderedProminent)
+                    .tint(Brand.violet)
                     .controlSize(.large)
                     .accessibilityIdentifier("intro.ready")
             }
@@ -189,6 +190,7 @@ private struct ResultView: View {
             } secondary: {
                 Button(newGameLabel, action: onNewGame)
                     .buttonStyle(.borderedProminent)
+                    .tint(Brand.violet)
                     .controlSize(.large)
                     .accessibilityIdentifier("result.newGame")
             }
