@@ -67,7 +67,10 @@ xcodebuild test -project iosApp/iosApp.xcodeproj -scheme Waay \
     cause is unknown.
   - `scripts/swift-format-lint.sh` passes, and `xcodegen` leaves the project unchanged.
   - `xcodebuild test` passes, 16 UI tests and 7 unit tests each, on iPhone 17 (iOS 27), iPhone 16
-    (iOS 18.6) and iPad Pro 11-inch (M5, iOS 27). This is after the last code change (69b70d0).
+    (iOS 18.6) and iPad Pro 11-inch (M5, iOS 27). It was re-run on all three after the last code
+    change (1e3021d, T044).
+  - Not run locally: iOS 26.4 and 17.5, the versions CI uses. The glass measurement, the
+    toolbar-icon check and the dark-mode guard first meet those OS versions in CI (T045).
   - The accessibility audit class also passes on iOS 26.3.
 - **Section 2, manual:**
 
@@ -95,9 +98,18 @@ xcodebuild test -project iosApp/iosApp.xcodeproj -scheme Waay \
     debug build dragging on it showed a 48 ms median frame. Neither the emulator nor a debug build
     represents a mid-range phone. **The owner should check SC-005 on a real device, with a release
     build.**
-- **Defects found and fixed during T040–T042:**
+- **Left for the owner:**
+  - M5 on iOS: the flick;
+  - M11: the cross-fade, by eye;
+  - M13: a real TalkBack/VoiceOver session;
+  - T044: in the Simulator, drag the card with the mouse and press ⌘⇧H while still holding. On
+    return, the card is at rest and nothing was answered;
+  - SC-004: with a first-time player;
+  - SC-005: on a real device, with a release build.
+- **Defects found and fixed during T040–T044:**
   - Android: at 2.0× text, the result's "New game" was pushed off the card (569ed93).
   - iOS 17–25: the toolbar icons were nearly invisible over the backdrop (69b70d0).
   - iOS test: the button-order test assumed iPhone's portrait layout on iPad (d52668c).
   - Android tests: a drag animation leaked into later test classes, and the drag screenshot was
     unseeded (263896f).
+  - iOS: a drag the system cancelled left the card displaced (1e3021d, T044).
