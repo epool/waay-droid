@@ -147,6 +147,8 @@ jobs:
           udid=$(scripts/ci-boot-simulator.sh 'iPhone 17')
           xcrun simctl bootstatus "$udid"
           echo "SIMULATOR_UDID=$udid" >> "$GITHUB_ENV"
+      # One retry per failed test: shared runners occasionally lose the simulator's app list ("Failed to
+      # get list of active applications"). A real failure fails both attempts.
       - name: App and UI tests
         run: >
           xcodebuild test-without-building
@@ -156,6 +158,8 @@ jobs:
           -derivedDataPath build/DerivedData
           -resultBundlePath build/Waay-${{ matrix.shard }}.xcresult
           -collect-test-diagnostics never
+          -retry-tests-on-failure
+          -test-iterations 2
           ${{ matrix.tests }}
       - name: Upload test results
         if: failure()
@@ -231,6 +235,8 @@ jobs:
           -derivedDataPath build/DerivedData
           -resultBundlePath build/Waay-ios17.xcresult
           -collect-test-diagnostics never
+          -retry-tests-on-failure
+          -test-iterations 2
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v7
