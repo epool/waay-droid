@@ -70,7 +70,12 @@ xcodebuild test -project iosApp/iosApp.xcodeproj -scheme Waay \
     (iOS 18.6) and iPad Pro 11-inch (M5, iOS 27). It was re-run on all three after the last code
     change (1e3021d, T044).
   - Not run locally: iOS 26.4 and 17.5, the versions CI uses. The glass measurement, the
-    toolbar-icon check and the dark-mode guard first meet those OS versions in CI (T045).
+    toolbar-icon check and the dark-mode guard first met those OS versions in CI (T045).
+  - CI on the 002 branch (T045): the first run failed one test.
+    `AccessibilityUITests.testLargestTextSizeLandscape` tapped "I'm ready" while it was mostly
+    scrolled out of view; that was a test-helper bug, reproduced on iOS 26.3 and fixed in 77fbbfc.
+  - Run 37273550973 is green on all five jobs (Android, macOS Gradle, both iOS shards on 26.4, and
+    iOS 17.5), with no retried tests.
   - The accessibility audit class also passes on iOS 26.3.
 - **Section 2, manual:**
 

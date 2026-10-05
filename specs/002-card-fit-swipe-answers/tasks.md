@@ -331,7 +331,7 @@ cross-fade.
   Done; the results are in the quickstart run log. Left for the owner: M5 on iOS, the M11
   cross-fade by eye, M13 with a real screen reader, SC-004, and SC-005 on a real device. Three
   defects were found and fixed along the way.
-- [ ] T043 Run `/speckit-converge` until it reports converged. Any new tasks are appended to
+- [X] T043 Run `/speckit-converge` until it reports converged. Any new tasks are appended to
   `specs/002-card-fit-swipe-answers/tasks.md`.
 
 ---
@@ -372,6 +372,9 @@ cross-fade.
   - XCUITest can't interrupt a drag partway, so this needs a hand check: in the Simulator, drag the
     card with the mouse and press ⌘⇧H while still holding. On return, the card is at rest and
     nothing was answered.
-- [ ] T045 Run CI on the `002-card-fit-swipe-answers` branch (push it or open a PR into `kmp`, with the owner's go-ahead) and get all four jobs green before the merge, per Constitution VIII (missing)
+- [X] T045 Run CI on the `002-card-fit-swipe-answers` branch (push it or open a PR into `kmp`, with the owner's go-ahead) and get all four jobs green before the merge, per Constitution VIII (missing)
+  - Done after `kmp` was merged in. The first run (37271199728) failed one iOS test, which was fixed
+    in 77fbbfc.
+  - Run 37273550973 is green on all five jobs, including iOS 17.5, with no retried tests.
 - [X] T046 Amend FR-020, FR-023, FR-024, US4/AC3 and US4/AC4 in `specs/002-card-fit-swipe-answers/spec.md` to the as-built iOS styles (glass "No" tinted with the system background; solid standard-control fallbacks on iOS 17–25), with the owner's approval, per FR-024 (contradicts)
 - [X] T047 Amend US1/AC2 and US1's Independent Test in `specs/002-card-fit-swipe-answers/spec.md` to match the narrowed SC-001 (7 cards scroll in small-phone landscape and phone split-screen halves), with the owner's approval, per US1/AC2 (contradicts)

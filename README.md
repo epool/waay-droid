@@ -33,7 +33,7 @@ There are human review gates between the stages.
 | Spec | Scope | State |
 |---|---|---|
 | 001 | Magic cards game v1 (Android + iOS, randomized cards, TTS, EN/ES, settings, adaptive layouts and foldables) | accepted, merged into `kmp` |
-| 002 | Card fit and swipe answers: every number on screen at once, swipe right/left to answer (Slack-style card stack), Material You on Android and Liquid Glass on iOS, reduce motion | implemented on `002-card-fit-swipe-answers`; at the verification gate |
+| 002 | Card fit and swipe answers: every number on screen at once, swipe right/left to answer (Slack-style card stack), Material You on Android and Liquid Glass on iOS, reduce motion | approved at the verification gate, merged into `kmp`; the owner's device checks are listed in its quickstart run log |
 
 ## Quick start
 
