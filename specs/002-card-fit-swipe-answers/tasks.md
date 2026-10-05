@@ -93,7 +93,7 @@ at accessibility sizes.
 
 ### Implementation
 
-- [ ] T011 [US1] Create `A/main/kotlin/dev/epool/waay/android/game/CardGridView.kt`:
+- [X] T011 [US1] Create `A/main/kotlin/dev/epool/waay/android/game/CardGridView.kt`:
   - `BoxWithConstraints` measures the area;
   - the minimum is `typography.bodyMedium` converted to dp (font-scale aware), with a 72 dp cap;
   - it calls `CardGridFit.fit`, then draws rows and columns with tabular digits (`tnum`);
