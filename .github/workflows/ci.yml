@@ -3,7 +3,7 @@
 #
 # Speed (T113): the Gradle cache is written on trunk pushes; ~/.konan is cached; simulators boot
 # (and the iOS 17.5 runtime downloads) while the app builds; Kotlin/Native shared tests run on the
-# short macOS job, off the iOS critical path.
+# short macOS job, off the iOS critical path; the iOS UI tests run in two parallel shards.
 name: CI
 
 on:
@@ -89,16 +89,29 @@ jobs:
           path: androidApp/build/outputs/roborazzi/
 
   ios:
-    name: iOS — format, app and UI tests
+    # The UI tests run in two parallel shards to halve the job's wall time (ADR-011, T113). Shard "a"
+    # takes the slowest classes; shard "b" runs everything else, so new test classes land there.
+    name: iOS — app and UI tests (${{ matrix.shard }})
     runs-on: macos-26
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: a
+            tests: >-
+              -only-testing:WaayUITests/AccessibilitySemanticsUITests
+              -only-testing:WaayUITests/AccessibilityUITests
+              -only-testing:WaayUITests/GameFlowUITests
+          - shard: b
+            tests: >-
+              -skip-testing:WaayUITests/AccessibilitySemanticsUITests
+              -skip-testing:WaayUITests/AccessibilityUITests
+              -skip-testing:WaayUITests/GameFlowUITests
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.4.1.app/Contents/Developer
     steps:
       - uses: actions/checkout@v7
-      # Booting takes minutes on a fresh runner; it carries on while everything below runs.
-      - name: Boot an iPhone 17 on the newest iOS runtime
-        run: echo "SIMULATOR_UDID=$(scripts/ci-boot-simulator.sh 'iPhone 17')" >> "$GITHUB_ENV"
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
@@ -112,11 +125,15 @@ jobs:
           path: ~/.konan
           key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}
       - name: Swift format
+        if: matrix.shard == 'a'
         run: scripts/swift-format-lint.sh
       - name: Regenerate the Xcode project from project.yml
         run: |
           brew install xcodegen
           xcodegen --spec iosApp/project.yml
+      # Booting takes minutes; started here it overlaps the build without slowing the setup steps.
+      - name: Boot an iPhone 17 on the newest iOS runtime
+        run: echo "SIMULATOR_UDID=$(scripts/ci-boot-simulator.sh 'iPhone 17')" >> "$GITHUB_ENV"
       - name: Build the app and tests
         run: >
           xcodebuild build-for-testing
@@ -132,14 +149,15 @@ jobs:
           -scheme Waay
           -destination "platform=iOS Simulator,id=$SIMULATOR_UDID"
           -derivedDataPath build/DerivedData
-          -resultBundlePath build/Waay.xcresult
+          -resultBundlePath build/Waay-${{ matrix.shard }}.xcresult
           -collect-test-diagnostics never
+          ${{ matrix.tests }}
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: ios-xcresult
-          path: build/Waay.xcresult
+          name: ios-xcresult-${{ matrix.shard }}
+          path: build/Waay-${{ matrix.shard }}.xcresult
 
   ios-minimum-os:
     # FR-030: the full suite on the minimum supported OS. No runner image preinstalls an iOS 17
