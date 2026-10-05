@@ -140,7 +140,7 @@ No, with tilt, hint labels, a flick and a spring-back. A card leaves only when i
   - multi-touch: a second pointer during a drag records no extra answer (spec edge case);
   - FR-026: a unit test that the stage's motion specs (`CardMotion`) are springs, plus a Roborazzi
     frame mid-drag showing the tilt and hint.
-- [ ] T017 [P] [US2] Write `I/WaayUITests/SwipeAnswerUITests.swift` with the same cases:
+- [X] T017 [P] [US2] Write `I/WaayUITests/SwipeAnswerUITests.swift` with the same cases:
   - `swipeRight` and `swipeLeft(velocity:)`;
   - `press(forDuration:thenDragTo:)` for the short drag;
   - `swipeUp` for the vertical drag.
