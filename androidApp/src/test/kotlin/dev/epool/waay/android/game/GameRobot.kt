@@ -8,6 +8,9 @@ import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeLeft
+import androidx.compose.ui.test.swipeRight
 
 /**
  * Robot for the game screen (robot pattern, Lackner's testing skill). Answers are chosen from the
@@ -41,6 +44,20 @@ class GameRobot(
             val isOnCard = rule.onAllNodesWithTag("number.$secret").fetchSemanticsNodes().isNotEmpty()
             rule.onNodeWithTag(if (isOnCard) "card.yes" else "card.no").performClick()
         }
+    }
+
+    /** Answers every card by swiping the card itself: right for Yes, left for No (spec 002 US2). */
+    fun swipeTruthfully(
+        secret: Int,
+        cards: Int = 5,
+    ) = apply {
+        repeat(cards) {
+            rule.waitForIdle()
+            waitOutAnswerCooldown()
+            val isOnCard = rule.onAllNodesWithTag("number.$secret").fetchSemanticsNodes().isNotEmpty()
+            rule.onNodeWithTag("card.surface").performTouchInput { if (isOnCard) swipeRight() else swipeLeft() }
+        }
+        rule.waitForIdle()
     }
 
     fun answer(tag: String) =

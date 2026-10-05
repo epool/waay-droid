@@ -126,7 +126,7 @@ No, with tilt, hint labels, a flick and a spring-back. A card leaves only when i
 
 ### Tests first
 
-- [ ] T016 [P] [US2] Write `A/test/kotlin/dev/epool/waay/android/game/SwipeAnswerTest.kt` for U1–U6 and
+- [X] T016 [P] [US2] Write `A/test/kotlin/dev/epool/waay/android/game/SwipeAnswerTest.kt` for U1–U6 and
   U11 from [card-screen-ui](./contracts/card-screen-ui.md):
   - `performTouchInput { swipeRight() }` and `swipeLeft()` play a game to the secret 27;
   - a short drag and a vertical drag answer nothing;
