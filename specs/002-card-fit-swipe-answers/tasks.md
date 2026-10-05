@@ -319,14 +319,18 @@ cross-fade.
     at font scale 2.0, the result's "New game" was pushed off the card and couldn't be scrolled to.
     It is fixed, with `MessageCardTest` added.
   - The drag frame is now seeded (`SeededWaayApp`), so it is stable.
-- [ ] T041 [P] Update the documentation:
+- [X] T041 [P] Update the documentation:
   - the quickstart run log in `specs/002-card-fit-swipe-answers/quickstart.md`;
   - the `README.md` status row for 002;
   - `AGENTS.md` §6 if any command changed.
-- [ ] T042 Run the full `specs/002-card-fit-swipe-answers/quickstart.md` §1 and §3 on both platforms:
+- [X] T042 Run the full `specs/002-card-fit-swipe-answers/quickstart.md` §1 and §3 on both platforms:
   - Android plus iOS 27, iOS 18.6 and iPad;
   - the manual scenarios M1–M15 that the emulators and simulators allow;
   - record the results.
+
+  Done; the results are in the quickstart run log. Left for the owner: M5 on iOS, the M11
+  cross-fade by eye, M13 with a real screen reader, SC-004, and SC-005 on a real device. Three
+  defects were found and fixed along the way.
 - [ ] T043 Run `/speckit-converge` until it reports converged. Any new tasks are appended to
   `specs/002-card-fit-swipe-answers/tasks.md`.
 
