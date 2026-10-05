@@ -39,9 +39,6 @@
       "Bash(git mv:*)",
       "Bash(git stash:*)",
       "Bash(git rev-parse:*)"
-    ],
-    "deny": [
-      "Bash(git push:*)"
     ]
   }
 }
