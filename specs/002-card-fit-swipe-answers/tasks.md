@@ -108,7 +108,7 @@ at accessibility sizes.
   - it wraps the grid in a `ScrollView` with `.id(card.index)` only when `scrolls`;
   - the identifiers are unchanged.
 - [X] T014 [US1] Use `CardGridView` in `I/iosApp/Game/GameScreen.swift` (`CardView`).
-- [ ] T015 [US1] Re-record the card-phase Roborazzi baselines in
+- [X] T015 [US1] Re-record the card-phase Roborazzi baselines in
   `A/test/kotlin/dev/epool/waay/android/screenshots/GameScreenScreenshotTest.kt` and review every image.
   - Run both suites green, including iOS 18.6.
 
