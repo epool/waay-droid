@@ -11,9 +11,11 @@ import assertk.assertions.contains
 import assertk.assertions.hasSize
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
 import assertk.assertions.isGreaterThanOrEqualTo
 import assertk.assertions.isInstanceOf
 import assertk.assertions.isNotEqualTo
+import assertk.assertions.isTrue
 import com.russhwolf.settings.MapSettings
 import dev.epool.waay.core.domain.Result
 import dev.epool.waay.core.i18n.EnglishStrings
@@ -474,6 +476,68 @@ class GameViewModelTest : MainDispatcherTest() {
                 clock += 200.milliseconds
                 viewModel.onAction(GameAction.OnAnswerClick(Answer.Yes, second.index))
                 assertThat((awaitItem().content as GameContentUi.Card).progress).isEqualTo("Card 3 of 5")
+            }
+        }
+
+    // G15a/b/e: canAnswer is true exactly when an answer would be recorded, and asking changes nothing.
+    @Test
+    fun canAnswerTellsWhetherAnAnswerWouldBeRecorded() =
+        runTest {
+            val clock = TestTimeSource()
+            val viewModel = viewModel(timeSource = clock)
+            viewModel.state.test {
+                awaitItem()
+                viewModel.onAction(GameAction.OnReadyClick)
+                val card = awaitItem().content as GameContentUi.Card
+
+                assertThat(viewModel.canAnswer(card.index)).isFalse() // within the 300 ms cooldown (G15b)
+                clock += 350.milliseconds
+                assertThat(viewModel.canAnswer(card.index)).isTrue() // G15a
+                assertThat(viewModel.canAnswer(card.index)).isTrue()
+                expectNoEvents() // asking is side-effect free
+
+                viewModel.onAction(GameAction.OnAnswerClick(Answer.Yes, card.index)) // G15e
+                assertThat((awaitItem().content as GameContentUi.Card).progress).isEqualTo("Card 2 of 5")
+            }
+        }
+
+    // G15c: any index other than the current card's is refused.
+    @Test
+    fun canAnswerRefusesOtherCards() =
+        runTest {
+            val clock = TestTimeSource()
+            val viewModel = viewModel(timeSource = clock)
+            viewModel.state.test {
+                awaitItem()
+                viewModel.onAction(GameAction.OnReadyClick)
+                val card = awaitItem().content as GameContentUi.Card
+                clock += 350.milliseconds
+
+                assertThat(viewModel.canAnswer(card.index + 1)).isFalse()
+                assertThat(viewModel.canAnswer(card.index - 1)).isFalse()
+            }
+        }
+
+    // G15d: outside the card phase nothing can be answered.
+    @Test
+    fun canAnswerIsFalseOutsideTheCardPhase() =
+        runTest {
+            val clock = TestTimeSource()
+            val viewModel = viewModel(timeSource = clock)
+            viewModel.state.test {
+                awaitItem()
+                assertThat(viewModel.canAnswer(0)).isFalse() // intro
+
+                viewModel.onAction(GameAction.OnReadyClick)
+                var state = awaitItem()
+                repeat(5) {
+                    clock += 350.milliseconds
+                    viewModel.onAction(GameAction.OnAnswerClick(Answer.Yes, (state.content as GameContentUi.Card).index))
+                    state = awaitItem()
+                }
+                assertThat(state.content).isInstanceOf<GameContentUi.Revealed>()
+                clock += 350.milliseconds
+                for (index in 0..4) assertThat(viewModel.canAnswer(index)).isFalse()
             }
         }
 }

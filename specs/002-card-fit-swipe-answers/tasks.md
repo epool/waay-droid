@@ -53,7 +53,7 @@ fail.
   algorithm, font model constants, cap and scroll fallback of ADR-013, with explicit API.
   - Green on the Android host and `iosSimulatorArm64`.
   - `koverVerify` still ≥ 90%.
-- [ ] T005 [P] Write G15a–e in `S/commonTest/kotlin/dev/epool/waay/game/presentation/GameViewModelTest.kt`,
+- [X] T005 [P] Write G15a–e in `S/commonTest/kotlin/dev/epool/waay/game/presentation/GameViewModelTest.kt`,
   using `TestTimeSource` for the cooldown.
   - They must fail.
 - [ ] T006 Implement `GameViewModel.canAnswer(cardIndex: Int): Boolean` in
