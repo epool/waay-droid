@@ -75,10 +75,20 @@ public class GameViewModel internal constructor(
     public fun onAction(action: GameAction) {
         when (action) {
             GameAction.OnReadyClick -> reduce(GameCommand.Ready)
-            is GameAction.OnAnswerClick -> if (!isWithinAnswerCooldown()) reduce(GameCommand.AnswerCard(action.answer, action.cardIndex))
+            is GameAction.OnAnswerClick -> if (canAnswer(action.cardIndex)) reduce(GameCommand.AnswerCard(action.answer, action.cardIndex))
             GameAction.OnNewGameClick -> reduce(GameCommand.NewGame)
             GameAction.OnSettingsClick -> eventChannel.trySend(GameEvent.NavigateToSettings)
         }
+    }
+
+    /**
+     * True iff an answer for [cardIndex] would be recorded right now: a card is being asked, it is
+     * that card, and the answer cooldown has passed (G15, ADR-014). Side-effect free. UIs ask before
+     * animating a card away, so a card never leaves unless its answer counts (FR-011).
+     */
+    public fun canAnswer(cardIndex: Int): Boolean {
+        val asking = snapshot?.phase as? GamePhase.Asking ?: return false
+        return asking.index == cardIndex && !isWithinAnswerCooldown()
     }
 
     override fun onCleared() {

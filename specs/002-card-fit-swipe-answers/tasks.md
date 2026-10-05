@@ -56,7 +56,7 @@ fail.
 - [X] T005 [P] Write G15a–e in `S/commonTest/kotlin/dev/epool/waay/game/presentation/GameViewModelTest.kt`,
   using `TestTimeSource` for the cooldown.
   - They must fail.
-- [ ] T006 Implement `GameViewModel.canAnswer(cardIndex: Int): Boolean` in
+- [X] T006 Implement `GameViewModel.canAnswer(cardIndex: Int): Boolean` in
   `S/commonMain/kotlin/dev/epool/waay/game/presentation/GameViewModel.kt`. One private guard serves
   both `canAnswer` and `onAction`, so they can't diverge (G15e).
 - [ ] T007 Pass `canAnswer` through to both UIs, with no visible change yet:
