@@ -198,6 +198,8 @@ xcodebuild test -project iosApp/iosApp.xcodeproj -scheme Waay \
 ```
 
 - UI tests launch the iOS app with `-resetPreferences`, so they always start from the defaults.
+  The dark-mode audit also passes `-forceDarkMode`: on iOS 27 simulators, `XCUIDevice.appearance`
+  doesn't reach the relaunched app (spec 002 ADR-017).
 - Android UI tests wait out the 300 ms answer cooldown (ADR-012) before each answer.
 
 **Official guidance sources, to consult before inventing patterns:**

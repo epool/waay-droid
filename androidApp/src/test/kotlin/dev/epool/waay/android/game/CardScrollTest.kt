@@ -4,11 +4,15 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollToIndex
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeUp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dev.epool.waay.android.MainActivity
 import org.junit.After
@@ -19,11 +23,11 @@ import org.koin.core.context.stopKoin
 import org.robolectric.annotation.Config
 
 /**
- * FR-003a: every card starts at the top of its numbers, however far the player scrolled the
- * previous card, so no number is hidden above the visible area.
+ * FR-003a in spec 002's fallback (FR-004): at the largest font scale 64 numbers can't fit a small
+ * phone, so the card scrolls, and every card still starts at the top of its numbers.
  */
 @RunWith(AndroidJUnit4::class)
-@Config(sdk = [36], qualifiers = "w411dp-h914dp")
+@Config(sdk = [36], qualifiers = "w360dp-h640dp", fontScale = 2.0f)
 class CardScrollTest {
     @get:Rule
     val rule = createAndroidComposeRule<MainActivity>()
@@ -46,9 +50,10 @@ class CardScrollTest {
         rule.onNodeWithTag("settings.cardCount.7").performClick()
         rule.onNodeWithContentDescription("Back").performClick()
 
-        val grid = rule.onNodeWithTag("card.numbers")
+        // The scroll container sits inside the measured card.numbers area (CardGridView).
+        val grid = rule.onNode(hasScrollAction() and hasAnyAncestor(hasTestTag("card.numbers")))
         GameRobot(rule).tapReady()
-        grid.performScrollToIndex(63)
+        grid.performTouchInput { swipeUp() }
         grid.assert(scrolledBy({ it > 0f }, "scrolled down"))
 
         GameRobot(rule).answer("card.no")

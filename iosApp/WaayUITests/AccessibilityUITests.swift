@@ -62,11 +62,16 @@ final class AccessibilityUITests: XCTestCase {
         XCTAssertTrue(newGame.isHittable)
     }
 
+    /// Scrolls until the element lies wholly inside the scroll view that shows it. `isHittable` alone
+    /// isn't enough: a button mostly below the scroll view's visible edge still counts as hittable,
+    /// but a tap at its centre misses (spec 002's intro card in landscape on iOS 26).
     @MainActor
     private func scrollIntoView(_ element: XCUIElement) {
+        let container = app.scrollViews.containing(.button, identifier: element.identifier).firstMatch
+        let isVisible = { element.isHittable && (!container.exists || container.frame.contains(element.frame)) }
         var attempts = 0
-        while !element.isHittable && attempts < 5 {
-            app.swipeUp()
+        while !isVisible() && attempts < 5 {
+            (container.exists ? container : app).swipeUp()
             attempts += 1
         }
     }

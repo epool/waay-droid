@@ -3,6 +3,7 @@ package dev.epool.waay.android.game
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
@@ -93,5 +94,15 @@ class GameFlowTest {
         rule.onNode(hasContentDescription("Settings") and hasClickAction()).assertIsDisplayed()
         rule.onNodeWithTag("card.numbers").assertIsDisplayed()
         rule.onNode(hasText("Yes") and hasClickAction()).assertIsDisplayed()
+
+        // Spec 002 FR-012, FR-019: the draggable card reads as its question, then every number.
+        val onCard = hasAnyAncestor(hasTestTag("card.surface"))
+        rule.onNode(onCard and isHeading() and hasText("Is your number on this card?")).assertIsDisplayed()
+        val numbers = rule.onAllNodes(onCard and SemanticsMatcher.keyIsDefined(SemanticsProperties.ContentDescription))
+        assertThat(numbers.fetchSemanticsNodes().size).isEqualTo(16)
+
+        // ...and a whole game completes with the Yes/No buttons alone, no gestures.
+        GameRobot(rule).answerTruthfully(secret = 21).assertRevealed(secret = 21)
+        rule.onNode(hasTestTag("result.message") and isHeading()).assertIsDisplayed()
     }
 }
