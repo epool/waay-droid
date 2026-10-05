@@ -529,18 +529,53 @@ Accessibility XXXL on iOS 18.6 and 27:
 - about 3.5 min of simulator boot ran after the build, serially;
 - the 2 min runtime download also ran before the build.
 
-Changes:
+Changes, as they stand after measuring:
 - `cache-read-only` is set only for pull requests;
 - `~/.konan` is cached in every Mac job;
-- simulators boot at job start, and the iOS 17.5 runtime downloads in the background during
-  `build-for-testing`, which uses a generic arm64 destination;
-- `test-without-building` follows the build;
+- `build-for-testing` uses a generic arm64 simulator destination, then `test-without-building`
+  runs on a simulator booted by UDID (`scripts/ci-boot-simulator.sh`);
 - `COMPILER_INDEX_STORE_ENABLE=NO`;
 - the Kotlin/Native shared tests moved to the short macOS Gradle job (`macos-gradle`, alongside
-  Roborazzi), off the Xcode critical path.
+  Roborazzi), off the Xcode critical path;
+- the iOS UI tests run in two parallel shards: `a` takes the three slowest classes, `b` the rest;
+- the iOS 17.5 runtime downloads in the background during the build, with a foreground retry if
+  that attempt fails;
+- a failed UI test is retried once (`-retry-tests-on-failure -test-iterations 2`), for runner
+  flakes such as "Failed to get list of active applications".
 
-Measured results are recorded below once the new workflow has run twice (the first run fills the
-caches).
+Tried and reverted: booting the simulator at job start, overlapping the build. On the 3-core
+runners the two slowed each other down (one run's build took 349–396 s instead of about 100 s,
+another failed on contention), so the simulator now boots after the build.
+
+**Measured (T113)**, job durations in seconds:
+
+| Run | `android` | `macos-gradle` | `ios` | `ios-minimum-os` |
+|---|---|---|---|---|
+| Baseline, 37161441986 (before) | ~210 | ~180 (screenshots) | ~720 | ~660 |
+| New workflow, cold caches | 200 | 352 | 783 | 780 |
+| Warm, boot at job start | 46 | 191 | 1027 (failed: contention) | 846 |
+| Shards, boot at job start | 54 | 123 | a 738, b 690 | failed (download) |
+| Shards, boot after build | 52 | 90 | a 754 (failed: runner flake), b 846 | 789 |
+| Plus test retry, 37263046033 (after) | 50 | 110 | a 780, b 809 | 620 |
+
+In the last run, each iOS shard spent 99–115 s building, 168–239 s booting the simulator and
+338–416 s in UI tests. The whole run took 819 s.
+
+**Outcome**
+- Android is about 4× faster (210 s to 50 s), because the Gradle cache is now written.
+- The macOS Gradle job is about 1.6× faster (180 s to 110 s), although it now also runs the
+  Kotlin/Native shared tests.
+- `ios-minimum-os` is about 6% faster.
+- The `ios` shards are not faster than the old single job (about 13 min against 12 min). The iOS
+  suite also grew in the meantime: Phase 13 added UI tests for parity with Android.
+- The iOS critical path is now simulator boot (3–4 min) plus UI test execution (6–7 min) on 3-core
+  runners. Caching can't shorten either of those.
+- The remaining options trade coverage or money for time:
+  - run the full UI suite only on pull requests and nightly, with a smoke subset on pushes;
+  - larger macOS runners (paid);
+  - fewer app relaunches per UI test.
+
+  Each needs an owner's decision.
 
 **CI as built (T098, 2026-10-03)** — `.github/workflows/ci.yml`. It passes `actionlint` 1.7.12 but
 has **not run yet**, because nothing has been pushed. It has four jobs:
