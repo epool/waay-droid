@@ -80,7 +80,7 @@ at accessibility sizes.
 
 ### Tests first
 
-- [ ] T008 [P] [US1] Write `A/test/kotlin/dev/epool/waay/android/game/CardFitTest.kt`:
+- [X] T008 [P] [US1] Write `A/test/kotlin/dev/epool/waay/android/game/CardFitTest.kt`:
   - 7 cards at `w360dp-h640dp`, default font: all 64 `number.N` nodes are fully within the root bounds,
     and `card.numbers` has no `VerticalScrollAxisRange`;
   - 3 cards at `w800dp-h1280dp`: the numbers' bounds cover ≥ 80% of `card.numbers` (SC-002).
