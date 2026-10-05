@@ -225,7 +225,7 @@ scheme shows. On iOS 26, the controls are glass. Light and dark modes pass the a
   - at `sdk = 36`, it uses the dynamic scheme.
 
   Add screenshot variants for light and dark × `sdk` 30 and 36 to the Roborazzi tests.
-- [ ] T029 [P] [US4] Extend `I/WaayUITests/AccessibilitySemanticsUITests.swift` to audit the card stage
+- [X] T029 [P] [US4] Extend `I/WaayUITests/AccessibilitySemanticsUITests.swift` to audit the card stage
   in light and dark (`XCUIDevice.shared.appearance`). For FR-023 and SC-009, add
   `I/WaayTests/AnswerControlStyleTests.swift` (Swift Testing): the pure helper
   `AnswerControlStyle.for(majorVersion:)` returns glass for 26+ and materials below.

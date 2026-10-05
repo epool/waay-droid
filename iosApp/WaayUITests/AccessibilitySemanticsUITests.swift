@@ -13,8 +13,26 @@ final class AccessibilitySemanticsUITests: XCTestCase {
         app.launch()
     }
 
+    override func tearDown() {
+        XCUIDevice.shared.appearance = .light
+    }
+
     @MainActor
     func testEveryScreenIsLabelledAndPassesTheAccessibilityAudit() throws {
+        try auditEveryScreen()
+    }
+
+    // Spec 002 FR-025 / SC-008: the same checks in dark mode (the backdrop and glass change).
+    @MainActor
+    func testEveryScreenPassesTheAccessibilityAuditInDarkMode() throws {
+        XCUIDevice.shared.appearance = .dark
+        app.terminate()
+        app.launch()
+        try auditEveryScreen()
+    }
+
+    @MainActor
+    private func auditEveryScreen() throws {
         let ready = app.buttons["intro.ready"]
         XCTAssertTrue(ready.waitForExistence(timeout: 10))
         XCTAssertEqual(app.buttons["toolbar.newGame"].label, "New game")
