@@ -25,8 +25,9 @@ final class CardFitUITests: XCTestCase {
         }
     }
 
-    // Spec 002 FR-012a / FR-020 / FR-021: "No" is left of "Yes" under the card in portrait, and the
-    // two flank the card in landscape (iPhone landscape is the wide layout).
+    // Spec 002 FR-012a / FR-020 / FR-021: "No" is left of "Yes" in every layout. On iPhone they sit
+    // under the card in portrait and flank it in landscape (the wide layout); iPad is wide in both
+    // orientations, so they flank the card in both.
     @MainActor
     func testNoIsLeftOfYesInEveryLayout() {
         continueAfterFailure = false
@@ -42,7 +43,12 @@ final class CardFitUITests: XCTestCase {
         XCTAssertTrue(card.waitForExistence(timeout: 5))
 
         XCTAssertLessThanOrEqual(no.frame.maxX, yes.frame.minX)
-        XCTAssertGreaterThanOrEqual(no.frame.minY, card.frame.maxY)
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            XCTAssertLessThanOrEqual(no.frame.maxX, card.frame.minX)
+            XCTAssertGreaterThanOrEqual(yes.frame.minX, card.frame.maxX)
+        } else {
+            XCTAssertGreaterThanOrEqual(no.frame.minY, card.frame.maxY)
+        }
 
         XCUIDevice.shared.orientation = .landscapeLeft
         defer { XCUIDevice.shared.orientation = .portrait }
