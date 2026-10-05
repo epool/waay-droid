@@ -807,10 +807,15 @@ fixed against its existing requirement.
 - [X] T110 Android `AccessibilityTest`: a full round at font scale 2.0 in portrait and landscape, with every control on screen (scrolling allowed). Mirrors the iOS `AccessibilityUITests`. Fix any clipping it exposes (FR-026, SC-006)
 - [X] T111 [P] iOS `RapidInputUITests`: a double tap on Yes records one answer. Mirrors the Android `RapidInputTest` (FR-028)
 - [X] T112 [P] iOS `AccessibilitySemanticsUITests`: the toolbar, answers and numbers carry their labels, and Xcode's accessibility audit passes on the intro, card, result and Settings. Mirrors the Android `gameIsUsableThroughSemantics` (FR-025)
-- [ ] T113 CI speed-ups in `.github/workflows/ci.yml`, measured before and after and recorded in ADR-011:
+- [X] T113 CI speed-ups in `.github/workflows/ci.yml`, measured before and after and recorded in ADR-011:
   - Gradle cache writable on trunk pushes (`setup-gradle` defaults to read-only off the default branch);
   - `~/.konan` cache in `ios-minimum-os`;
   - simulators booted at job start so the boot overlaps the build;
   - `build-for-testing` / `test-without-building`;
   - no index store in CI builds.
+
+  Done, with an honest result (ADR-011):
+  - Android is about 4× faster, and macOS Gradle about 1.6×.
+  - The iOS shards are about level with the old single job; simulator boot and UI tests dominate.
+  - Booting at job start was measured as slower and reverted.
 - [X] T114 Update `quickstart.md` with the parity test table and the CI run log, including I10: the full UI suite passed on iOS 17.5 in CI run 37161441986.
