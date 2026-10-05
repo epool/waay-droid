@@ -23,7 +23,7 @@ fail.
 
 ## Phase 1: Setup
 
-- [ ] T001 Run the spike for ADR-020 to settle how iOS sizes the numbers.
+- [X] T001 Run the spike for ADR-020 to settle how iOS sizes the numbers.
   1. Add a throwaway view that draws 64 numbers in a hand-computed 6 × 11 grid at a size derived from
      `@ScaledMetric(relativeTo: .subheadline)`.
   2. Run `performAccessibilityAudit` on it at the default size and at Accessibility XXXL, on iPhone 17

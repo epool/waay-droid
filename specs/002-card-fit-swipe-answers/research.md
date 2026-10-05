@@ -292,6 +292,14 @@ spec's layouts. The answers always read No (left), then Yes (right).
   `relativeTo:`), with the base size computed at the default content size.
 - An allowance is the last resort, and only with by-eye evidence, as in T112.
 
+**Spike result (T001, 2026-10-04): approach A passes, so B is not needed.** The card's numbers were
+drawn with `.font(.system(size: scaledMinimum × factor).monospacedDigit())`, where `scaledMinimum`
+comes from `@ScaledMetric`. `performAccessibilityAudit` on the card screen reported **zero issues** on:
+- iPhone 17 (iOS 27.0), at the default size (L) and at Accessibility XXXL;
+- iPhone 16 (iOS 18.6), at the same two sizes.
+
+The audit accepts a computed size as long as it follows the content size category.
+
 ---
 
 ## ADR-021 — Testing strategy for spec 002
