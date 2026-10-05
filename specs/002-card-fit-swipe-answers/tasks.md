@@ -107,7 +107,7 @@ at accessibility sizes.
   - it calls `CardGridFit.shared.fit`, then lays out a fixed-column grid with `monospacedDigit`;
   - it wraps the grid in a `ScrollView` with `.id(card.index)` only when `scrolls`;
   - the identifiers are unchanged.
-- [ ] T014 [US1] Use `CardGridView` in `I/iosApp/Game/GameScreen.swift` (`CardView`).
+- [X] T014 [US1] Use `CardGridView` in `I/iosApp/Game/GameScreen.swift` (`CardView`).
 - [ ] T015 [US1] Re-record the card-phase Roborazzi baselines in
   `A/test/kotlin/dev/epool/waay/android/screenshots/GameScreenScreenshotTest.kt` and review every image.
   - Run both suites green, including iOS 18.6.

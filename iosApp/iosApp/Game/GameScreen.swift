@@ -85,37 +85,22 @@ private struct CardView: View {
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.verticalSizeClass) private var verticalSizeClass
-    /// Grows with Dynamic Type so numbers never clip, up to the largest accessibility sizes (FR-026).
-    @ScaledMetric(relativeTo: .title3) private var minimumCellWidth: CGFloat = 56
 
     var body: some View {
         AdaptiveGameLayout {
-            // The header scrolls with the numbers, so short landscape windows at AX sizes never clip it.
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    // Primary text colour: the secondary grey fails the 4.5:1 contrast audit (FR-025).
-                    Text(card.progress)
-                        .font(.subheadline)
-                        .accessibilityIdentifier("card.progress")
-                    Text(card.question)
-                        .font(.headline)
-                        .accessibilityAddTraits(.isHeader)
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: minimumCellWidth), spacing: 8)], spacing: 8) {
-                        ForEach(card.numbers, id: \.value) { number in
-                            Text("\(number.value)")
-                                .font(.title3.monospacedDigit())
-                                .frame(maxWidth: .infinity, minHeight: 44)
-                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(.secondary))
-                                .accessibilityLabel(number.label)
-                                .accessibilityIdentifier("number.\(number.value)")
-                        }
-                    }
-                }
+            VStack(alignment: .leading, spacing: 12) {
+                // Primary text colour: the secondary grey fails the 4.5:1 contrast audit (FR-025).
+                Text(card.progress)
+                    .font(.subheadline)
+                    .accessibilityIdentifier("card.progress")
+                Text(card.question)
+                    .font(.headline)
+                    .accessibilityAddTraits(.isHeader)
+                CardGridView(numbers: card.numbers)
+                    // A fresh grid per card: in the scroll fallback (FR-004) each card starts at the top,
+                    // so no number stays hidden by the previous card's scrolling (FR-003a).
+                    .id(card.index)
             }
-            .scrollBounceBehavior(.basedOnSize)
-            // A fresh scroll view per card: each card starts at the top, so no number stays hidden
-            // above the visible area by the previous card's scrolling (FR-003a).
-            .id(card.index)
         } secondary: {
             answerButtons
         }
