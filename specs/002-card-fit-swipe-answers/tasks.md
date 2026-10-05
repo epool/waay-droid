@@ -232,7 +232,7 @@ scheme shows. On iOS 26, the controls are glass. Light and dark modes pass the a
 
 ### Implementation
 
-- [ ] T030 [US4] Update `A/main/kotlin/dev/epool/waay/android/ui/theme/Theme.kt`:
+- [X] T030 [US4] Update `A/main/kotlin/dev/epool/waay/android/ui/theme/Theme.kt`:
   - dynamic colour on API 31+, and the `Color.kt` fallback on 26–30;
   - apply the card-stage roles from [card-screen-ui](./contracts/card-screen-ui.md) across `CardStage`,
     `AnswerControls` and `GameScreen`;

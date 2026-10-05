@@ -3,14 +3,15 @@ package dev.epool.waay.android.ui.theme
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
-/** Material 3 theme with dynamic color on Android 12+. */
+/**
+ * Material You (spec 002 FR-022): colours from the wallpaper and theme on Android 12+ (dynamic
+ * colour), and Wáay's generated Material 3 scheme where dynamic colour isn't available (Android 8–11).
+ */
 @Composable
 fun WaayTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -24,11 +25,11 @@ fun WaayTheme(
             }
 
             darkTheme -> {
-                darkColorScheme()
+                WaayDarkColorScheme
             }
 
             else -> {
-                lightColorScheme()
+                WaayLightColorScheme
             }
         }
     MaterialTheme(colorScheme = colorScheme, content = content)
