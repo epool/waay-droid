@@ -303,8 +303,11 @@ cross-fade.
 
 ## Phase 7: Polish & cross-cutting
 
-- [ ] T039 Align the F6 expectations in `CardGridFitTest` and the quickstart with the narrowed SC-001.
+- [X] T039 Align the F6 expectations in `CardGridFitTest` and the quickstart with the narrowed SC-001.
   The owner accepted it at the plan gate, and `spec.md` was updated then.
+
+  `CardGridFitTest` already matched it, from US1. The F6 contract row, the ADR-013 note and the
+  quickstart table now say the same.
 - [ ] T040 Re-record the full Roborazzi set (intro, card and result × sizes × fonts × postures ×
   light/dark × dynamic/fallback, plus Settings). Review every image, delete obsolete baselines, and
   commit.

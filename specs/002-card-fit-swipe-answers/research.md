@@ -85,8 +85,8 @@ At the default text size, everything fits except a 7-card game:
 - in landscape on small Android phones;
 - in a phone's split-screen half (and 6-card games there too).
 
-In those cases FR-004's precedence applies and the card scrolls. **SC-001 as worded promises no
-scrolling there, so it needs the amendment proposed in the plan.**
+In those cases FR-004's precedence applies and the card scrolls. SC-001 was narrowed at the plan
+gate to exempt exactly these windows (spec Clarifications), and F6 checks that nothing else scrolls.
 
 **Sources**:
 - [Material 3 type scale](https://m3.material.io/styles/typography/type-scale-tokens)

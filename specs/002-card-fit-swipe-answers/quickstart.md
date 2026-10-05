@@ -23,6 +23,7 @@ xcodebuild test -project iosApp/iosApp.xcodeproj -scheme Waay \
 | `GameViewModelTest`: G15a–e | FR-011 |
 | Android `SwipeAnswerTest`, iOS `SwipeAnswerUITests` (U1–U6, U11) | FR-006 to FR-011, SC-003, SC-007 |
 | Android `CardFitTest`, iOS no-scroll check (7 cards, smallest phone) | FR-001, SC-001 |
+| `CardGridFitTest` F6: scrolling only in the windows the narrowed SC-001 exempts (small landscape phones with 7 cards, phone split-screen halves with 6–7 cards) | SC-001, FR-004 |
 | `ButtonOrderTest` (both platforms, compact and wide) | FR-012a, FR-020, FR-021 |
 | Roborazzi baselines: phases × sizes × light/dark × dynamic/fallback colours, re-recorded and reviewed | FR-019 to FR-022, SC-002 |
 | iOS `AccessibilitySemanticsUITests` audit on every screen | FR-025, SC-006, SC-008 |

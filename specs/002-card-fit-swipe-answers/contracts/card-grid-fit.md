@@ -36,7 +36,7 @@ public object CardGridFit {
 | F3 | Any non-scrolling result | No other column count yields a larger `fontSize`. A brute-force check over 1..count, with ties going to fewer empty cells and then the squarer grid. |
 | F4 | Any result | `fontSize ≤ maxFontSize`, and `fontSize ≥ minFontSize` unless `scrolls` |
 | F5 | No column count fits at `minFontSize` | `scrolls == true` and `fontSize == minFontSize`. Columns are the most that hold that size across `width`, and the total height exceeds `height`. |
-| F6 | The configurations in [research ADR-013](../research.md#adr-013--grid-fit-as-shared-pure-kotlin-fr-001-to-fr-005) at the default minimum | `scrolls` matches the feasibility table |
+| F6 | The configurations in [research ADR-013](../research.md#adr-013--grid-fit-as-shared-pure-kotlin-fr-001-to-fr-005) at the default minimum (14 and 15) | `scrolls` matches the feasibility table, and so the narrowed SC-001. Only small landscape phones with 64 numbers and phone split-screen halves with 32 or 64 numbers scroll. 64 numbers still fit phones in portrait, tablets and foldables at 18.2. |
 | F7 | `width` or `height` ≤ 0, or `count` ≤ 0 | A defined degenerate result (1 column, `scrolls = true`), never an exception |
 | F8 | The same inputs | The same output (pure, deterministic) |
 
