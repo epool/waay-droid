@@ -1,3 +1,4 @@
+import Shared
 import SwiftUI
 
 /// Arranges the game screen for the current size classes (ADR-008, FR-031):
@@ -47,6 +48,51 @@ struct AdaptiveGameLayout<Primary: View, Secondary: View>: View {
             VStack(spacing: 12) {
                 primary.frame(maxHeight: .infinity)
                 secondary
+            }
+        }
+    }
+}
+
+/// How an answer control is drawn: a button under the card, or a tall panel beside it.
+enum AnswerStyle {
+    case button
+    case panel
+}
+
+/// Places the card stage and its two answers for the current size classes (spec 002 FR-012a,
+/// FR-020, FR-021): "No" is always left of "Yes". Compact: buttons side by side under the card.
+/// Wide (iPad, iPhone landscape): panels flanking the card.
+struct CardStageLayout<Card: View, Answers: View>: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+
+    private let card: Card
+    private let answer: (Answer, AnswerStyle) -> Answers
+
+    init(@ViewBuilder card: () -> Card, @ViewBuilder answer: @escaping (Answer, AnswerStyle) -> Answers) {
+        self.card = card()
+        self.answer = answer
+    }
+
+    var body: some View {
+        if AdaptiveGameLayout<EmptyView, EmptyView>.isSideBySide(
+            horizontal: horizontalSizeClass, vertical: verticalSizeClass)
+        {
+            GeometryReader { proxy in
+                let panelWidth = min(max(proxy.size.width * 0.14, 88), 160)
+                HStack(spacing: 16) {
+                    answer(.no, .panel).frame(width: panelWidth)
+                    card.frame(maxWidth: .infinity, maxHeight: .infinity)
+                    answer(.yes, .panel).frame(width: panelWidth)
+                }
+            }
+        } else {
+            VStack(spacing: 16) {
+                card.frame(maxHeight: .infinity)
+                HStack(spacing: 12) {
+                    answer(.no, .button)
+                    answer(.yes, .button)
+                }
             }
         }
     }
