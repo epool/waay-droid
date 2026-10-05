@@ -162,7 +162,7 @@ No, with tilt, hint labels, a flick and a spring-back. A card leaves only when i
   - Book: the card left of the hinge, the row right of it.
 
   Keep the hinge gutters and the `movableContentOf` slots.
-- [ ] T020 [P] [US2] Create `A/main/kotlin/dev/epool/waay/android/game/AnswerControls.kt`:
+- [X] T020 [P] [US2] Create `A/main/kotlin/dev/epool/waay/android/game/AnswerControls.kt`:
   - a No/Yes row (compact) and flanking panels (wide), tagged `card.no` and `card.yes`, with No on
     the left;
   - a tap checks `canAnswer`, then starts the stage's exit animation and sends `OnAnswerClick`
