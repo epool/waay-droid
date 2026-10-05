@@ -195,7 +195,7 @@ No, with tilt, hint labels, a flick and a spring-back. A card leaves only when i
   - exit and entry transitions keyed by the card index;
   - the stack hint;
   - `sensoryFeedback`.
-- [ ] T026 [US2] Update `I/iosApp/Game/GameScreen.swift`:
+- [X] T026 [US2] Update `I/iosApp/Game/GameScreen.swift`:
   - the toolbar's `.principal` item shows the progress (`card.progress`);
   - New game is leading and Settings trailing;
   - add `I/iosApp/Theme/Backdrop.swift` (the accent gradient);

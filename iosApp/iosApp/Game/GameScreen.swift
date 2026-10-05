@@ -1,38 +1,72 @@
 import Shared
 import SwiftUI
 
-/// Stateless, previewable game screen: renders `state` and forwards actions.
+/// Stateless, previewable game screen: renders `state` and forwards actions. `canAnswer` tells whether
+/// an answer for a card would be recorded now (ADR-014); cards only fly away when it says yes (FR-011).
+///
+/// Spec 002 layout (FR-019): the backdrop, a toolbar with the progress centred, and each phase drawn as
+/// a card in front of it. The card phase is a draggable `CardStage` with its answers.
 struct GameScreen: View {
     let state: GameState
     let onAction: (GameAction) -> Void
     /// Whether an answer for a card would be recorded now (ADR-014, FR-011).
     let canAnswer: (Int32) -> Bool
 
-    var body: some View {
-        content
-            .padding()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .navigationTitle(state.title)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    Button {
-                        onAction(GameActionOnNewGameClick.shared)
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
-                    }
-                    .accessibilityLabel(state.newGameLabel)
-                    .accessibilityIdentifier("toolbar.newGame")
+    static let space = "game"
+    @State private var exiting: ExitingCard?
 
-                    Button {
-                        onAction(GameActionOnSettingsClick.shared)
-                    } label: {
-                        Image(systemName: "gearshape")
-                    }
-                    .accessibilityLabel(state.settingsLabel)
-                    .accessibilityIdentifier("toolbar.settings")
-                }
+    var body: some View {
+        ZStack {
+            Backdrop()
+            content
+                .padding()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // Drawn over every phase, so the last card can finish flying off as the result appears.
+            if let exiting {
+                ExitingCardView(exiting: exiting) { self.exiting = nil }
+                    .id(exiting.card.index)
             }
+        }
+        .coordinateSpace(.named(Self.space))
+        .navigationTitle(state.title)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarColorScheme(.dark, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    onAction(GameActionOnNewGameClick.shared)
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                }
+                .accessibilityLabel(state.newGameLabel)
+                .accessibilityIdentifier("toolbar.newGame")
+            }
+            ToolbarItem(placement: .principal) { title }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    onAction(GameActionOnSettingsClick.shared)
+                } label: {
+                    Image(systemName: "gearshape")
+                }
+                .accessibilityLabel(state.settingsLabel)
+                .accessibilityIdentifier("toolbar.settings")
+            }
+        }
+    }
+
+    /// The progress during cards (FR-017), the app's name otherwise.
+    @ViewBuilder
+    private var title: some View {
+        if case .card(let card) = onEnum(of: state.content) {
+            Text(card.progress)
+                .font(.headline)
+                .foregroundStyle(.white)
+                .accessibilityIdentifier("card.progress")
+        } else {
+            Text(state.title)
+                .font(.headline)
+                .foregroundStyle(.white)
+        }
     }
 
     @ViewBuilder
@@ -41,10 +75,9 @@ struct GameScreen: View {
         case .intro(let intro):
             IntroView(intro: intro, onReady: { onAction(GameActionOnReadyClick.shared) })
         case .card(let card):
-            CardView(card: card) { answer in
-                if canAnswer(card.index) {
-                    onAction(GameActionOnAnswerClick(answer: answer, cardIndex: card.index))
-                }
+            CardPhase(card: card, canAnswer: canAnswer) { exit in
+                exiting = exit
+                onAction(GameActionOnAnswerClick(answer: exit.answer, cardIndex: exit.card.index))
             }
         case .revealed(let revealed):
             ResultView(message: revealed.message, newGameLabel: revealed.newGameLabel) {
@@ -58,87 +91,83 @@ struct GameScreen: View {
     }
 }
 
-private struct IntroView: View {
-    let intro: GameContentUiIntro
-    let onReady: () -> Void
-
-    var body: some View {
-        AdaptiveGameLayout(keepTogether: true) {
-            Text(intro.message)
-                .font(.title2)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 480)
-                .accessibilityAddTraits(.isHeader)
-                .accessibilityIdentifier("intro.message")
-        } secondary: {
-            Button(intro.readyLabel, action: onReady)
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .accessibilityIdentifier("intro.ready")
-        }
-    }
+/// Where the card sits in the game screen, so the exit animation starts exactly there.
+private struct CardFrameKey: PreferenceKey {
+    static let defaultValue: CGRect = .zero
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) { value = nextValue() }
 }
 
-private struct CardView: View {
+/// The card phase: the draggable card and its "No"/"Yes" answers, placed for the size classes. A swipe
+/// and a tap go through the same gate: only an answer `canAnswer` accepts throws the card (FR-011, FR-013).
+private struct CardPhase: View {
     let card: GameContentUiCard
-    let onAnswer: (Answer) -> Void
+    let canAnswer: (Int32) -> Bool
+    let onAnswer: (ExitingCard) -> Void
 
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @State private var frame: CGRect = .zero
+    @State private var answered = 0
 
     var body: some View {
-        AdaptiveGameLayout {
-            VStack(alignment: .leading, spacing: 12) {
-                // Primary text colour: the secondary grey fails the 4.5:1 contrast audit (FR-025).
-                Text(card.progress)
-                    .font(.subheadline)
-                    .accessibilityIdentifier("card.progress")
-                Text(card.question)
-                    .font(.headline)
-                    .accessibilityAddTraits(.isHeader)
-                CardGridView(numbers: card.numbers)
-                    // A fresh grid per card: in the scroll fallback (FR-004) each card starts at the top,
-                    // so no number stays hidden by the previous card's scrolling (FR-003a).
-                    .id(card.index)
+        CardStageLayout {
+            CardStage(card: card, tryAnswer: tryAnswer)
+                .id(card.index)
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear.preference(key: CardFrameKey.self, value: proxy.frame(in: .named(GameScreen.space)))
+                    })
+        } answer: { answer, style in
+            AnswerControl(answer: answer, label: answer == .yes ? card.yesLabel : card.noLabel, style: style) {
+                _ = tryAnswer(answer, 0)
             }
-        } secondary: {
-            answerButtons
         }
+        .onPreferenceChange(CardFrameKey.self) { frame = $0 }
+        .sensoryFeedback(.success, trigger: answered)
         // Screen-reader users hear each new card's position as it appears (FR-025).
         .onChange(of: card.progress, initial: true) { _, progress in
             AccessibilityNotification.Announcement(progress).post()
         }
     }
 
-    /// Beside the numbers the answers stack vertically; below them they sit side by side.
-    private var isSideBySide: Bool {
-        AdaptiveGameLayout<EmptyView, EmptyView>.isSideBySide(
-            horizontal: horizontalSizeClass,
-            vertical: verticalSizeClass
-        )
+    private func tryAnswer(_ answer: Answer, _ fromOffset: CGFloat) -> Bool {
+        guard canAnswer(card.index) else { return false }
+        answered += 1
+        onAnswer(ExitingCard(card: card, answer: answer, fromOffset: fromOffset, frame: frame))
+        return true
     }
+}
 
-    @ViewBuilder
-    private var answerButtons: some View {
-        let layout = isSideBySide ? AnyLayout(VStackLayout(spacing: 12)) : AnyLayout(HStackLayout(spacing: 12))
-        layout {
-            Button {
-                onAnswer(.yes)
-            } label: {
-                Text(card.yesLabel).frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .accessibilityIdentifier("card.yes")
+/// The intro and result share the card look: an opaque card over the backdrop.
+private struct MessageCard<Content: View>: View {
+    @ViewBuilder let content: Content
 
-            Button {
-                onAnswer(.no)
-            } label: {
-                Text(card.noLabel).frame(maxWidth: .infinity)
+    var body: some View {
+        content
+            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 28))
+    }
+}
+
+private struct IntroView: View {
+    let intro: GameContentUiIntro
+    let onReady: () -> Void
+
+    var body: some View {
+        MessageCard {
+            AdaptiveGameLayout(keepTogether: true) {
+                Text(intro.message)
+                    .font(.title2)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 480)
+                    .accessibilityAddTraits(.isHeader)
+                    .accessibilityIdentifier("intro.message")
+            } secondary: {
+                Button(intro.readyLabel, action: onReady)
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .accessibilityIdentifier("intro.ready")
             }
-            .buttonStyle(.bordered)
-            .accessibilityIdentifier("card.no")
         }
-        .controlSize(.large)
     }
 }
 
@@ -148,19 +177,21 @@ private struct ResultView: View {
     let onNewGame: () -> Void
 
     var body: some View {
-        AdaptiveGameLayout(keepTogether: true) {
-            Text(message)
-                .font(.title)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 480)
-                .accessibilityAddTraits(.isHeader)
-                .accessibilityIdentifier("result.message")
-                .onAppear { AccessibilityNotification.Announcement(message).post() }
-        } secondary: {
-            Button(newGameLabel, action: onNewGame)
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .accessibilityIdentifier("result.newGame")
+        MessageCard {
+            AdaptiveGameLayout(keepTogether: true) {
+                Text(message)
+                    .font(.title)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 480)
+                    .accessibilityAddTraits(.isHeader)
+                    .accessibilityIdentifier("result.message")
+                    .onAppear { AccessibilityNotification.Announcement(message).post() }
+            } secondary: {
+                Button(newGameLabel, action: onNewGame)
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .accessibilityIdentifier("result.newGame")
+            }
         }
     }
 }
