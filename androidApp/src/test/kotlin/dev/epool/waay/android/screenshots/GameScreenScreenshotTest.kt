@@ -74,7 +74,7 @@ class GameScreenScreenshotTest {
                 RuntimeEnvironment.setQualifiers("w${width}dp-h${height}dp")
                 phases.forEach { (name, state) ->
                     captureRoboImage("src/test/screenshots/game_${name}_w${width}_h$height.png") {
-                        WaayTheme { GameScreen(state = state, onAction = {}) }
+                        WaayTheme { GameScreen(state = state, onAction = {}, canAnswer = { true }) }
                     }
                 }
             }
@@ -88,7 +88,7 @@ class GameScreenScreenshotTest {
             RuntimeEnvironment.setFontScale(scale)
             phases.forEach { (name, state) ->
                 captureRoboImage("src/test/screenshots/game_${name}_font$scale.png") {
-                    WaayTheme { GameScreen(state = state, onAction = {}) }
+                    WaayTheme { GameScreen(state = state, onAction = {}, canAnswer = { true }) }
                 }
             }
         }
@@ -108,7 +108,7 @@ class GameScreenScreenshotTest {
         listOf("tabletop" to tabletop, "book" to book).forEach { (posture, layout) ->
             listOf("intro", "card5", "revealed").forEach { name ->
                 captureRoboImage("src/test/screenshots/game_${name}_$posture.png") {
-                    WaayTheme { GameScreen(state = phases.getValue(name), onAction = {}, layout = layout) }
+                    WaayTheme { GameScreen(state = phases.getValue(name), onAction = {}, canAnswer = { true }, layout = layout) }
                 }
             }
         }

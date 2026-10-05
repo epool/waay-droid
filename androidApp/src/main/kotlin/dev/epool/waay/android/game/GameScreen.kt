@@ -70,15 +70,20 @@ fun GameRoot(
             GameEvent.NavigateToSettings -> onNavigateToSettings()
         }
     }
-    GameScreen(state = state, onAction = viewModel::onAction, modifier = modifier)
+    GameScreen(state = state, onAction = viewModel::onAction, canAnswer = viewModel::canAnswer, modifier = modifier)
 }
 
-/** Stateless, previewable screen: renders [state] and forwards actions. */
+/**
+ * Stateless, previewable screen: renders [state] and forwards actions. [canAnswer] tells whether an
+ * answer for a card would be recorded now (ADR-014); answers are only sent, and cards only animated
+ * away, when it says yes (FR-011).
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameScreen(
     state: GameState,
     onAction: (GameAction) -> Unit,
+    canAnswer: (cardIndex: Int) -> Boolean,
     modifier: Modifier = Modifier,
     layout: GameLayout = rememberGameLayout(),
 ) {
@@ -107,7 +112,7 @@ fun GameScreen(
         val contentModifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)
         when (val content = state.content) {
             is GameContentUi.Intro -> IntroContent(content, layout, onAction, contentModifier)
-            is GameContentUi.Card -> CardContent(content, layout, onAction, contentModifier)
+            is GameContentUi.Card -> CardContent(content, layout, onAction, canAnswer, contentModifier)
             is GameContentUi.Revealed -> ResultContent(content.message, content.newGameLabel, layout, onAction, contentModifier)
             is GameContentUi.Invalid -> ResultContent(content.message, content.newGameLabel, layout, onAction, contentModifier)
         }
@@ -146,6 +151,7 @@ private fun CardContent(
     content: GameContentUi.Card,
     layout: GameLayout,
     onAction: (GameAction) -> Unit,
+    canAnswer: (cardIndex: Int) -> Boolean,
     modifier: Modifier = Modifier,
 ) {
     AdaptiveGameLayout(
@@ -175,7 +181,11 @@ private fun CardContent(
             }
         },
         secondary = {
-            AnswerButtons(content, isVertical = layout.mode == GameLayoutMode.SideBySide, onAction = onAction)
+            AnswerButtons(
+                content,
+                isVertical = layout.mode == GameLayoutMode.SideBySide,
+                onAnswer = { answer -> if (canAnswer(content.index)) onAction(GameAction.OnAnswerClick(answer, content.index)) },
+            )
         },
     )
 }
@@ -184,12 +194,12 @@ private fun CardContent(
 private fun AnswerButtons(
     content: GameContentUi.Card,
     isVertical: Boolean,
-    onAction: (GameAction) -> Unit,
+    onAnswer: (Answer) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val yes: @Composable (Modifier) -> Unit = { buttonModifier ->
         Button(
-            onClick = { onAction(GameAction.OnAnswerClick(Answer.Yes, content.index)) },
+            onClick = { onAnswer(Answer.Yes) },
             modifier = buttonModifier.testTag("card.yes"),
         ) {
             Text(content.yesLabel)
@@ -197,7 +207,7 @@ private fun AnswerButtons(
     }
     val no: @Composable (Modifier) -> Unit = { buttonModifier ->
         OutlinedButton(
-            onClick = { onAction(GameAction.OnAnswerClick(Answer.No, content.index)) },
+            onClick = { onAnswer(Answer.No) },
             modifier = buttonModifier.testTag("card.no"),
         ) {
             Text(content.noLabel)
@@ -278,6 +288,7 @@ private fun IntroPreview() {
         GameScreen(
             state = previewState(GameContentUi.Intro("Think of a number from 1 to 31 and let me guess it…", "I'm ready")),
             onAction = {},
+            canAnswer = { true },
         )
     }
 }
@@ -299,6 +310,7 @@ private fun CardPreview() {
                     ),
                 ),
             onAction = {},
+            canAnswer = { true },
         )
     }
 }
@@ -310,6 +322,7 @@ private fun RevealedPreview() {
         GameScreen(
             state = previewState(GameContentUi.Revealed("The number you thought of is… 27!", 27, "New game")),
             onAction = {},
+            canAnswer = { true },
         )
     }
 }

@@ -59,7 +59,7 @@ fail.
 - [X] T006 Implement `GameViewModel.canAnswer(cardIndex: Int): Boolean` in
   `S/commonMain/kotlin/dev/epool/waay/game/presentation/GameViewModel.kt`. One private guard serves
   both `canAnswer` and `onAction`, so they can't diverge (G15e).
-- [ ] T007 Pass `canAnswer` through to both UIs, with no visible change yet:
+- [X] T007 Pass `canAnswer` through to both UIs, with no visible change yet:
   - Android: `GameRoot` passes `viewModel::canAnswer` to `GameScreen(canAnswer = …)`, and previews and
     screenshot tests pass `{ true }`.
   - iOS: `I/iosApp/Game/GameModel.swift` gets `canAnswer(cardIndex:)`, and `GameScreen` takes a

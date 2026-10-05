@@ -34,6 +34,11 @@ final class GameModel {
         obtainViewModel().onAction(action: action)
     }
 
+    /// Whether an answer for the card would be recorded now (ADR-014): cards only leave when it would.
+    func canAnswer(_ cardIndex: Int32) -> Bool {
+        obtainViewModel().canAnswer(cardIndex: cardIndex)
+    }
+
     private func obtainViewModel() -> GameViewModel {
         if let viewModel { return viewModel }
         let scope = ScreenScope()

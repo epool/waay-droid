@@ -5,6 +5,8 @@ import SwiftUI
 struct GameScreen: View {
     let state: GameState
     let onAction: (GameAction) -> Void
+    /// Whether an answer for a card would be recorded now (ADR-014, FR-011).
+    let canAnswer: (Int32) -> Bool
 
     var body: some View {
         content
@@ -39,7 +41,11 @@ struct GameScreen: View {
         case .intro(let intro):
             IntroView(intro: intro, onReady: { onAction(GameActionOnReadyClick.shared) })
         case .card(let card):
-            CardView(card: card, onAnswer: { onAction(GameActionOnAnswerClick(answer: $0, cardIndex: card.index)) })
+            CardView(card: card) { answer in
+                if canAnswer(card.index) {
+                    onAction(GameActionOnAnswerClick(answer: answer, cardIndex: card.index))
+                }
+            }
         case .revealed(let revealed):
             ResultView(message: revealed.message, newGameLabel: revealed.newGameLabel) {
                 onAction(GameActionOnNewGameClick.shared)
@@ -184,7 +190,8 @@ private func previewState(_ content: GameContentUi) -> GameState {
             state: previewState(
                 GameContentUiIntro(
                     message: "Think of a number from 1 to 31 and let me guess it…", readyLabel: "I'm ready")),
-            onAction: { _ in }
+            onAction: { _ in },
+            canAnswer: { _ in true }
         )
     }
 }
@@ -204,7 +211,8 @@ private func previewState(_ content: GameContentUi) -> GameState {
                     noLabel: "No"
                 )
             ),
-            onAction: { _ in }
+            onAction: { _ in },
+            canAnswer: { _ in true }
         )
     }
 }
@@ -215,7 +223,8 @@ private func previewState(_ content: GameContentUi) -> GameState {
             state: previewState(
                 GameContentUiRevealed(
                     message: "The number you thought of is… 27!", number: 27, newGameLabel: "New game")),
-            onAction: { _ in }
+            onAction: { _ in },
+            canAnswer: { _ in true }
         )
     }
 }

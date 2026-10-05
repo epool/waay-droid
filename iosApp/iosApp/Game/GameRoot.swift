@@ -8,7 +8,7 @@ struct GameRoot: View {
     @State private var model = GameModel()
 
     var body: some View {
-        GameScreen(state: model.state, onAction: model.send)
+        GameScreen(state: model.state, onAction: model.send, canAnswer: model.canAnswer)
             .task { await model.observeState() }
             .task {
                 await model.observeEvents { event in
