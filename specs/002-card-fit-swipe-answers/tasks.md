@@ -41,7 +41,7 @@ fail.
 
 ## Phase 2: Foundational (blocks every story)
 
-- [ ] T003 [P] Write `S/commonTest/kotlin/dev/epool/waay/game/presentation/CardGridFitTest.kt`:
+- [X] T003 [P] Write `S/commonTest/kotlin/dev/epool/waay/game/presentation/CardGridFitTest.kt`:
   - cover F1–F8 from [card-grid-fit](./contracts/card-grid-fit.md);
   - use the configuration matrix from ADR-013, n ∈ {4, 8, 16, 32, 64}, and minimum sizes
     {14, 18.2, 21, 28};
