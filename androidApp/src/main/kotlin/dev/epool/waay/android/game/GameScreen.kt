@@ -166,17 +166,10 @@ private fun CardContent(
                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }.testTag("card.progress"),
                 )
                 Text(content.question, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
-                // A fresh scroll state per card: each card starts at the top, so no number stays hidden
-                // above the visible area by the previous card's scrolling (FR-003a).
+                // A fresh grid per card: in the scroll fallback (FR-004) each card starts at the top, so no
+                // number stays hidden above the visible area by the previous card's scrolling (FR-003a).
                 key(content.index) {
-                    LazyVerticalGrid(
-                        columns = GridCells.Adaptive(minSize = 64.dp),
-                        modifier = Modifier.fillMaxWidth().testTag("card.numbers"),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        items(content.numbers, key = { it.value }) { number -> NumberCell(number) }
-                    }
+                    CardGridView(numbers = content.numbers, modifier = Modifier.fillMaxWidth().weight(1f))
                 }
             }
         },
@@ -223,24 +216,6 @@ private fun AnswerButtons(
             yes(Modifier.weight(1f))
             no(Modifier.weight(1f))
         }
-    }
-}
-
-@Composable
-private fun NumberCell(
-    number: NumberUi,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier =
-            modifier
-                .heightIn(min = 48.dp)
-                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
-                .semantics { contentDescription = number.label }
-                .testTag("number.${number.value}"),
-    ) {
-        Text(text = number.value.toString(), style = MaterialTheme.typography.titleMedium)
     }
 }
 

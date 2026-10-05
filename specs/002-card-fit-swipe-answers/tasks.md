@@ -99,7 +99,7 @@ at accessibility sizes.
   - it calls `CardGridFit.fit`, then draws rows and columns with tabular digits (`tnum`);
   - it uses `verticalScroll` only when `scrolls`;
   - it keeps the `card.numbers` and `number.N` tags and the number semantics.
-- [ ] T012 [US1] Use `CardGridView` in `A/main/kotlin/dev/epool/waay/android/game/GameScreen.kt` in place
+- [X] T012 [US1] Use `CardGridView` in `A/main/kotlin/dev/epool/waay/android/game/GameScreen.kt` in place
   of the `LazyVerticalGrid`. Keep `key(content.index)` so a fallback scroll still starts at the top.
 - [ ] T013 [P] [US1] Create `I/iosApp/Game/CardGridView.swift`:
   - `GeometryReader` measures the area;

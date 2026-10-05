@@ -4,6 +4,9 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -47,7 +50,8 @@ class CardScrollTest {
         rule.onNodeWithTag("settings.cardCount.7").performClick()
         rule.onNodeWithContentDescription("Back").performClick()
 
-        val grid = rule.onNodeWithTag("card.numbers")
+        // The scroll container sits inside the measured card.numbers area (CardGridView).
+        val grid = rule.onNode(hasScrollAction() and hasAnyAncestor(hasTestTag("card.numbers")))
         GameRobot(rule).tapReady()
         grid.performTouchInput { swipeUp() }
         grid.assert(scrolledBy({ it > 0f }, "scrolled down"))

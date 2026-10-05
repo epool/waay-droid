@@ -3,7 +3,10 @@ package dev.epool.waay.android.game
 import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
-import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -52,7 +55,7 @@ class CardFitTest {
     fun sevenCardsFitASmallPhoneWithoutScrolling() {
         startGameWith(cards = 7)
 
-        rule.onNodeWithTag("card.numbers").assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.VerticalScrollAxisRange))
+        rule.onAllNodes(hasScrollAction() and hasAnyAncestor(hasTestTag("card.numbers"))).assertCountEquals(0)
         val numbers = numberNodes()
         assertThat(numbers.size).isEqualTo(64)
         val screen = rule.onRoot().fetchSemanticsNode().boundsInRoot
