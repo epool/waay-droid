@@ -366,7 +366,12 @@ cross-fade.
 
 ## Phase 8: Convergence
 
-- [ ] T044 Return the iOS card to rest when the system cancels a drag (app switch, call, Control Center), with no answer, in `iosApp/iosApp/Game/CardStage.swift` (e.g. `@GestureState` for the translation, reset on cancel), per FR-016 / contract U9 (partial)
+- [X] T044 Return the iOS card to rest when the system cancels a drag (app switch, call, Control Center), with no answer, in `iosApp/iosApp/Game/CardStage.swift` (e.g. `@GestureState` for the translation, reset on cancel), per FR-016 / contract U9 (partial)
+  - Done: a `@GestureState` notices when a drag stops, including a cancelled one. An unanswered
+    card then settles back.
+  - XCUITest can't interrupt a drag partway, so this needs a hand check: in the Simulator, drag the
+    card with the mouse and press ⌘⇧H while still holding. On return, the card is at rest and
+    nothing was answered.
 - [ ] T045 Run CI on the `002-card-fit-swipe-answers` branch (push it or open a PR into `kmp`, with the owner's go-ahead) and get all four jobs green before the merge, per Constitution VIII (missing)
 - [ ] T046 Amend FR-020, FR-023, FR-024 and US4/AC4 in `specs/002-card-fit-swipe-answers/spec.md` to the as-built iOS styles (glass "No" tinted with the system background; solid standard-control fallbacks on iOS 17–25), with the owner's approval, per FR-024 (contradicts)
 - [ ] T047 Amend US1/AC2 and US1's Independent Test in `specs/002-card-fit-swipe-answers/spec.md` to match the narrowed SC-001 (7 cards scroll in small-phone landscape and phone split-screen halves), with the owner's approval, per US1/AC2 (contradicts)

@@ -42,6 +42,11 @@ struct CardStage: View {
     @State private var offset: CGFloat = 0
     @State private var entered = false
     @State private var pastThreshold = false
+    /// The answer was accepted, and the card now belongs to the exit animation.
+    @State private var handedOff = false
+    /// True while a drag is in progress. Unlike `onEnded`, it also resets when the system cancels the
+    /// drag (an app switch, a call), so the card can go back to rest (FR-016, contract U9).
+    @GestureState private var dragging = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -69,10 +74,25 @@ struct CardStage: View {
         }
         .sensoryFeedback(.impact(weight: .light), trigger: pastThreshold) { _, isPast in isPast }
         .onAppear { withAnimation(reduceMotion ? CardMotion.fade : .snappy) { entered = true } }
+        .onChange(of: dragging) { _, isDragging in
+            if !isDragging { settleIfAbandoned() }
+        }
+    }
+
+    /// When a drag stops, a card that wasn't answered goes back to rest. `onEnded` already does this
+    /// after a release; this also covers a drag the system cancelled, which never reaches `onEnded`.
+    /// It runs after the current update, once `onEnded` (if any) has decided.
+    private func settleIfAbandoned() {
+        Task { @MainActor in
+            guard !handedOff, offset != 0 else { return }
+            pastThreshold = false
+            withAnimation(reduceMotion ? CardMotion.fade : .bouncy) { offset = 0 }
+        }
     }
 
     private func drag(width: CGFloat) -> some Gesture {
         DragGesture(minimumDistance: 12)
+            .updating($dragging) { _, isDragging, _ in isDragging = true }
             .onChanged { value in
                 // Only a mostly horizontal drag moves the card (FR-008).
                 guard offset != 0 || abs(value.translation.width) > abs(value.translation.height) else { return }
@@ -91,7 +111,10 @@ struct CardStage: View {
                         nil
                     }
                 pastThreshold = false
-                if let answer, tryAnswer(answer, offset) { return }
+                if let answer, tryAnswer(answer, offset) {
+                    handedOff = true
+                    return
+                }
                 withAnimation(reduceMotion ? CardMotion.fade : .bouncy) { offset = 0 }
             }
     }
