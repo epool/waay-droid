@@ -132,7 +132,14 @@ No, with tilt, hint labels, a flick and a spring-back. A card leaves only when i
   - a short drag and a vertical drag answer nothing;
   - a fast short flick answers;
   - a swipe right after a card appears springs back;
-  - the hint `card.hint.yes` or `card.hint.no` appears mid-drag.
+  - the hint `card.hint.yes` or `card.hint.no` appears mid-drag;
+  - FR-015: with the stack hint visible, exactly `numbersPerCard` `number.*` nodes exist, so the
+    preview shows no numbers;
+  - FR-016 (U9): hold a drag part-way, recreate the Activity, and nothing is answered;
+  - FR-017: mid-drag, `card.progress`, `toolbar.newGame` and `toolbar.settings` are displayed;
+  - multi-touch: a second pointer during a drag records no extra answer (spec edge case);
+  - FR-026: a unit test that the stage's motion specs (`CardMotion`) are springs, plus a Roborazzi
+    frame mid-drag showing the tilt and hint.
 - [ ] T017 [P] [US2] Write `I/WaayUITests/SwipeAnswerUITests.swift` with the same cases:
   - `swipeRight` and `swipeLeft(velocity:)`;
   - `press(forDuration:thenDragTo:)` for the short drag;
@@ -219,7 +226,9 @@ scheme shows. On iOS 26, the controls are glass. Light and dark modes pass the a
 
   Add screenshot variants for light and dark × `sdk` 30 and 36 to the Roborazzi tests.
 - [ ] T029 [P] [US4] Extend `I/WaayUITests/AccessibilitySemanticsUITests.swift` to audit the card stage
-  in light and dark (`XCUIDevice.shared.appearance`).
+  in light and dark (`XCUIDevice.shared.appearance`). For FR-023 and SC-009, add
+  `I/WaayTests/AnswerControlStyleTests.swift` (Swift Testing): the pure helper
+  `AnswerControlStyle.for(majorVersion:)` returns glass for 26+ and materials below.
 
 ### Implementation
 
@@ -230,7 +239,7 @@ scheme shows. On iOS 26, the controls are glass. Light and dark modes pass the a
   - `shapes.extraLarge` for the card;
   - Material 3 components on intro, result and Settings.
 - [ ] T031 [US4] Add Liquid Glass in `I/iosApp/Game/AnswerControls.swift` and
-  `I/iosApp/Game/GameScreen.swift`:
+  `I/iosApp/Game/GameScreen.swift`, choosing the style through `AnswerControlStyle` (T029's helper):
   - under `if #available(iOS 26, *)`, `.glassProminent` with the accent tint for Yes, `.glass` for No,
     and a `GlassEffectContainer` around the answers;
   - the fallback is `.borderedProminent`, and `.bordered` on `.thinMaterial`;
@@ -281,8 +290,8 @@ cross-fade.
 
 ## Phase 7: Polish & cross-cutting
 
-- [ ] T039 Apply the owner's SC-001 decision from the plan gate to `specs/002-card-fit-swipe-answers/spec.md`,
-  the F6 expectations in `CardGridFitTest` and the quickstart.
+- [ ] T039 Align the F6 expectations in `CardGridFitTest` and the quickstart with the narrowed SC-001.
+  The owner accepted it at the plan gate, and `spec.md` was updated then.
 - [ ] T040 Re-record the full Roborazzi set (intro, card and result × sizes × fonts × postures ×
   light/dark × dynamic/fallback, plus Settings). Review every image, delete obsolete baselines, and
   commit.
@@ -290,7 +299,7 @@ cross-fade.
   - the quickstart run log in `specs/002-card-fit-swipe-answers/quickstart.md`;
   - the `README.md` status row for 002;
   - `AGENTS.md` §6 if any command changed.
-- [ ] T042 Run the full `specs/002-card-fit-swipe-answers/quickstart.md` §1 on both platforms:
+- [ ] T042 Run the full `specs/002-card-fit-swipe-answers/quickstart.md` §1 and §3 on both platforms:
   - Android plus iOS 27, iOS 18.6 and iPad;
   - the manual scenarios M1–M15 that the emulators and simulators allow;
   - record the results.

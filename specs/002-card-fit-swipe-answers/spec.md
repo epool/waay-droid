@@ -37,6 +37,9 @@ still holds unless a requirement below says it replaces part of it.
     its right.
 
   See FR-019 to FR-021.
+- Q: At the plan gate, given that 64 numbers can't fit at the default text size on small phones in
+  landscape or in a phone's split-screen half, how should SC-001 read? → A: Narrow it. Those small
+  windows use FR-004's scroll fallback; every other configuration still never scrolls (SC-001).
 - Q: What visual style should each platform follow? → A: Each platform's current design language,
   across the whole app. On Android that is Material You: colours come from the user's wallpaper and
   theme, with Material 3 components, shapes and motion. On iOS it is Apple's Liquid Glass (the owner
@@ -334,9 +337,12 @@ Requirement IDs are local to this spec. "001/FR-xxx" refers to [spec 001](../001
 
 ### Measurable Outcomes
 
-- **SC-001**: In every configuration of spec 001's verification matrix, at the default text size and at
-  every larger standard (non-accessibility) size, a card shows 100% of its numbers with no scrolling,
-  for every card count from 3 to 7.
+- **SC-001**: In every configuration of spec 001's verification matrix, at the default text size and
+  at every larger standard (non-accessibility) size, a card shows 100% of its numbers with no
+  scrolling, for every card count from 3 to 7. The exceptions are windows too small for the card at
+  the player's text size, where FR-004's scroll fallback applies:
+  - phones in landscape less than about 375 dp/pt tall, with 7 cards;
+  - phone split-screen halves, with 6 or 7 cards.
 - **SC-002**: On every configuration, the numbers' area covers at least 80% of the space available for
   the card. On a typical phone in portrait, 64 numbers are each at least as tall as the default body text.
 - **SC-003**: In testing, 100% of swipes released past the threshold record exactly one answer in the
