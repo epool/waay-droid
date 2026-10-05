@@ -22,6 +22,7 @@ import assertk.assertions.isInstanceOf
 import assertk.assertions.isNotEqualTo
 import com.github.takahirom.roborazzi.captureRoboImage
 import dev.epool.waay.android.MainActivity
+import dev.epool.waay.android.SeededWaayApp
 import org.junit.After
 import org.junit.Rule
 import org.junit.Test
@@ -99,7 +100,9 @@ class SwipeAnswerTest {
     }
 
     // U10 + FR-017: mid-drag the hint shows, and progress and the top-bar controls stay usable.
+    // Seeded, so the screenshot shows the same card every run.
     @Test
+    @Config(application = SeededWaayApp::class)
     fun whileDraggingTheHintShowsAndTheControlsStay() {
         startGame()
         GameRobot.waitOutAnswerCooldown()
@@ -136,6 +139,8 @@ class SwipeAnswerTest {
         val dragged = card.fetchSemanticsNode().boundsInRoot
         assertThat(dragged.height - rest.height).isGreaterThan(5f)
         card.performTouchInput { up() }
+        // Let the card settle: an animation still running when the test ends leaks into later tests.
+        rule.waitForIdle()
     }
 
     // U9 / FR-016: an interruption mid-drag (here a configuration change) records nothing.

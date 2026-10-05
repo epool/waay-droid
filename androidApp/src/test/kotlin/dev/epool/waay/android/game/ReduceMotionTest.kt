@@ -84,6 +84,8 @@ class ReduceMotionTest {
         assertThat(dragged.left - rest.left).isGreaterThan(rest.width * 0.2f)
         assertThat(abs(dragged.height - rest.height)).isLessThan(1f)
         card.performTouchInput { up() }
+        // Let the card settle: an animation still running when the test ends leaks into later tests.
+        rule.waitForIdle()
     }
 
     // FR-014: "Dragging MUST still answer."
