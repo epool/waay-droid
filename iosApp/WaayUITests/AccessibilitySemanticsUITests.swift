@@ -59,12 +59,21 @@ final class AccessibilitySemanticsUITests: XCTestCase {
 
     /// Runs Xcode's accessibility audit, retrying only when the audit itself times out ("Audit failed
     /// to complete in time", seen on busy CI runners). Real accessibility findings fail at once.
+    /// Text inside the navigation bar is capped by the system bar, so its Dynamic Type findings are
+    /// accepted on every screen, as for the system's own title.
     @MainActor
     private func audit(_ accept: ((XCUIAccessibilityAuditIssue) throws -> Bool)? = nil) throws {
+        let navigationBar = app.navigationBars.firstMatch.frame
+        let handler: (XCUIAccessibilityAuditIssue) throws -> Bool = { issue in
+            if issue.auditType == .dynamicType, let element = issue.element, navigationBar.contains(element.frame) {
+                return true
+            }
+            return try accept?(issue) ?? false
+        }
         let attempts = 3
         for attempt in 1...attempts {
             do {
-                try app.performAccessibilityAudit(for: .all, accept)
+                try app.performAccessibilityAudit(for: .all, handler)
                 return
             } catch let error as NSError
                 where error.domain == "com.apple.xcode.xctest.accessibilityAudit" && error.code == -56

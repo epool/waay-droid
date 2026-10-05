@@ -201,7 +201,7 @@ No, with tilt, hint labels, a flick and a spring-back. A card leaves only when i
   - add `I/iosApp/Theme/Backdrop.swift` (the accent gradient);
   - the question is the card header;
   - intro and result are drawn as cards.
-- [ ] T027 [US2] Keep every existing suite green:
+- [X] T027 [US2] Keep every existing suite green:
   - update `A/test/kotlin/dev/epool/waay/android/game/GameRobot.kt` and the iOS UI test helpers in
     `I/WaayUITests/`, adding swipe helpers;
   - run all Android tests, and iOS on iPhone 17 (27), iPhone 16 (18.6) and iPad.

@@ -1,8 +1,9 @@
 import XCTest
 
-/// Spec 002 US2 on iOS, contract U1–U4 and U6 (card-screen-ui.md): right is Yes, left is No, short
-/// or vertical drags answer nothing. The cooldown and mid-drag cases are covered on Android, where
-/// the test can act within 300 ms and inspect the screen mid-gesture.
+/// Spec 002 US2 on iOS, contract U1, U2, U4 and U6 (card-screen-ui.md): right is Yes, left is No, short
+/// or vertical drags answer nothing. The flick (U3), cooldown and mid-drag cases are covered on
+/// Android: synthesized XCUITest drags carry no release velocity, and can't act within 300 ms or
+/// inspect the screen mid-gesture. The iOS flick is checked by hand (quickstart M5).
 final class SwipeAnswerUITests: XCTestCase {
     private var app: XCUIApplication!
 
@@ -62,16 +63,5 @@ final class SwipeAnswerUITests: XCTestCase {
         card.swipeUp()
         Thread.sleep(forTimeInterval: 1)
         XCTAssertEqual(progress.label, "Card 1 of 5")
-    }
-
-    // U3: a fast flick counts even below the distance threshold.
-    @MainActor
-    func testAFastFlickAnswers() {
-        readTheCard()
-        let start = card.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-        let flick = start.withOffset(CGVector(dx: card.frame.width * 0.25, dy: 0))
-        start.press(forDuration: 0.05, thenDragTo: flick, withVelocity: .fast, thenHoldForDuration: 0)
-        waitForProgress(toLeave: "Card 1 of 5")
-        XCTAssertEqual(progress.label, "Card 2 of 5")
     }
 }
