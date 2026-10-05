@@ -37,6 +37,7 @@ struct GameScreen: View {
                     onAction(GameActionOnNewGameClick.shared)
                 } label: {
                     Image(systemName: "arrow.clockwise")
+                        .foregroundStyle(.white)
                 }
                 .accessibilityLabel(state.newGameLabel)
                 .accessibilityIdentifier("toolbar.newGame")
@@ -47,6 +48,7 @@ struct GameScreen: View {
                     onAction(GameActionOnSettingsClick.shared)
                 } label: {
                     Image(systemName: "gearshape")
+                        .foregroundStyle(.white)
                 }
                 .accessibilityLabel(state.settingsLabel)
                 .accessibilityIdentifier("toolbar.settings")
@@ -54,7 +56,8 @@ struct GameScreen: View {
         }
     }
 
-    /// The progress during cards (FR-017), the app's name otherwise.
+    /// The progress during cards (FR-017), the app's name otherwise. The title and the toolbar icons
+    /// are white: the toolbar sits on the backdrop, which is dark in both modes (FR-025).
     @ViewBuilder
     private var title: some View {
         if case .card(let card) = onEnum(of: state.content) {

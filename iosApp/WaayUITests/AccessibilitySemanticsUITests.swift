@@ -44,6 +44,7 @@ final class AccessibilitySemanticsUITests: XCTestCase {
         XCTAssertEqual(app.buttons["toolbar.newGame"].label, "New game")
         XCTAssertEqual(app.buttons["toolbar.settings"].label, "Settings")
         try audit()
+        assertToolbarIconContrast()
 
         ready.tap()
         let yes = app.buttons["card.yes"]
@@ -118,6 +119,17 @@ final class AccessibilitySemanticsUITests: XCTestCase {
             {
                 continue
             }
+        }
+    }
+
+    /// The toolbar icons sit on the always-dark backdrop, in light and dark mode. The audit doesn't
+    /// check icon contrast, so it is measured: at least 3:1 for non-text controls (WCAG 1.4.11). On
+    /// iOS 18 they took the accent violet and measured below that (spec 002 T042).
+    @MainActor
+    private func assertToolbarIconContrast() {
+        for identifier in ["toolbar.newGame", "toolbar.settings"] {
+            let measured = MeasuredContrast.of(app.buttons[identifier])
+            XCTAssertGreaterThanOrEqual(measured, 3, "\(identifier) measures \(measured):1")
         }
     }
 
