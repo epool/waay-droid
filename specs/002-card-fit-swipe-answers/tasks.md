@@ -250,7 +250,7 @@ scheme shows. On iOS 26, the controls are glass. Light and dark modes pass the a
     dark;
   - iOS: the audit passes in light and dark;
   - check Reduce Transparency and Increase Contrast by hand (quickstart M12), and record the result.
-- [ ] T033 [US4] Re-record and review the Roborazzi baselines for light/dark × dynamic/fallback.
+- [X] T033 [US4] Re-record and review the Roborazzi baselines for light/dark × dynamic/fallback.
 
 **Checkpoint**: each platform looks native, and both pass their accessibility checks.
 
