@@ -309,6 +309,23 @@ can't change them.
   rotation.
 - Dragging still answers on both platforms.
 
+**As built (T036–T038).**
+- With reduce motion on, the card still follows the finger, which is direct manipulation. It doesn't
+  tilt or rise.
+- A short drag slides back on a 150 ms ease instead of a spring.
+- An answered card fades out where it was released; the next card fades in.
+- Android reads the setting through a `ContentObserver`, so changing it in the system settings
+  applies when the player returns to the game.
+- Button answers go through the same `tryAnswer` as swipes on both platforms. So they get the same
+  directional exit, or the same fade (FR-013, T038).
+
+Verification:
+- Android: `ReduceMotionTest` checks tilt through the card's bounds, which a rotated layer widens;
+  `SwipeAnswerTest.theCardTiltsWhileDragging` is the control.
+- iOS: `CardMotionTests` covers the pure tilt rule. Then, with the simulator's
+  `com.apple.Accessibility ReduceMotionEnabled` on, a temporary probe confirmed that the app's
+  `accessibilityReduceMotion` was true, and the swipe and game-flow UI tests passed.
+
 **Sources**:
 - [Android animator duration scale](https://developer.android.com/reference/android/provider/Settings.Global#ANIMATOR_DURATION_SCALE)
 - [SwiftUI accessibilityReduceMotion](https://developer.apple.com/documentation/swiftui/environmentvalues/accessibilityreducemotion)

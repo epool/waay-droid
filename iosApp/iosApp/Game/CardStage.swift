@@ -2,14 +2,17 @@ import Shared
 import SwiftUI
 
 /// Card physics (spec 002 ADR-015, FR-026): system springs, a tilt cap and the answer thresholds.
+/// With Reduce Motion (FR-014, ADR-018) cards don't tilt, rise or spring: they fade.
 enum CardMotion {
     static let maxTiltDegrees: CGFloat = 12
     static let thresholdFraction: CGFloat = 1.0 / 3.0
     /// Points per second.
     static let flickVelocity: CGFloat = 1_200
+    /// The Reduce Motion cross-fade, and the slide back after a short drag.
+    static let fade = Animation.easeInOut(duration: 0.15)
 
-    static func tilt(offset: CGFloat, width: CGFloat) -> Double {
-        guard width > 0 else { return 0 }
+    static func tilt(offset: CGFloat, width: CGFloat, reduceMotion: Bool) -> Double {
+        guard width > 0, !reduceMotion else { return 0 }
         return Double(min(max(offset / width * maxTiltDegrees, -maxTiltDegrees), maxTiltDegrees))
     }
 }
@@ -30,11 +33,12 @@ struct ExitingCard: Equatable {
 /// tilts, and shows the answer it would give. On release past a third of its width, or on a flick, it
 /// asks `tryAnswer`; if the answer counts the card is handed to the exit animation, otherwise it
 /// springs back. Mostly vertical drags never move it. Two blank backs behind it hint at the stack and
-/// never show numbers (FR-015).
+/// never show numbers (FR-015). With Reduce Motion it still follows the finger, without tilting.
 struct CardStage: View {
     let card: GameContentUiCard
     let tryAnswer: (Answer, CGFloat) -> Bool
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var offset: CGFloat = 0
     @State private var entered = false
     @State private var pastThreshold = false
@@ -50,8 +54,11 @@ struct CardStage: View {
                         SwipeHint(card: card, offset: offset, width: width).padding(.bottom, StackHint.depth * 2)
                     }
                     .offset(x: offset)
-                    .rotationEffect(.degrees(CardMotion.tilt(offset: offset, width: width)), anchor: .bottom)
-                    .scaleEffect(entered ? 1 : 0.94)
+                    .rotationEffect(
+                        .degrees(CardMotion.tilt(offset: offset, width: width, reduceMotion: reduceMotion)),
+                        anchor: .bottom
+                    )
+                    .scaleEffect(entered || reduceMotion ? 1 : 0.94)
                     .opacity(entered ? 1 : 0)
                     .accessibilityElement(children: .contain)
                     .accessibilityIdentifier("card.surface")
@@ -61,7 +68,7 @@ struct CardStage: View {
             .simultaneousGesture(drag(width: width))
         }
         .sensoryFeedback(.impact(weight: .light), trigger: pastThreshold) { _, isPast in isPast }
-        .onAppear { withAnimation(.snappy) { entered = true } }
+        .onAppear { withAnimation(reduceMotion ? CardMotion.fade : .snappy) { entered = true } }
     }
 
     private func drag(width: CGFloat) -> some Gesture {
@@ -85,7 +92,7 @@ struct CardStage: View {
                     }
                 pastThreshold = false
                 if let answer, tryAnswer(answer, offset) { return }
-                withAnimation(.bouncy) { offset = 0 }
+                withAnimation(reduceMotion ? CardMotion.fade : .bouncy) { offset = 0 }
             }
     }
 }
@@ -153,12 +160,15 @@ struct CardFace: View {
 }
 
 /// The answered card flying off in its answer's direction, drawn over the screen so it can finish even
-/// when the result has already replaced the card (FR-010). Hidden from accessibility: it is only motion.
+/// when the result has already replaced the card (FR-010). With Reduce Motion it fades out where it
+/// was released instead (FR-014). Hidden from accessibility: it is only motion.
 struct ExitingCardView: View {
     let exiting: ExitingCard
     let onFinish: () -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var offset: CGFloat
+    @State private var opacity: Double = 1
 
     init(exiting: ExitingCard, onFinish: @escaping () -> Void) {
         self.exiting = exiting
@@ -171,16 +181,28 @@ struct ExitingCardView: View {
             .padding(.bottom, StackHint.depth * 2)
             .frame(width: exiting.frame.width, height: exiting.frame.height)
             .offset(x: offset)
-            .rotationEffect(.degrees(CardMotion.tilt(offset: offset, width: exiting.frame.width)), anchor: .bottom)
+            .rotationEffect(
+                .degrees(CardMotion.tilt(offset: offset, width: exiting.frame.width, reduceMotion: reduceMotion)),
+                anchor: .bottom
+            )
+            .opacity(opacity)
             .position(x: exiting.frame.midX, y: exiting.frame.midY)
             .allowsHitTesting(false)
             .accessibilityHidden(true)
             .onAppear {
-                let direction: CGFloat = exiting.answer == .yes ? 1 : -1
-                withAnimation(.snappy) {
-                    offset = direction * exiting.frame.width * 1.6
-                } completion: {
-                    onFinish()
+                if reduceMotion {
+                    withAnimation(CardMotion.fade) {
+                        opacity = 0
+                    } completion: {
+                        onFinish()
+                    }
+                } else {
+                    let direction: CGFloat = exiting.answer == .yes ? 1 : -1
+                    withAnimation(.snappy) {
+                        offset = direction * exiting.frame.width * 1.6
+                    } completion: {
+                        onFinish()
+                    }
                 }
             }
     }

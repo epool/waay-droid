@@ -289,10 +289,13 @@ cross-fade.
 - [X] T036 [US3] Create `A/main/kotlin/dev/epool/waay/android/ui/ReduceMotion.kt`
   (`rememberReduceMotion()`, ADR-018). Use it in `CardStage.kt`: a 150 ms cross-fade, with no tilt or
   fly.
-- [ ] T037 [P] [US3] In `I/iosApp/Game/CardStage.swift`, use `@Environment(\.accessibilityReduceMotion)`
+- [X] T037 [P] [US3] In `I/iosApp/Game/CardStage.swift`, use `@Environment(\.accessibilityReduceMotion)`
   to switch to `.opacity` transitions with no rotation.
-- [ ] T038 [US3] Make sure button answers run the same directional exit animation as swipes on both
+- [X] T038 [US3] Make sure button answers run the same directional exit animation as swipes on both
   platforms (FR-013, U7), if T020 and T024 didn't already finish it.
+
+  Already done by T020 and T024: buttons call the same `tryAnswer` as swipes, with `fromOffset` 0.
+  With reduce motion they fade like swipes too (ADR-018).
 
 **Checkpoint**: all four stories are complete.
 
