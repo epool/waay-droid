@@ -185,7 +185,7 @@ No, with tilt, hint labels, a flick and a spring-back. A card leaves only when i
   - intro and result drawn as cards on the backdrop.
 - [X] T023 [P] [US2] Rework `I/iosApp/Game/AdaptiveGameLayout.swift`: a row under the card for compact
   size classes, and flanking panels for wide (ADR-019).
-- [ ] T024 [P] [US2] Create `I/iosApp/Game/AnswerControls.swift` for the row and panels. It uses
+- [X] T024 [P] [US2] Create `I/iosApp/Game/AnswerControls.swift` for the row and panels. It uses
   standard styles for now; US4 adds the glass. A tap checks `canAnswer`, then animates and sends.
 - [ ] T025 [US2] Create `I/iosApp/Game/CardStage.swift`:
   - `DragGesture`, offset and rotation;
