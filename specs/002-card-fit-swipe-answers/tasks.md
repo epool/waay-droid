@@ -286,7 +286,7 @@ cross-fade.
 
 ### Implementation
 
-- [ ] T036 [US3] Create `A/main/kotlin/dev/epool/waay/android/ui/ReduceMotion.kt`
+- [X] T036 [US3] Create `A/main/kotlin/dev/epool/waay/android/ui/ReduceMotion.kt`
   (`rememberReduceMotion()`, ADR-018). Use it in `CardStage.kt`: a 150 ms cross-fade, with no tilt or
   fly.
 - [ ] T037 [P] [US3] In `I/iosApp/Game/CardStage.swift`, use `@Environment(\.accessibilityReduceMotion)`

@@ -3,7 +3,9 @@ package dev.epool.waay.android.game
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
+import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,6 +46,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import dev.epool.waay.android.ui.rememberReduceMotion
 import dev.epool.waay.game.domain.Answer
 import dev.epool.waay.game.presentation.GameContentUi
 import kotlinx.coroutines.launch
@@ -61,6 +64,9 @@ internal object CardMotion {
 
     /** The next card rising from the stack. */
     val enter: SpringSpec<Float> = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMediumLow)
+
+    /** Reduce motion (FR-014, U8): cards cross-fade, and a released card slides straight back. */
+    val fade: TweenSpec<Float> = tween(durationMillis = 150)
 
     const val MAX_TILT_DEGREES = 12f
     const val THRESHOLD_FRACTION = 1f / 3f
@@ -86,7 +92,8 @@ data class ExitingCard(
  * tilts, and shows the answer it would give. On release past a third of its width, or on a flick,
  * it asks [tryAnswer]; if the answer counts, the card is handed to the exit animation, otherwise it
  * springs back. Interrupted drags answer nothing (FR-016). Two blank backs behind it hint at the
- * stack and never show numbers (FR-015).
+ * stack and never show numbers (FR-015). With reduce motion on (FR-014) it still follows the finger,
+ * but doesn't tilt, rise or spring: cards fade in.
  */
 @Composable
 fun CardStage(
@@ -99,10 +106,12 @@ fun CardStage(
     val haptics = LocalHapticFeedback.current
     val flickVelocity = with(LocalDensity.current) { CardMotion.FlickVelocity.toPx() }
     val currentTryAnswer by rememberUpdatedState(tryAnswer)
+    val reduceMotion = rememberReduceMotion()
+    val currentReduceMotion by rememberUpdatedState(reduceMotion)
     val offset = remember(card.index) { Animatable(0f) }
     val entrance = remember(card.index) { Animatable(0f) }
     var width by remember { mutableFloatStateOf(0f) }
-    LaunchedEffect(card.index) { entrance.animateTo(1f, CardMotion.enter) }
+    LaunchedEffect(card.index) { entrance.animateTo(1f, if (currentReduceMotion) CardMotion.fade else CardMotion.enter) }
 
     Box(
         modifier =
@@ -137,10 +146,18 @@ fun CardStage(
                                     else -> null
                                 }
                             if (answer == null || !currentTryAnswer(answer, travelled)) {
-                                scope.launch { offset.animateTo(0f, CardMotion.settle, initialVelocity = velocity) }
+                                scope.launch {
+                                    if (currentReduceMotion) {
+                                        offset.animateTo(0f, CardMotion.fade)
+                                    } else {
+                                        offset.animateTo(0f, CardMotion.settle, initialVelocity = velocity)
+                                    }
+                                }
                             }
                         },
-                        onDragCancel = { scope.launch { offset.animateTo(0f, CardMotion.settle) } },
+                        onDragCancel = {
+                            scope.launch { offset.animateTo(0f, if (currentReduceMotion) CardMotion.fade else CardMotion.settle) }
+                        },
                     )
                 },
     ) {
@@ -162,8 +179,8 @@ fun CardStage(
                         .fillMaxSize()
                         .graphicsLayer {
                             translationX = offset.value
-                            rotationZ = CardMotion.tilt(offset.value, width)
-                            val rise = 0.94f + 0.06f * entrance.value
+                            rotationZ = if (reduceMotion) 0f else CardMotion.tilt(offset.value, width)
+                            val rise = if (reduceMotion) 1f else 0.94f + 0.06f * entrance.value
                             scaleX = rise
                             scaleY = rise
                             alpha = entrance.value
@@ -252,8 +269,9 @@ internal fun CardFace(
 
 /**
  * The answered card flying off in its answer's direction, from where it was released, drawn over the
- * screen so it can finish even when the next phase has already replaced the card (FR-010). Hidden from
- * accessibility: it is only motion.
+ * screen so it can finish even when the next phase has already replaced the card (FR-010). With reduce
+ * motion on (FR-014) it fades out where it was released instead. Hidden from accessibility: it is
+ * only motion.
  */
 @Composable
 fun ExitingCardOverlay(
@@ -263,11 +281,18 @@ fun ExitingCardOverlay(
     modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
+    val reduceMotion = rememberReduceMotion()
+    val currentReduceMotion by rememberUpdatedState(reduceMotion)
     val position = remember(exiting) { Animatable(exiting.fromOffset) }
+    val opacity = remember(exiting) { Animatable(1f) }
     val currentOnFinished by rememberUpdatedState(onFinish)
     LaunchedEffect(exiting) {
-        val direction = if (exiting.answer == Answer.Yes) 1f else -1f
-        position.animateTo(direction * exiting.bounds.width * 1.6f, CardMotion.exit)
+        if (currentReduceMotion) {
+            opacity.animateTo(0f, CardMotion.fade)
+        } else {
+            val direction = if (exiting.answer == Answer.Yes) 1f else -1f
+            position.animateTo(direction * exiting.bounds.width * 1.6f, CardMotion.exit)
+        }
         currentOnFinished()
     }
     val size =
@@ -283,7 +308,8 @@ fun ExitingCardOverlay(
                 .size(size)
                 .graphicsLayer {
                     translationX = position.value
-                    rotationZ = CardMotion.tilt(position.value, exiting.bounds.width)
+                    rotationZ = if (reduceMotion) 0f else CardMotion.tilt(position.value, exiting.bounds.width)
+                    alpha = opacity.value
                 }.clearAndSetSemantics {},
     )
 }
