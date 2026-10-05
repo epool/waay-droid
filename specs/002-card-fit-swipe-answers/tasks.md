@@ -48,7 +48,7 @@ fail.
   - for F3, brute-force every column count.
 
   It must fail to compile or fail.
-- [ ] T004 Implement `CardGrid` and `CardGridFit` in
+- [X] T004 Implement `CardGrid` and `CardGridFit` in
   `S/commonMain/kotlin/dev/epool/waay/game/presentation/CardGridFit.kt`, following the contract: the
   algorithm, font model constants, cap and scroll fallback of ADR-013, with explicit API.
   - Green on the Android host and `iosSimulatorArm64`.
