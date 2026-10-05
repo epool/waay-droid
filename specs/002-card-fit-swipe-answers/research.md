@@ -184,7 +184,9 @@ When a swipe is released past the threshold, or a button is tapped, each UI does
 - **API 26–30:** a Wáay Material 3 scheme, light and dark, generated with Material Color Utilities
   (TonalSpot, the same algorithm as Material Theme Builder) from the seed `#4527A0`, which is the
   iOS accent and the app icon's violet. The values are committed in `ui/theme/Color.kt` with the
-  seed and generator noted.
+  seed and generator noted. They were generated (T002) with **materialyoucolor 3.0.4** by
+  `scripts/generate-android-fallback-colors.py`, covering all 48 roles that Material 3 1.4.0's
+  `lightColorScheme` and `darkColorScheme` take.
 - **Card screen roles:**
   - backdrop: `primaryContainer`, with `onPrimaryContainer` for top-bar content;
   - card: `surfaceContainerLowest`, with `onSurface` numbers;

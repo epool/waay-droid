@@ -31,7 +31,7 @@ fail.
   3. Record in `specs/002-card-fit-swipe-answers/research.md` ADR-020 which approach passes:
      A, a computed `.system(size:)`; or B, `Font.custom(…, relativeTo:)`.
   4. Delete the spike code.
-- [ ] T002 [P] Generate the Android fallback colour scheme with Material Color Utilities:
+- [X] T002 [P] Generate the Android fallback colour scheme with Material Color Utilities:
   `uvx --from materialyoucolor`, TonalSpot, seed `#4527A0`, light and dark, every M3 role.
   - Write it to `A/main/kotlin/dev/epool/waay/android/ui/theme/Color.kt`, with a header naming the
     generator, its version and the seed.
