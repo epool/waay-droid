@@ -154,7 +154,7 @@ No, with tilt, hint labels, a flick and a spring-back. A card leaves only when i
 
 ### Implementation
 
-- [ ] T019 [US2] Rework `A/main/kotlin/dev/epool/waay/android/adaptive/AdaptiveGameLayout.kt` for the card
+- [X] T019 [US2] Rework `A/main/kotlin/dev/epool/waay/android/adaptive/AdaptiveGameLayout.kt` for the card
   stage (ADR-019):
   - Stacked: the card, with the answer row below;
   - SideBySide: [No panel] card [Yes panel];
