@@ -24,4 +24,31 @@ final class CardFitUITests: XCTestCase {
             XCTAssertTrue(number.isHittable, "\(number.identifier) is not on screen")
         }
     }
+
+    // Spec 002 FR-012a / FR-020 / FR-021: "No" is left of "Yes" under the card in portrait, and the
+    // two flank the card in landscape (iPhone landscape is the wide layout).
+    @MainActor
+    func testNoIsLeftOfYesInEveryLayout() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-resetPreferences"]
+        app.launch()
+        let ready = app.buttons["intro.ready"]
+        XCTAssertTrue(ready.waitForExistence(timeout: 10))
+        ready.tap()
+        let card = app.otherElements["card.surface"]
+        let no = app.buttons["card.no"]
+        let yes = app.buttons["card.yes"]
+        XCTAssertTrue(card.waitForExistence(timeout: 5))
+
+        XCTAssertLessThanOrEqual(no.frame.maxX, yes.frame.minX)
+        XCTAssertGreaterThanOrEqual(no.frame.minY, card.frame.maxY)
+
+        XCUIDevice.shared.orientation = .landscapeLeft
+        defer { XCUIDevice.shared.orientation = .portrait }
+        XCTAssertTrue(card.waitForExistence(timeout: 5))
+        Thread.sleep(forTimeInterval: 1)
+        XCTAssertLessThanOrEqual(no.frame.maxX, card.frame.minX)
+        XCTAssertGreaterThanOrEqual(yes.frame.minX, card.frame.maxX)
+    }
 }

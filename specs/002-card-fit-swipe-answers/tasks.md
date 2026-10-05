@@ -144,7 +144,7 @@ No, with tilt, hint labels, a flick and a spring-back. A card leaves only when i
   - `swipeRight` and `swipeLeft(velocity:)`;
   - `press(forDuration:thenDragTo:)` for the short drag;
   - `swipeUp` for the vertical drag.
-- [ ] T018 [P] [US2] Write `A/test/kotlin/dev/epool/waay/android/game/ButtonOrderTest.kt`:
+- [X] T018 [P] [US2] Write `A/test/kotlin/dev/epool/waay/android/game/ButtonOrderTest.kt`:
   - compact `w411dp-h914dp`, wide `w900dp-h600dp`, and tabletop and book via the `layout` parameter;
   - check `card.no` is left of `card.yes`;
   - when wide, check `card.no` is left of `card.surface` and `card.yes` is right of it.
