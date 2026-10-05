@@ -12,9 +12,11 @@ import dev.epool.waay.android.ui.theme.WaayTheme
 import dev.epool.waay.game.presentation.GameContentUi
 import dev.epool.waay.game.presentation.GameState
 import dev.epool.waay.game.presentation.NumberUi
+import org.junit.After
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.stopKoin
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
@@ -26,6 +28,12 @@ import org.robolectric.annotation.Config
 class ButtonOrderTest {
     @get:Rule
     val rule = createComposeRule()
+
+    @After
+    fun tearDown() {
+        // The Robolectric Application (WaayApp) starts Koin for every test.
+        stopKoin()
+    }
 
     private val state =
         GameState(

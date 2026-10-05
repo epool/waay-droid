@@ -177,7 +177,7 @@ No, with tilt, hint labels, a flick and a spring-back. A card leaves only when i
     backs;
   - haptics: `GestureThresholdActivate` and `Confirm`;
   - cancel on interruption (U9).
-- [ ] T022 [US2] Update `A/main/kotlin/dev/epool/waay/android/game/GameScreen.kt`:
+- [X] T022 [US2] Update `A/main/kotlin/dev/epool/waay/android/game/GameScreen.kt`:
   - a `CenterAlignedTopAppBar`, with the progress centred during cards (tag `card.progress`) and the
     title otherwise;
   - New game at the start and Settings at the end;
